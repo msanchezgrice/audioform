@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 const repoRoot = path.resolve(process.cwd(), "../..");
-const docsRoot = path.join(repoRoot, "docs");
+const docsRoot = path.join(repoRoot, "content", "docs");
 
 export const docsIndex = [
   {
@@ -58,4 +58,3 @@ export async function getDocContent(slug: string) {
     content,
   };
 }
-
