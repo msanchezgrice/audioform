@@ -8,6 +8,10 @@
   ],
   "routes": [
     {
+      "src": "^/docs(?:/(.*))?$",
+      "dest": "/apps/web/docs/$1"
+    },
+    {
       "src": "^/(?!apps/web)(.*)$",
       "dest": "/apps/web/$1"
     }
