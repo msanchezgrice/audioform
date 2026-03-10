@@ -13,8 +13,6 @@ import {
   createEmptyValues,
   createTranscriptEntry,
   getCompletion,
-  getCurrentPrompt,
-  getMissingFieldIds,
   mergeRealtimeUpdate,
   normalizeRealtimeUpdate,
   toSessionResult,
@@ -26,6 +24,12 @@ import {
   type TranscriptEntry,
   type TranscriptSpeaker,
 } from "@talkform/core";
+import {
+  buildLocalExport,
+  getPendingPromptQueue,
+  getTranscriptResponses,
+  getVisualPromptState,
+} from "./AudioformWidget.helpers";
 import styles from "./AudioformWidget.module.css";
 
 type ConnectionState = "idle" | "connecting" | "live" | "ended" | "error";
@@ -150,9 +154,9 @@ export function AudioformWidget({
   const [transcript, setTranscript] = useState<TranscriptEntry[]>([]);
   const [draftReply, setDraftReply] = useState("");
   const [waitingForAssistant, setWaitingForAssistant] = useState(false);
-  const [rotatingMissingIndex, setRotatingMissingIndex] = useState(0);
   const [completedPrompts, setCompletedPrompts] = useState<CompletedPrompt[]>([]);
   const [lastStructuredUpdate, setLastStructuredUpdate] = useState<StructuredUpdate | null>(null);
+  const [currentHostQuestion, setCurrentHostQuestion] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [model, setModel] = useState(config.realtime?.model ?? "gpt-realtime");
   const [voice, setVoice] = useState(config.realtime?.voice ?? "marin");
@@ -173,9 +177,13 @@ export function AudioformWidget({
 
   const completion = useMemo(() => getCompletion(config, values), [config, values]);
   const missingFieldIds = completion.missingFieldIds;
-  const activeMissingFieldId =
-    missingFieldIds.length > 0 ? missingFieldIds[rotatingMissingIndex % missingFieldIds.length] : null;
-  const activeField = config.fields.find((field) => field.id === activeMissingFieldId) ?? null;
+  const activeMissingFieldId = missingFieldIds[0] ?? null;
+  const transcriptResponses = useMemo(() => getTranscriptResponses(transcript), [transcript]);
+  const pendingPromptQueue = useMemo(() => getPendingPromptQueue(config, values), [config, values]);
+  const visualPromptState = useMemo(
+    () => getVisualPromptState(config, values, currentHostQuestion),
+    [config, currentHostQuestion, values],
+  );
   const latestRequiredFields = useMemo(
     () =>
       (lastStructuredUpdate?.fields ?? []).filter((fieldId) =>
@@ -238,18 +246,6 @@ export function AudioformWidget({
     }
 
     previousMissingFieldsRef.current = missingFieldIds;
-    setRotatingMissingIndex((current) => (missingFieldIds.length ? current % missingFieldIds.length : 0));
-  }, [missingFieldIds]);
-
-  useEffect(() => {
-    if (missingFieldIds.length <= 1) return;
-    const intervalId = window.setInterval(() => {
-      setRotatingMissingIndex((current) => (current + 1) % missingFieldIds.length);
-    }, 2600);
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
   }, [missingFieldIds]);
 
   useEffect(() => {
@@ -363,7 +359,7 @@ export function AudioformWidget({
 
       if (type === "response.audio_transcript.done") {
         const transcriptText = typeof event.transcript === "string" ? event.transcript : "";
-        appendTranscript("assistant", transcriptText);
+        setCurrentHostQuestion(transcriptText.trim() || null);
         setWaitingForAssistant(false);
         return;
       }
@@ -377,6 +373,7 @@ export function AudioformWidget({
         const nextSummary = update.summary || summaryRef.current;
         applyStructuredUpdate(nextValues, nextSummary, pendingInputSourceRef.current ?? "voice");
         pendingInputSourceRef.current = null;
+        setCurrentHostQuestion(null);
         setStatusMessage(nextSummary || "Structured fields updated live from the conversation.");
 
         const callId = typeof event.call_id === "string" ? event.call_id : "";
@@ -441,7 +438,7 @@ export function AudioformWidget({
     previousMissingFieldsRef.current = [];
     pendingInputSourceRef.current = null;
     setCompletedPrompts([]);
-    setRotatingMissingIndex(0);
+    setCurrentHostQuestion(null);
     const emptyValues = createEmptyValues(config);
     setValues(emptyValues);
     valuesRef.current = emptyValues;
@@ -517,7 +514,6 @@ export function AudioformWidget({
 
       dataChannel.addEventListener("open", () => {
         if (connectionToken !== connectionTokenRef.current) return;
-        appendTranscript("system", "Voice session connected. Talkform is joining the interview.");
         sendRealtimeEvent({
           type: "response.create",
           response: {
@@ -593,7 +589,7 @@ export function AudioformWidget({
 
   function endOnboardingCall() {
     closeConnection("ended");
-    appendTranscript("system", "Call ended. Structured fields remain available for export.");
+    setCurrentHostQuestion(null);
     setStatusMessage("Call ended. You can restart the form or export the captured result.");
   }
 
@@ -602,7 +598,7 @@ export function AudioformWidget({
     setError(null);
     setLastStructuredUpdate(null);
     setCompletedPrompts([]);
-    setRotatingMissingIndex(0);
+    setCurrentHostQuestion(null);
     setSessionId(null);
     const emptyValues = createEmptyValues(config);
     setValues(emptyValues);
@@ -663,6 +659,26 @@ export function AudioformWidget({
       type: "response.create",
       response: {},
     });
+  }
+
+  function downloadExport(format: "json" | "markdown") {
+    if (!sessionId) {
+      setError("Start a session before exporting.");
+      return;
+    }
+
+    const file = buildLocalExport(config, sessionResult, format);
+    const blob = new Blob([file.content], { type: file.mimeType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = file.filename;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
+    setError(null);
+    setStatusMessage(`${format === "json" ? "JSON" : "Markdown"} export downloaded.`);
   }
 
   return (
@@ -739,24 +755,22 @@ export function AudioformWidget({
             <div className={styles.panelHeader}>
               <div>
                 <div className={styles.panelEyebrow}>Transcript</div>
-                <h2>Exact transcript</h2>
+                <h2>Your answers</h2>
               </div>
-              <span className={styles.transcriptMeta}>{transcript.length} turns</span>
+              <span className={styles.transcriptMeta}>{transcriptResponses.length} responses</span>
             </div>
 
             <div className={styles.transcriptFeed}>
-              {transcript.length ? (
-                transcript.map((entry) => (
-                  <div key={entry.id} className={styles[`transcript${entry.speaker[0].toUpperCase()}${entry.speaker.slice(1)}`]}>
-                    <span className={styles.transcriptSpeaker}>
-                      {entry.speaker === "assistant" ? "Host" : entry.speaker === "user" ? "You" : "System"}
-                    </span>
+              {transcriptResponses.length ? (
+                transcriptResponses.map((entry, index) => (
+                  <div key={entry.id} className={styles.transcriptEntry}>
+                    <span className={styles.transcriptSpeaker}>Response {index + 1}</span>
                     <p>{entry.text}</p>
                   </div>
                 ))
               ) : (
                 <div className={styles.transcriptEmpty}>
-                  The transcript will appear here as soon as Talkform starts asking questions.
+                  Your spoken and typed answers will show up here as soon as the session starts.
                 </div>
               )}
             </div>
@@ -786,7 +800,7 @@ export function AudioformWidget({
             <div className={styles.panelHeader}>
               <div>
                 <div className={styles.panelEyebrow}>Prompt canvas</div>
-                <h2>What the host is asking now</h2>
+                <h2>Live question flow</h2>
               </div>
               <div className={styles.notesBoardMeta}>
                 <div className={styles.coveragePill}>
@@ -805,7 +819,7 @@ export function AudioformWidget({
                   <span className={styles.visualDot}></span>
                   <span className={styles.visualDotTeal}></span>
                 </div>
-                <span className={styles.visualFrameLabel}>Animated prompt surface</span>
+                <span className={styles.visualFrameLabel}>Live question flow</span>
               </div>
 
               <div className={styles.visualFrameBody}>
@@ -824,16 +838,12 @@ export function AudioformWidget({
 
                 <div className={styles.visualOverlay}>
                   <div className={styles.visualHeroCard}>
-                    <span className={styles.summaryLabel}>{activeField ? "Asking now" : "Ready to wrap"}</span>
-                    <h3>{activeField ? activeField.promptTitle : "Everything required is captured."}</h3>
-                    <p>
-                      {activeField
-                        ? activeField.promptDetail
-                        : "The form on the right has enough information to export the Talkform result."}
-                    </p>
+                    <span className={styles.summaryLabel}>{pendingPromptQueue.length ? "Asking now" : "Ready to export"}</span>
+                    <h3>{visualPromptState.title}</h3>
+                    <p>{visualPromptState.detail}</p>
 
                     <div className={styles.visualMetaRow}>
-                      <span className={styles.visualMetaChip}>{activeField ? activeField.label : "Export-ready"}</span>
+                      <span className={styles.visualMetaChip}>{visualPromptState.fieldLabel ?? "Export-ready"}</span>
                       <span className={styles.visualMetaChip}>
                         {lastStructuredUpdate
                           ? `Last sync: ${lastStructuredUpdate.source}`
@@ -847,34 +857,24 @@ export function AudioformWidget({
                     </div>
                   </div>
 
-                  <div className={styles.visualTopicGrid}>
-                    {config.fields
-                      .filter((field) => field.required)
-                      .map((field) => {
-                        const isCaptured = !missingFieldIds.includes(field.id);
-                        const isActive = field.id === activeMissingFieldId;
-                        return (
-                          <button
-                            key={field.id}
-                            type="button"
-                            className={
-                              isCaptured
-                                ? `${styles.visualTopicCard} ${styles.visualTopicDone}`
-                                : isActive
-                                  ? `${styles.visualTopicCard} ${styles.visualTopicActive}`
-                                  : `${styles.visualTopicCard} ${styles.visualTopicPending}`
-                            }
-                            onClick={() => {
-                              if (!missingFieldIds.includes(field.id)) return;
-                              setRotatingMissingIndex(missingFieldIds.indexOf(field.id));
-                            }}
-                          >
-                            <span>{isCaptured ? "Done" : isActive ? "Live" : "Queue"}</span>
-                            <strong>{field.label}</strong>
-                          </button>
-                        );
-                      })}
-                  </div>
+                  {pendingPromptQueue.length ? (
+                    <div className={styles.visualTopicGrid}>
+                      {pendingPromptQueue.map((item) => (
+                        <div
+                          key={item.fieldId}
+                          className={
+                            item.isActive
+                              ? `${styles.visualTopicCard} ${styles.visualTopicActive}`
+                              : `${styles.visualTopicCard} ${styles.visualTopicPending}`
+                          }
+                        >
+                          <span>{item.isActive ? "Current" : "Next"}</span>
+                          <strong>{item.label}</strong>
+                          <p>{item.detail}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
 
                   {latestRequiredFields.length ? (
                     <div className={styles.visualUpdateRow}>
@@ -890,7 +890,7 @@ export function AudioformWidget({
                     <div className={styles.visualCompletionRail}>
                       {completedPrompts.map((prompt) => (
                         <span key={prompt.id} className={styles.completedChip}>
-                          {config.fields.find((field) => field.id === prompt.fieldId)?.label ?? prompt.fieldId} captured
+                          {String.fromCharCode(10003)} {config.fields.find((field) => field.id === prompt.fieldId)?.label ?? prompt.fieldId}
                         </span>
                       ))}
                     </div>
@@ -905,8 +905,8 @@ export function AudioformWidget({
           <article className={styles.notesPanel}>
             <div className={styles.panelHeader}>
               <div>
-                <div className={styles.panelEyebrow}>Structured intake</div>
-                <h2>Bound form</h2>
+                <div className={styles.panelEyebrow}>Captured answers</div>
+                <h2>Form answers</h2>
               </div>
               <div className={styles.notesBoardMeta}>
                 <div className={styles.coveragePill}>{completion.percent}% captured</div>
@@ -917,21 +917,21 @@ export function AudioformWidget({
             </div>
 
             <div className={styles.summaryCard}>
-              <span className={styles.summaryLabel}>Working summary</span>
+              <span className={styles.summaryLabel}>Session summary</span>
               <p>{summary || "The host will keep this summary updated as answers come in."}</p>
             </div>
 
             <div className={styles.variablePanel}>
               <div className={styles.variableHeader}>
                 <div>
-                  <span className={styles.summaryLabel}>Direct variable sync</span>
+                  <span className={styles.summaryLabel}>Exported fields</span>
                   <p className={styles.variableCopy}>
-                    Audio transcript and typed replies write directly into these bound fields. These are the exact values exported from Talkform.
+                    These are the exact form values Talkform will export from the session.
                   </p>
                 </div>
                 <div className={styles.syncBadge}>
                   {lastStructuredUpdate
-                    ? `${lastStructuredUpdate.source === "voice" ? "Voice" : lastStructuredUpdate.source === "typed" ? "Typed" : "Manual"} sync`
+                    ? `${lastStructuredUpdate.source === "voice" ? "Voice" : lastStructuredUpdate.source === "typed" ? "Typed" : "Manual"} update`
                     : "Waiting"}
                 </div>
               </div>
@@ -944,7 +944,7 @@ export function AudioformWidget({
                     </span>
                   ))
                 ) : (
-                  <span className={styles.emptyInline}>No structured variables captured yet.</span>
+                  <span className={styles.emptyInline}>No answers captured yet.</span>
                 )}
               </div>
 
@@ -1054,7 +1054,7 @@ export function AudioformWidget({
                 })}
 
                 <div className={`${styles.fieldCard} ${styles.fieldCardWide}`}>
-                  <span className={styles.fieldLabel}>Live payload</span>
+                  <span className={styles.fieldLabel}>Session JSON preview</span>
                   <pre className={styles.payloadPreview}>{payloadPreview}</pre>
                 </div>
               </div>
@@ -1077,33 +1077,23 @@ export function AudioformWidget({
         <div className={styles.exportGrid}>
           <div className={styles.exportCard}>
             <span className={styles.fieldLabel}>Current prompt</span>
-            <strong>{activeField ? activeField.label : "All required fields captured"}</strong>
+            <strong>{visualPromptState.fieldLabel ?? "All required fields captured"}</strong>
             <p>
-              {activeField
-                ? activeField.promptDetail
-                : "You can open the JSON or markdown export endpoints for this session."}
+              {pendingPromptQueue.length
+                ? visualPromptState.detail
+                : "The local export buttons download the exact session state shown on this page."}
             </p>
           </div>
 
           <div className={styles.exportCard}>
             <span className={styles.fieldLabel}>Export actions</span>
             <div className={styles.exportActions}>
-              <a
-                className={styles.primaryButton}
-                href={sessionId ? `${apiBasePath}/sessions/${sessionId}/export?format=json` : "#"}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Open JSON
-              </a>
-              <a
-                className={styles.secondaryButton}
-                href={sessionId ? `${apiBasePath}/sessions/${sessionId}/export?format=markdown` : "#"}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Open Markdown
-              </a>
+              <button type="button" className={styles.primaryButton} onClick={() => downloadExport("json")}>
+                Download JSON
+              </button>
+              <button type="button" className={styles.secondaryButton} onClick={() => downloadExport("markdown")}>
+                Download Markdown
+              </button>
             </div>
           </div>
 

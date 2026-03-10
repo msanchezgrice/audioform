@@ -88,7 +88,7 @@ export default function HomePage() {
           <article className={styles.stepCard}>
             <span className={styles.stepNumber}>3</span>
             <h3>Export the result</h3>
-            <p>Open JSON or markdown exports, or pull the same data through the HTTP API, CLI, or MCP server.</p>
+            <p>Download JSON or markdown exports, or pull the same data through the HTTP API, CLI, or MCP server.</p>
           </article>
         </div>
       </section>
@@ -96,7 +96,7 @@ export default function HomePage() {
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>The product surface</h2>
         <p className={styles.sectionIntro}>
-          Transcript on the left, dominant current prompt in the middle, and bound form values on the right.
+          Your answers on the left, the live question flow in the middle, and captured form answers on the right.
         </p>
         <article className={styles.previewCard}>
           <div className={styles.previewStage}>
@@ -121,7 +121,7 @@ export default function HomePage() {
               </div>
             </div>
             <div className={styles.previewPanel}>
-              <div className={styles.eyebrow}>Bound form</div>
+              <div className={styles.eyebrow}>Form answers</div>
               <div className={styles.previewFormLine}></div>
               <div className={styles.previewFormLine}></div>
               <div className={styles.previewFormLine}></div>
@@ -202,4 +202,3 @@ export default function HomePage() {
     </main>
   );
 }
-

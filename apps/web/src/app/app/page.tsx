@@ -1,12 +1,18 @@
-import { AI_SKILL_TUTOR_TEMPLATE } from "@talkform/core";
-import { AudioformClient } from "@/components/audioform-client";
+import {
+  CUSTOMER_FEEDBACK_TEMPLATE,
+  JOB_APPLICATION_TEMPLATE,
+  LEAD_GENERATION_TEMPLATE,
+} from "@talkform/core";
+import { DemoTemplateGallery } from "@/components/demo-template-gallery";
 
 export default function AppPage() {
   return (
-    <AudioformClient
-      config={AI_SKILL_TUTOR_TEMPLATE}
-      heading="Talkform live demo"
-      subheading="Run the extracted voice-first form utility on the bundled AI Skill Tutor example template."
+    <DemoTemplateGallery
+      templates={[
+        CUSTOMER_FEEDBACK_TEMPLATE,
+        LEAD_GENERATION_TEMPLATE,
+        JOB_APPLICATION_TEMPLATE,
+      ]}
       vendorUrl={process.env.NEXT_PUBLIC_AUDIOFORM_VENDOR_URL ?? ""}
     />
   );

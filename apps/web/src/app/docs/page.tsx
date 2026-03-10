@@ -11,14 +11,17 @@ export default function DocsPage() {
         <p className={styles.sectionIntro}>
           Everything needed to embed Talkform, validate configs, expose it through MCP, and onboard AI agents.
         </p>
-        <div className={styles.docGrid}>
-          {docsIndex.map((doc) => (
-            <article key={doc.slug} className={styles.docCard}>
-              <div className={styles.eyebrow}>Guide</div>
-              <h3>{doc.title}</h3>
-              <p>{doc.description}</p>
+        <div className={styles.docList}>
+          {docsIndex.map((doc, index) => (
+            <article key={doc.slug} className={styles.docRow}>
+              <div className={styles.docRowIndex}>{String(index + 1).padStart(2, "0")}</div>
+              <div className={styles.docRowBody}>
+                <div className={styles.eyebrow}>Guide</div>
+                <h3>{doc.title}</h3>
+                <p>{doc.description}</p>
+              </div>
               <Link href={`/docs/${doc.slug}`} className={styles.docLink}>
-                Open doc
+                Open
               </Link>
             </article>
           ))}
@@ -27,4 +30,3 @@ export default function DocsPage() {
     </main>
   );
 }
-

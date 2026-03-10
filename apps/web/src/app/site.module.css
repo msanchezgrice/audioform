@@ -291,6 +291,44 @@
   font-weight: 700;
 }
 
+.docList {
+  margin-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.docRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: start;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.docRowIndex {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.4rem;
+  letter-spacing: -0.04em;
+  color: rgba(18, 36, 32, 0.38);
+}
+
+.docRowBody h3 {
+  margin: 0.35rem 0 0;
+  font-size: 1.3rem;
+  font-family: var(--font-display), sans-serif;
+}
+
+.docRowBody p {
+  margin: 0.55rem 0 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.docRow .docLink {
+  margin-top: 0;
+  align-self: center;
+}
+
 .markdown {
   margin-top: 1rem;
   padding: 1.4rem;
@@ -333,5 +371,8 @@
   .previewStage {
     grid-template-columns: 1fr;
   }
-}
 
+  .docRow {
+    grid-template-columns: 1fr;
+  }
+}
