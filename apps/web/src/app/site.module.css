@@ -1,0 +1,337 @@
+.page {
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: 1.2rem;
+  align-items: stretch;
+  margin-top: 1rem;
+}
+
+.heroCard,
+.surface,
+.ctaCard,
+.docCard,
+.previewCard,
+.stepCard,
+.integrationCard,
+.outputCard {
+  border: 1px solid var(--line);
+  border-radius: 2rem;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(20px);
+}
+
+.heroCard {
+  padding: 2.4rem;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.eyebrow::before {
+  content: "";
+  width: 0.68rem;
+  height: 0.68rem;
+  border-radius: 999px;
+  background: #d68a3b;
+}
+
+.heroCard h1,
+.sectionTitle {
+  font-family: var(--font-display), sans-serif;
+  letter-spacing: -0.04em;
+}
+
+.heroCard h1 {
+  margin: 0.7rem 0 0;
+  font-size: clamp(3rem, 6vw, 5.8rem);
+  line-height: 0.93;
+}
+
+.lede {
+  margin: 1rem 0 0;
+  font-size: 1.08rem;
+  line-height: 1.7;
+  color: var(--muted);
+  max-width: 50rem;
+}
+
+.heroActions {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  margin-top: 1.4rem;
+}
+
+.primaryAction,
+.secondaryAction,
+.ghostAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.1rem;
+  padding: 0.9rem 1.25rem;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.primaryAction {
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  color: white;
+}
+
+.secondaryAction {
+  background: rgba(15, 142, 121, 0.08);
+  color: var(--accent);
+}
+
+.ghostAction {
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.heroAside {
+  display: grid;
+  gap: 1rem;
+}
+
+.ctaCard,
+.surface {
+  padding: 1.4rem;
+}
+
+.ctaCard strong,
+.surface strong {
+  display: block;
+  font-size: 1.3rem;
+}
+
+.ctaCard p,
+.surface p,
+.docCard p,
+.integrationCard p,
+.outputCard p,
+.previewCard p,
+.stepCard p {
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.threeUp,
+.fourUp {
+  display: grid;
+  gap: 1rem;
+}
+
+.threeUp {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 1rem;
+}
+
+.fourUp {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 1rem;
+}
+
+.section {
+  margin-top: 1rem;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: clamp(2rem, 3.8vw, 3.4rem);
+  line-height: 0.96;
+}
+
+.sectionIntro {
+  margin: 0.85rem 0 0;
+  max-width: 46rem;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.stepCard,
+.integrationCard,
+.docCard,
+.outputCard {
+  padding: 1.2rem;
+}
+
+.stepNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.15rem;
+  height: 2.15rem;
+  border-radius: 999px;
+  background: rgba(15, 142, 121, 0.1);
+  color: var(--accent);
+  font-weight: 800;
+}
+
+.previewCard {
+  margin-top: 1rem;
+  padding: 1.1rem;
+}
+
+.previewStage {
+  display: grid;
+  grid-template-columns: 0.6fr 1fr 0.8fr;
+  gap: 0.8rem;
+  min-height: 22rem;
+}
+
+.previewPanel,
+.previewCenter {
+  border-radius: 1.4rem;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.7);
+  padding: 1rem;
+}
+
+.previewCenter {
+  color: white;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(15, 142, 121, 0.42), transparent 18rem),
+    linear-gradient(160deg, #082522 0%, #051a28 60%, #0d2830 100%);
+}
+
+.previewTranscriptLine,
+.previewFormLine,
+.previewChip {
+  border-radius: 999px;
+  min-height: 0.8rem;
+  background: rgba(15, 142, 121, 0.12);
+}
+
+.previewTranscriptLine {
+  margin-top: 0.75rem;
+  height: 0.75rem;
+}
+
+.previewFormLine {
+  margin-top: 0.9rem;
+  height: 2.8rem;
+  border-radius: 1rem;
+}
+
+.previewHeroTitle {
+  font-family: var(--font-display), sans-serif;
+  font-size: 2.2rem;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+}
+
+.previewHeroBody {
+  margin-top: 0.9rem;
+  max-width: 22rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.previewChipRow {
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.previewChip {
+  display: inline-flex;
+  min-height: 2rem;
+  padding: 0 0.8rem;
+  align-items: center;
+  color: white;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.jsonBlock {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 1.3rem;
+  background: #0e1a18;
+  color: #dff7f2;
+  overflow: auto;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.docGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.docCard h3,
+.integrationCard h3,
+.stepCard h3,
+.outputCard h3 {
+  margin: 0.75rem 0 0;
+  font-size: 1.3rem;
+  font-family: var(--font-display), sans-serif;
+}
+
+.docLink {
+  display: inline-flex;
+  margin-top: 0.9rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.markdown {
+  margin-top: 1rem;
+  padding: 1.4rem;
+  border-radius: 1.6rem;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: var(--shadow);
+}
+
+.markdown h1,
+.markdown h2,
+.markdown h3 {
+  font-family: var(--font-display), sans-serif;
+  letter-spacing: -0.03em;
+}
+
+.markdown p,
+.markdown li {
+  line-height: 1.75;
+  color: var(--ink);
+}
+
+.markdown pre {
+  overflow: auto;
+  padding: 1rem;
+  border-radius: 1rem;
+  background: #0f1a18;
+  color: #dff7f2;
+}
+
+.markdown code {
+  font-family: ui-monospace, "SFMono-Regular", monospace;
+}
+
+@media (max-width: 1180px) {
+  .hero,
+  .threeUp,
+  .fourUp,
+  .docGrid,
+  .previewStage {
+    grid-template-columns: 1fr;
+  }
+}
+

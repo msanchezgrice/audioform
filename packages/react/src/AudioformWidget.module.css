@@ -1,0 +1,721 @@
+.shell {
+  --talkform-accent: #0f8e79;
+  --talkform-accent-soft: rgba(15, 142, 121, 0.14);
+  --talkform-ink: #122420;
+  --talkform-muted: #55706b;
+  --talkform-surface: #f5faf8;
+  --talkform-panel: rgba(255, 255, 255, 0.92);
+  --talkform-line: rgba(18, 36, 32, 0.12);
+  --talkform-shadow: 0 24px 80px rgba(18, 36, 32, 0.14);
+  min-height: 100vh;
+  padding: 2rem 2rem 3rem;
+  background:
+    radial-gradient(circle at top right, rgba(15, 142, 121, 0.18), transparent 28rem),
+    linear-gradient(180deg, #f8fbf9 0%, #edf6f2 100%);
+  color: var(--talkform-ink);
+}
+
+.hero,
+.statusStrip,
+.layout,
+.exportSection {
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.eyebrow,
+.panelEyebrow,
+.fieldLabel,
+.statusLabel,
+.summaryLabel,
+.footerLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--talkform-accent);
+}
+
+.eyebrow::before,
+.panelEyebrow::before {
+  content: "";
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 999px;
+  background: #d68a3b;
+}
+
+.title {
+  margin: 0.55rem 0 0;
+  font-size: clamp(2.4rem, 3.8vw, 4.8rem);
+  line-height: 0.95;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  font-family: "Space Grotesk", "Sora", sans-serif;
+}
+
+.subtitle {
+  max-width: 48rem;
+  margin: 1rem 0 0;
+  font-size: 1.08rem;
+  line-height: 1.65;
+  color: var(--talkform-muted);
+}
+
+.heroActions,
+.exportActions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.primaryButton,
+.secondaryButton,
+.ghostButton {
+  border-radius: 999px;
+  padding: 0.95rem 1.3rem;
+  font-weight: 700;
+  font-size: 0.96rem;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease,
+    color 180ms ease;
+  cursor: pointer;
+}
+
+.primaryButton {
+  border: 1px solid transparent;
+  background: linear-gradient(135deg, #0f8e79, #0f6b8e);
+  color: white;
+  box-shadow: 0 16px 40px rgba(15, 107, 142, 0.24);
+}
+
+.secondaryButton {
+  border: 1px solid rgba(18, 36, 32, 0.16);
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--talkform-ink);
+}
+
+.ghostButton {
+  border: 1px dashed rgba(18, 36, 32, 0.2);
+  background: transparent;
+  color: var(--talkform-muted);
+}
+
+.primaryButton:hover,
+.secondaryButton:hover,
+.ghostButton:hover {
+  transform: translateY(-1px);
+}
+
+.primaryButton:disabled,
+.secondaryButton:disabled,
+.ghostButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.statusStrip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.statusCard,
+.statusMessage,
+.promptStagePanel,
+.transcriptPanel,
+.notesPanel,
+.exportSection {
+  border: 1px solid var(--talkform-line);
+  border-radius: 1.9rem;
+  background: var(--talkform-panel);
+  box-shadow: var(--talkform-shadow);
+  backdrop-filter: blur(18px);
+}
+
+.statusCard,
+.statusMessage {
+  padding: 1rem 1.15rem;
+}
+
+.statusCard strong {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 1.2rem;
+}
+
+.statusMessage {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  color: var(--talkform-muted);
+}
+
+.errorBanner {
+  max-width: 1440px;
+  margin: 0 auto 1rem;
+  padding: 1rem 1.2rem;
+  border-radius: 1.2rem;
+  border: 1px solid rgba(181, 52, 57, 0.22);
+  background: rgba(255, 241, 241, 0.95);
+  color: #9e2a31;
+  font-weight: 600;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.65fr) minmax(0, 1.05fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.transcriptPanel,
+.promptStagePanel,
+.notesPanel {
+  padding: 1.15rem;
+}
+
+.transcriptColumn,
+.visualColumn,
+.formColumn {
+  min-width: 0;
+}
+
+.panelHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.panelHeader h2 {
+  margin: 0.5rem 0 0;
+  font-size: 1.85rem;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-family: "Space Grotesk", "Sora", sans-serif;
+}
+
+.notesBoardMeta {
+  display: flex;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.coveragePill,
+.liveBadge,
+.liveBadgeHot,
+.syncBadge,
+.visualMetaChip,
+.transcriptMeta {
+  border-radius: 999px;
+  padding: 0.55rem 0.9rem;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.coveragePill,
+.syncBadge,
+.transcriptMeta {
+  background: rgba(15, 142, 121, 0.09);
+  color: var(--talkform-accent);
+}
+
+.liveBadge {
+  background: rgba(18, 36, 32, 0.08);
+  color: var(--talkform-muted);
+}
+
+.liveBadgeHot {
+  background: rgba(214, 138, 59, 0.16);
+  color: #9a6525;
+}
+
+.transcriptFeed {
+  min-height: 35rem;
+  max-height: 48rem;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding-right: 0.2rem;
+}
+
+.transcriptAssistant,
+.transcriptUser,
+.transcriptSystem {
+  border-radius: 1.35rem;
+  padding: 0.95rem 1rem;
+}
+
+.transcriptAssistant {
+  background: rgba(15, 142, 121, 0.1);
+}
+
+.transcriptUser {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--talkform-line);
+}
+
+.transcriptSystem {
+  background: rgba(15, 107, 142, 0.09);
+}
+
+.transcriptAssistant p,
+.transcriptUser p,
+.transcriptSystem p {
+  margin: 0.45rem 0 0;
+  line-height: 1.55;
+}
+
+.transcriptSpeaker {
+  font-weight: 800;
+  font-size: 0.76rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--talkform-muted);
+}
+
+.transcriptEmpty {
+  border: 1px dashed var(--talkform-line);
+  border-radius: 1.4rem;
+  padding: 1.4rem;
+  color: var(--talkform-muted);
+  line-height: 1.55;
+}
+
+.replyComposer {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.7rem;
+}
+
+.replyInput,
+.fieldInput,
+.fieldTextarea {
+  width: 100%;
+  border-radius: 1rem;
+  border: 1px solid var(--talkform-line);
+  background: rgba(255, 255, 255, 0.86);
+  color: var(--talkform-ink);
+  padding: 0.9rem 1rem;
+  font: inherit;
+}
+
+.fieldTextarea {
+  resize: vertical;
+}
+
+.replyInput:focus,
+.fieldInput:focus,
+.fieldTextarea:focus {
+  outline: none;
+  border-color: rgba(15, 142, 121, 0.45);
+  box-shadow: 0 0 0 4px rgba(15, 142, 121, 0.1);
+}
+
+.visualFrame {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.55rem;
+  border: 1px solid rgba(18, 36, 32, 0.08);
+  background: rgba(18, 36, 32, 0.92);
+  min-height: 46rem;
+}
+
+.visualFrameBar {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.9rem 1rem;
+  background: rgba(7, 15, 14, 0.66);
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.visualDots {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.visualDot,
+.visualDotAmber,
+.visualDotTeal {
+  width: 0.72rem;
+  height: 0.72rem;
+  border-radius: 999px;
+}
+
+.visualDot {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.visualDotAmber {
+  background: #d68a3b;
+}
+
+.visualDotTeal {
+  background: #0f8e79;
+}
+
+.visualFrameLabel {
+  font-size: 0.8rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.visualFrameBody {
+  position: relative;
+  min-height: 42rem;
+  overflow: hidden;
+}
+
+.visualBackdropGradient,
+.visualBackdropFrame {
+  position: absolute;
+  inset: 0;
+}
+
+.visualBackdropGradient {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(15, 142, 121, 0.36), transparent 20rem),
+    radial-gradient(circle at 85% 18%, rgba(214, 138, 59, 0.28), transparent 16rem),
+    linear-gradient(160deg, #082522 0%, #051a28 55%, #0d2830 100%);
+}
+
+.visualBackdropFrame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  opacity: 0.28;
+}
+
+.visualBackdropGlow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.06), transparent 32rem),
+    linear-gradient(180deg, rgba(7, 15, 14, 0.08), rgba(7, 15, 14, 0.42));
+}
+
+.visualOverlay {
+  position: relative;
+  z-index: 1;
+  padding: 1.2rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.visualHeroCard,
+.summaryCard,
+.fieldCard,
+.exportCard {
+  border-radius: 1.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(14px);
+}
+
+.visualHeroCard {
+  padding: 1.3rem;
+  color: white;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24);
+}
+
+.visualHeroCard h3 {
+  margin: 0.55rem 0 0;
+  font-size: clamp(2rem, 3vw, 3.3rem);
+  line-height: 0.94;
+  font-family: "Space Grotesk", "Sora", sans-serif;
+}
+
+.visualHeroCard p,
+.visualSummaryBand strong {
+  display: block;
+  margin: 0.85rem 0 0;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.84);
+}
+
+.visualMetaRow,
+.syncTrail,
+.visualUpdateRow,
+.visualCompletionRail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.visualMetaRow {
+  margin-top: 1rem;
+}
+
+.visualMetaChip {
+  background: rgba(255, 255, 255, 0.14);
+  color: white;
+}
+
+.visualSummaryBand {
+  margin-top: 1.2rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.visualTopicGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.visualTopicCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  align-items: flex-start;
+  border-radius: 1.3rem;
+  padding: 1rem;
+  color: white;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.08);
+  transition:
+    transform 200ms ease,
+    background 200ms ease,
+    border-color 200ms ease;
+}
+
+.visualTopicCard span {
+  font-size: 0.76rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.visualTopicCard strong {
+  font-size: 1rem;
+}
+
+.visualTopicCard:hover {
+  transform: translateY(-2px);
+}
+
+.visualTopicActive {
+  background: rgba(15, 142, 121, 0.22);
+  border-color: rgba(15, 142, 121, 0.56);
+  animation: pulseCard 2.1s ease-in-out infinite;
+}
+
+.visualTopicPending {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.visualTopicDone {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.syncChip,
+.completedChip,
+.infoChip {
+  border-radius: 999px;
+  padding: 0.55rem 0.9rem;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.syncChip {
+  background: rgba(15, 142, 121, 0.12);
+  color: var(--talkform-accent);
+}
+
+.completedChip {
+  background: rgba(214, 138, 59, 0.16);
+  color: #9a6525;
+  animation: driftOut 2.2s ease forwards;
+}
+
+.summaryCard {
+  margin-bottom: 1rem;
+  padding: 1.2rem;
+  border: 1px solid var(--talkform-line);
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.summaryCard p {
+  margin: 0.8rem 0 0;
+  font-size: 1.1rem;
+  line-height: 1.55;
+}
+
+.variableHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.variableCopy,
+.emptyInline,
+.exportCard p,
+.exportSummaryItem span {
+  color: var(--talkform-muted);
+  line-height: 1.55;
+}
+
+.variablePanel {
+  display: grid;
+  gap: 1rem;
+}
+
+.fieldGrid,
+.exportGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.fieldCard,
+.exportCard {
+  padding: 1rem;
+  border: 1px solid var(--talkform-line);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.fieldCardWide,
+.exportCardWide {
+  grid-column: 1 / -1;
+}
+
+.goalChecklist {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-top: 0.8rem;
+}
+
+.goalOption {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.85rem 0.9rem;
+  border-radius: 1rem;
+  border: 1px solid var(--talkform-line);
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.payloadPreview {
+  margin: 0.8rem 0 0;
+  max-height: 18rem;
+  overflow: auto;
+  border-radius: 1rem;
+  padding: 1rem;
+  background: #101a19;
+  color: #def7f2;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.exportSection {
+  margin-top: 1rem;
+  padding: 1.15rem;
+}
+
+.exportSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-top: 0.8rem;
+}
+
+.exportSummaryItem {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.85rem 0.9rem;
+  border-radius: 1rem;
+  background: rgba(15, 142, 121, 0.06);
+}
+
+@keyframes pulseCard {
+  0%,
+  100% {
+    box-shadow: 0 0 0 rgba(15, 142, 121, 0.22);
+    transform: translateY(0);
+  }
+  50% {
+    box-shadow: 0 0 0 12px rgba(15, 142, 121, 0);
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes driftOut {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  18%,
+  74% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-8px) scale(1.02);
+  }
+}
+
+@media (max-width: 1180px) {
+  .statusStrip,
+  .layout,
+  .fieldGrid,
+  .exportGrid,
+  .exportSummaryGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .goalChecklist,
+  .visualTopicGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 720px) {
+  .shell {
+    padding: 1rem 1rem 2rem;
+  }
+
+  .replyComposer,
+  .heroActions {
+    flex-direction: column;
+  }
+
+  .title {
+    font-size: 2.6rem;
+  }
+
+  .panelHeader h2 {
+    font-size: 1.4rem;
+  }
+}

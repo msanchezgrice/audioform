@@ -1,0 +1,249 @@
+{
+  "id": "ai-skill-tutor",
+  "title": "AI Skill Tutor Onboarding",
+  "description": "Conversational intake for role, experience, goals, and AI comfort so a product can map the user into a learning plan.",
+  "instructions": "Keep the tone practical. Tie each question back to what kind of learning plan or project direction the product can generate from the answer.",
+  "realtime": {
+    "model": "gpt-realtime",
+    "voice": "marin"
+  },
+  "output": {
+    "formats": [
+      "json",
+      "markdown"
+    ]
+  },
+  "theme": {
+    "accent": "#0f8e79",
+    "surface": "#eef7f4",
+    "panel": "#ffffff"
+  },
+  "fields": [
+    {
+      "id": "fullName",
+      "label": "Full name",
+      "type": "text",
+      "required": true,
+      "promptTitle": "Lock the learner identity",
+      "promptDetail": "Ask for the person's full name so the plan and session can be attached cleanly.",
+      "placeholder": "Captured from chat",
+      "agentHint": "Use the person's actual name, not a nickname when possible."
+    },
+    {
+      "id": "jobTitle",
+      "label": "Current role",
+      "type": "text",
+      "required": true,
+      "promptTitle": "Clarify the current role",
+      "promptDetail": "Get the exact job title or responsibility anchor before you map the plan.",
+      "placeholder": "Captured from chat"
+    },
+    {
+      "id": "careerPathId",
+      "label": "Learning track",
+      "type": "single_select",
+      "required": true,
+      "promptTitle": "Choose the learning track",
+      "promptDetail": "Map the conversation to the best-fit track so the first modules are correct.",
+      "options": [
+        {
+          "value": "product-management",
+          "label": "Product Management"
+        },
+        {
+          "value": "marketing-seo",
+          "label": "Marketing & SEO"
+        },
+        {
+          "value": "branding-design",
+          "label": "Branding & Design"
+        },
+        {
+          "value": "quality-assurance",
+          "label": "Quality Assurance"
+        },
+        {
+          "value": "sales-revops",
+          "label": "Sales / RevOps"
+        },
+        {
+          "value": "customer-support",
+          "label": "Customer Support"
+        },
+        {
+          "value": "operations",
+          "label": "Operations"
+        },
+        {
+          "value": "human-resources",
+          "label": "Human Resources"
+        },
+        {
+          "value": "software-engineering",
+          "label": "Software Engineering"
+        }
+      ]
+    },
+    {
+      "id": "careerCategoryLabel",
+      "label": "Track label",
+      "type": "text",
+      "required": false,
+      "promptTitle": "Translate the track into human language",
+      "promptDetail": "Capture a clean human-readable label for the chosen learning direction.",
+      "placeholder": "Human-readable track label"
+    },
+    {
+      "id": "yearsExperience",
+      "label": "Experience band",
+      "type": "single_select",
+      "required": true,
+      "promptTitle": "Size the experience band",
+      "promptDetail": "Capture the range from 0-1 through 10+ so the plan can calibrate pace.",
+      "options": [
+        {
+          "value": "0-1",
+          "label": "Less than 1 year"
+        },
+        {
+          "value": "1-3",
+          "label": "1-3 years"
+        },
+        {
+          "value": "3-5",
+          "label": "3-5 years"
+        },
+        {
+          "value": "5-10",
+          "label": "5-10 years"
+        },
+        {
+          "value": "10+",
+          "label": "10+ years"
+        }
+      ]
+    },
+    {
+      "id": "companySize",
+      "label": "Company size",
+      "type": "single_select",
+      "required": false,
+      "promptTitle": "Capture context about the current environment",
+      "promptDetail": "Company size can shape pace and tooling expectations, but it is optional.",
+      "options": [
+        {
+          "value": "startup",
+          "label": "Startup (1-50)"
+        },
+        {
+          "value": "small",
+          "label": "Small (51-200)"
+        },
+        {
+          "value": "medium",
+          "label": "Medium (201-1000)"
+        },
+        {
+          "value": "large",
+          "label": "Large (1000+)"
+        }
+      ]
+    },
+    {
+      "id": "situation",
+      "label": "Current situation",
+      "type": "single_select",
+      "required": true,
+      "promptTitle": "Understand the current situation",
+      "promptDetail": "Confirm whether they are employed, a founder, a student, or in transition.",
+      "options": [
+        {
+          "value": "employed",
+          "label": "Employed"
+        },
+        {
+          "value": "unemployed",
+          "label": "Unemployed"
+        },
+        {
+          "value": "student",
+          "label": "Student"
+        },
+        {
+          "value": "founder",
+          "label": "Founder"
+        },
+        {
+          "value": "freelancer",
+          "label": "Freelancer"
+        },
+        {
+          "value": "career_switcher",
+          "label": "Career switcher"
+        }
+      ]
+    },
+    {
+      "id": "selectedGoals",
+      "label": "Goals",
+      "type": "multi_select",
+      "required": true,
+      "promptTitle": "Pin the learning goals",
+      "promptDetail": "Find out whether this is for upskilling, hiring proof, foundations, projects, or business building.",
+      "options": [
+        {
+          "value": "build_business",
+          "label": "Build a business"
+        },
+        {
+          "value": "upskill_current_job",
+          "label": "Upskill for current job"
+        },
+        {
+          "value": "find_new_role",
+          "label": "Find a new role"
+        },
+        {
+          "value": "showcase_for_job",
+          "label": "Showcase skills for a new role"
+        },
+        {
+          "value": "learn_foundations",
+          "label": "Learn foundations"
+        },
+        {
+          "value": "ship_ai_projects",
+          "label": "Ship AI projects"
+        }
+      ]
+    },
+    {
+      "id": "aiComfort",
+      "label": "AI comfort",
+      "type": "rating",
+      "required": true,
+      "promptTitle": "Gauge AI comfort",
+      "promptDetail": "Get a 1 to 5 self-rating so the host can pace the plan and follow-ups correctly.",
+      "validation": {
+        "min": 1,
+        "max": 5
+      }
+    },
+    {
+      "id": "linkedinUrl",
+      "label": "LinkedIn URL",
+      "type": "url",
+      "required": false,
+      "promptTitle": "Optional LinkedIn context",
+      "promptDetail": "Capture a LinkedIn URL only if the user wants to share one."
+    },
+    {
+      "id": "resumeFilename",
+      "label": "Resume note",
+      "type": "file_ref",
+      "required": false,
+      "promptTitle": "Optional resume note",
+      "promptDetail": "Capture a filename or note if the user mentions a resume they want to upload later."
+    }
+  ]
+}
