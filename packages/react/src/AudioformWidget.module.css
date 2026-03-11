@@ -1,25 +1,33 @@
 .shell {
-  --talkform-accent: #0f8e79;
-  --talkform-accent-soft: rgba(15, 142, 121, 0.14);
-  --talkform-ink: #122420;
-  --talkform-muted: #55706b;
-  --talkform-surface: #f5faf8;
-  --talkform-panel: rgba(255, 255, 255, 0.92);
-  --talkform-line: rgba(18, 36, 32, 0.12);
-  --talkform-shadow: 0 24px 80px rgba(18, 36, 32, 0.14);
+  --tf-bg: #fdfcfa;
+  --tf-bg-warm: #f7f4ee;
+  --tf-bg-cream: #f0ece3;
+  --tf-surface: #fff;
+  --tf-ink: #2c2825;
+  --tf-muted: #7a7268;
+  --tf-muted-tertiary: #a69e94;
+  --tf-accent: #d05a36;
+  --tf-accent-soft: rgba(208, 90, 54, 0.07);
+  --tf-olive: #6b7c52;
+  --tf-olive-soft: rgba(107, 124, 82, 0.08);
+  --tf-line: rgba(44, 40, 37, 0.09);
+  --tf-line-strong: rgba(44, 40, 37, 0.16);
+  --tf-shadow: 0 12px 40px rgba(44, 40, 37, 0.07);
+  --tf-radius: 14px;
+  --tf-radius-lg: 24px;
+  --tf-radius-xl: 32px;
+
   min-height: 100vh;
   padding: 2rem 2rem 3rem;
-  background:
-    radial-gradient(circle at top right, rgba(15, 142, 121, 0.18), transparent 28rem),
-    linear-gradient(180deg, #f8fbf9 0%, #edf6f2 100%);
-  color: var(--talkform-ink);
+  background: var(--tf-bg);
+  color: var(--tf-ink);
 }
 
 .hero,
 .statusStrip,
 .layout,
 .exportSection {
-  max-width: 1440px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
@@ -39,44 +47,51 @@
 .footerLabel {
   display: inline-flex;
   align-items: center;
-  gap: 0.55rem;
-  font-size: 0.82rem;
-  letter-spacing: 0.24em;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  font-weight: 700;
-  color: var(--talkform-accent);
+  font-weight: 600;
+  color: var(--tf-accent);
 }
 
 .eyebrow::before,
 .panelEyebrow::before {
   content: "";
-  width: 0.65rem;
-  height: 0.65rem;
-  border-radius: 999px;
-  background: #d68a3b;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--tf-accent);
+  animation: pulse 2s ease infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }
 
 .title {
-  margin: 0.55rem 0 0;
-  font-size: clamp(2.4rem, 3.8vw, 4.8rem);
-  line-height: 0.95;
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  font-family: "Space Grotesk", "Sora", sans-serif;
+  margin: 0.65rem 0 0;
+  font-size: clamp(2rem, 3.5vw, 3.5rem);
+  line-height: 1.1;
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  font-family: var(--font-display), Georgia, serif;
 }
 
 .subtitle {
   max-width: 48rem;
-  margin: 1rem 0 0;
-  font-size: 1.08rem;
-  line-height: 1.65;
-  color: var(--talkform-muted);
+  margin: 0.75rem 0 0;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--tf-muted);
+  font-weight: 300;
 }
 
 .heroActions,
 .exportActions {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.625rem;
   flex-wrap: wrap;
 }
 
@@ -84,40 +99,45 @@
 .secondaryButton,
 .ghostButton {
   border-radius: 999px;
-  padding: 0.95rem 1.3rem;
-  font-weight: 700;
-  font-size: 0.96rem;
-  transition:
-    transform 180ms ease,
-    box-shadow 180ms ease,
-    background 180ms ease,
-    color 180ms ease;
+  padding: 0.875rem 1.5rem;
+  font-weight: 500;
+  font-size: 0.9375rem;
   cursor: pointer;
+  transition: all 200ms ease;
+  font-family: inherit;
 }
 
 .primaryButton {
-  border: 1px solid transparent;
-  background: linear-gradient(135deg, #0f8e79, #0f6b8e);
-  color: white;
-  box-shadow: 0 16px 40px rgba(15, 107, 142, 0.24);
+  border: none;
+  background: var(--tf-ink);
+  color: var(--tf-bg);
+}
+
+.primaryButton:hover {
+  background: var(--tf-accent);
+  color: #fff;
 }
 
 .secondaryButton {
-  border: 1px solid rgba(18, 36, 32, 0.16);
-  background: rgba(255, 255, 255, 0.7);
-  color: var(--talkform-ink);
+  border: 1px solid var(--tf-line);
+  background: var(--tf-bg-warm);
+  color: var(--tf-ink);
+}
+
+.secondaryButton:hover {
+  background: var(--tf-bg-cream);
+  border-color: var(--tf-line-strong);
 }
 
 .ghostButton {
-  border: 1px dashed rgba(18, 36, 32, 0.2);
+  border: 1px dashed var(--tf-line-strong);
   background: transparent;
-  color: var(--talkform-muted);
+  color: var(--tf-muted);
 }
 
-.primaryButton:hover,
-.secondaryButton:hover,
 .ghostButton:hover {
-  transform: translateY(-1px);
+  color: var(--tf-ink);
+  border-color: var(--tf-ink);
 }
 
 .primaryButton:disabled,
@@ -125,7 +145,6 @@
 .ghostButton:disabled {
   opacity: 0.45;
   cursor: not-allowed;
-  transform: none;
 }
 
 .statusStrip {
@@ -141,39 +160,41 @@
 .transcriptPanel,
 .notesPanel,
 .exportSection {
-  border: 1px solid var(--talkform-line);
-  border-radius: 1.9rem;
-  background: var(--talkform-panel);
-  box-shadow: var(--talkform-shadow);
-  backdrop-filter: blur(18px);
+  border: 1px solid var(--tf-line);
+  border-radius: var(--tf-radius-xl);
+  background: var(--tf-surface);
+  box-shadow: var(--tf-shadow);
 }
 
 .statusCard,
 .statusMessage {
-  padding: 1rem 1.15rem;
+  padding: 1rem 1.25rem;
 }
 
 .statusCard strong {
   display: block;
   margin-top: 0.35rem;
-  font-size: 1.2rem;
+  font-size: 1.125rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 400;
 }
 
 .statusMessage {
   display: flex;
   align-items: center;
-  font-weight: 600;
-  color: var(--talkform-muted);
+  font-weight: 400;
+  color: var(--tf-muted);
+  font-size: 0.9375rem;
 }
 
 .errorBanner {
-  max-width: 1440px;
+  max-width: 1200px;
   margin: 0 auto 1rem;
-  padding: 1rem 1.2rem;
-  border-radius: 1.2rem;
-  border: 1px solid rgba(181, 52, 57, 0.22);
-  background: rgba(255, 241, 241, 0.95);
-  color: #9e2a31;
+  padding: 1rem 1.5rem;
+  border-radius: var(--tf-radius);
+  border: 1px solid rgba(208, 90, 54, 0.22);
+  background: rgba(208, 90, 54, 0.05);
+  color: #a23419;
   font-weight: 600;
 }
 
@@ -187,7 +208,7 @@
 .transcriptPanel,
 .promptStagePanel,
 .notesPanel {
-  padding: 1.15rem;
+  padding: 1.25rem;
 }
 
 .transcriptColumn,
@@ -206,15 +227,16 @@
 
 .panelHeader h2 {
   margin: 0.5rem 0 0;
-  font-size: 1.85rem;
-  line-height: 1.05;
-  letter-spacing: -0.03em;
-  font-family: "Space Grotesk", "Sora", sans-serif;
+  font-size: 1.5rem;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 400;
 }
 
 .notesBoardMeta {
   display: flex;
-  gap: 0.7rem;
+  gap: 0.5rem;
   flex-wrap: wrap;
   justify-content: flex-end;
 }
@@ -226,26 +248,27 @@
 .visualMetaChip,
 .transcriptMeta {
   border-radius: 999px;
-  padding: 0.55rem 0.9rem;
-  font-weight: 700;
-  font-size: 0.85rem;
+  padding: 0.4rem 0.75rem;
+  font-weight: 600;
+  font-size: 0.75rem;
 }
 
 .coveragePill,
 .syncBadge,
 .transcriptMeta {
-  background: rgba(15, 142, 121, 0.09);
-  color: var(--talkform-accent);
+  background: var(--tf-accent-soft);
+  color: var(--tf-accent);
 }
 
 .liveBadge {
-  background: rgba(18, 36, 32, 0.08);
-  color: var(--talkform-muted);
+  background: var(--tf-bg-warm);
+  color: var(--tf-muted);
 }
 
 .liveBadgeHot {
-  background: rgba(214, 138, 59, 0.16);
-  color: #9a6525;
+  background: rgba(208, 90, 54, 0.1);
+  color: var(--tf-accent);
+  animation: pulse 2s ease infinite;
 }
 
 .transcriptFeed {
@@ -254,54 +277,56 @@
   overflow: auto;
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.5rem;
   padding-right: 0.2rem;
 }
 
 .transcriptEntry {
-  border-radius: 1.15rem;
-  padding: 0.95rem 1rem;
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid var(--talkform-line);
+  border-radius: var(--tf-radius);
+  padding: 0.875rem 1rem;
+  background: var(--tf-bg-warm);
+  border: 1px solid var(--tf-line);
 }
 
 .transcriptEntry p {
-  margin: 0.45rem 0 0;
-  line-height: 1.55;
+  margin: 0.4rem 0 0;
+  line-height: 1.6;
 }
 
 .transcriptSpeaker {
-  font-weight: 800;
-  font-size: 0.76rem;
-  letter-spacing: 0.18em;
+  font-weight: 600;
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--talkform-muted);
+  color: var(--tf-muted);
 }
 
 .transcriptEmpty {
-  border: 1px dashed var(--talkform-line);
-  border-radius: 1.4rem;
-  padding: 1.4rem;
-  color: var(--talkform-muted);
-  line-height: 1.55;
+  border: 1px dashed var(--tf-line);
+  border-radius: var(--tf-radius-lg);
+  padding: 1.5rem;
+  color: var(--tf-muted);
+  line-height: 1.6;
+  font-weight: 300;
 }
 
 .replyComposer {
   margin-top: 1rem;
   display: flex;
-  gap: 0.7rem;
+  gap: 0.625rem;
 }
 
 .replyInput,
 .fieldInput,
 .fieldTextarea {
   width: 100%;
-  border-radius: 1rem;
-  border: 1px solid var(--talkform-line);
-  background: rgba(255, 255, 255, 0.86);
-  color: var(--talkform-ink);
+  border-radius: var(--tf-radius);
+  border: 1px solid var(--tf-line);
+  background: var(--tf-bg);
+  color: var(--tf-ink);
   padding: 0.9rem 1rem;
   font: inherit;
+  transition: border-color 200ms ease, box-shadow 200ms ease;
 }
 
 .fieldTextarea {
@@ -312,16 +337,16 @@
 .fieldInput:focus,
 .fieldTextarea:focus {
   outline: none;
-  border-color: rgba(15, 142, 121, 0.45);
-  box-shadow: 0 0 0 4px rgba(15, 142, 121, 0.1);
+  border-color: var(--tf-accent);
+  box-shadow: 0 0 0 3px var(--tf-accent-soft);
 }
 
 .visualFrame {
   position: relative;
   overflow: hidden;
-  border-radius: 1.55rem;
-  border: 1px solid rgba(18, 36, 32, 0.08);
-  background: rgba(18, 36, 32, 0.92);
+  border-radius: var(--tf-radius-xl);
+  border: 1px solid var(--tf-line-strong);
+  background: var(--tf-ink);
   min-height: 46rem;
 }
 
@@ -331,9 +356,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.9rem 1rem;
-  background: rgba(7, 15, 14, 0.66);
-  color: rgba(255, 255, 255, 0.86);
+  padding: 0.875rem 1.25rem;
+  background: rgba(44, 40, 37, 0.6);
+  color: rgba(255, 255, 255, 0.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .visualDots {
@@ -344,26 +370,26 @@
 .visualDot,
 .visualDotAmber,
 .visualDotTeal {
-  width: 0.72rem;
-  height: 0.72rem;
+  width: 0.7rem;
+  height: 0.7rem;
   border-radius: 999px;
 }
 
 .visualDot {
-  background: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .visualDotAmber {
-  background: #d68a3b;
+  background: var(--tf-accent);
 }
 
 .visualDotTeal {
-  background: #0f8e79;
+  background: var(--tf-olive);
 }
 
 .visualFrameLabel {
-  font-size: 0.8rem;
-  letter-spacing: 0.18em;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
@@ -381,30 +407,30 @@
 
 .visualBackdropGradient {
   background:
-    radial-gradient(circle at 20% 20%, rgba(15, 142, 121, 0.36), transparent 20rem),
-    radial-gradient(circle at 85% 18%, rgba(214, 138, 59, 0.28), transparent 16rem),
-    linear-gradient(160deg, #082522 0%, #051a28 55%, #0d2830 100%);
+    radial-gradient(circle at 20% 20%, rgba(208, 90, 54, 0.18), transparent 20rem),
+    radial-gradient(circle at 85% 18%, rgba(107, 124, 82, 0.14), transparent 16rem),
+    linear-gradient(160deg, #1a1614 0%, #2c2825 100%);
 }
 
 .visualBackdropFrame {
   width: 100%;
   height: 100%;
   border: 0;
-  opacity: 0.28;
+  opacity: 0.2;
 }
 
 .visualBackdropGlow {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at center, rgba(255, 255, 255, 0.06), transparent 32rem),
-    linear-gradient(180deg, rgba(7, 15, 14, 0.08), rgba(7, 15, 14, 0.42));
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.04), transparent 32rem),
+    linear-gradient(180deg, rgba(44, 40, 37, 0.05), rgba(44, 40, 37, 0.3));
 }
 
 .visualOverlay {
   position: relative;
   z-index: 1;
-  padding: 1.2rem;
+  padding: 1.25rem;
   display: grid;
   gap: 1rem;
 }
@@ -413,32 +439,33 @@
 .summaryCard,
 .fieldCard,
 .exportCard {
-  border-radius: 1.55rem;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.12);
+  border-radius: var(--tf-radius-xl);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(14px);
 }
 
 .visualHeroCard {
-  padding: 1.3rem;
+  padding: 1.5rem;
   color: white;
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.2);
 }
 
 .visualHeroCard h3 {
-  margin: 0.55rem 0 0;
-  font-size: clamp(2rem, 3vw, 3.3rem);
-  line-height: 0.94;
-  font-family: "Space Grotesk", "Sora", sans-serif;
+  margin: 0.5rem 0 0;
+  font-size: clamp(1.75rem, 3vw, 2.75rem);
+  line-height: 1.05;
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 400;
 }
 
 .visualHeroCard p,
 .visualSummaryBand strong {
   display: block;
-  margin: 0.85rem 0 0;
+  margin: 0.75rem 0 0;
   font-size: 1rem;
   line-height: 1.65;
-  color: rgba(255, 255, 255, 0.84);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .visualMetaRow,
@@ -447,7 +474,7 @@
 .visualCompletionRail {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.6rem;
+  gap: 0.5rem;
 }
 
 .visualMetaRow {
@@ -455,43 +482,40 @@
 }
 
 .visualMetaChip {
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.12);
   color: white;
 }
 
 .visualSummaryBand {
-  margin-top: 1.2rem;
+  margin-top: 1.25rem;
   padding-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .visualTopicGrid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0.75rem;
+  gap: 0.625rem;
 }
 
 .visualTopicCard {
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  gap: 0.45rem;
   align-items: flex-start;
-  border-radius: 1.3rem;
+  border-radius: var(--tf-radius-lg);
   padding: 1rem;
   color: white;
   border: 1px solid transparent;
-  background: rgba(255, 255, 255, 0.08);
-  transition:
-    transform 200ms ease,
-    background 200ms ease,
-    border-color 200ms ease;
+  background: rgba(255, 255, 255, 0.06);
+  transition: all 200ms ease;
 }
 
 .visualTopicCard span {
-  font-size: 0.76rem;
-  letter-spacing: 0.18em;
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.65);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .visualTopicCard strong {
@@ -500,57 +524,57 @@
 
 .visualTopicCard p {
   margin: 0;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.65);
   line-height: 1.55;
 }
 
 .visualTopicActive {
-  background: rgba(15, 142, 121, 0.22);
-  border-color: rgba(15, 142, 121, 0.56);
-  animation: pulseCard 2.1s ease-in-out infinite;
+  background: rgba(208, 90, 54, 0.14);
+  border-color: rgba(208, 90, 54, 0.4);
+  animation: pulseCard 2.2s ease-in-out infinite;
 }
 
 .visualTopicPending {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.06);
 }
 
 .visualTopicDone {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .syncChip,
 .completedChip,
 .infoChip {
   border-radius: 999px;
-  padding: 0.55rem 0.9rem;
-  font-size: 0.84rem;
-  font-weight: 700;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
 .syncChip {
-  background: rgba(15, 142, 121, 0.12);
-  color: var(--talkform-accent);
+  background: var(--tf-accent-soft);
+  color: var(--tf-accent);
 }
 
 .completedChip {
-  background: rgba(214, 138, 59, 0.16);
-  color: #9a6525;
+  background: var(--tf-olive-soft);
+  color: var(--tf-olive);
   animation: driftOut 2.2s ease forwards;
 }
 
 .summaryCard {
   margin-bottom: 1rem;
-  padding: 1.2rem;
-  border: 1px solid var(--talkform-line);
-  background: rgba(255, 255, 255, 0.74);
+  padding: 1.25rem;
+  border: 1px solid var(--tf-line);
+  background: var(--tf-bg-warm);
 }
 
 .summaryCard p {
-  margin: 0.8rem 0 0;
-  font-size: 1.1rem;
-  line-height: 1.55;
+  margin: 0.65rem 0 0;
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
 .variableHeader {
@@ -564,8 +588,9 @@
 .emptyInline,
 .exportCard p,
 .exportSummaryItem span {
-  color: var(--talkform-muted);
-  line-height: 1.55;
+  color: var(--tf-muted);
+  line-height: 1.6;
+  font-weight: 300;
 }
 
 .variablePanel {
@@ -577,14 +602,14 @@
 .exportGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.9rem;
+  gap: 0.75rem;
 }
 
 .fieldCard,
 .exportCard {
   padding: 1rem;
-  border: 1px solid var(--talkform-line);
-  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--tf-line);
+  background: var(--tf-surface);
 }
 
 .fieldCardWide,
@@ -595,60 +620,61 @@
 .goalChecklist {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.65rem;
-  margin-top: 0.8rem;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
 }
 
 .goalOption {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
-  padding: 0.85rem 0.9rem;
-  border-radius: 1rem;
-  border: 1px solid var(--talkform-line);
-  background: rgba(255, 255, 255, 0.76);
+  gap: 0.5rem;
+  padding: 0.75rem 0.875rem;
+  border-radius: var(--tf-radius);
+  border: 1px solid var(--tf-line);
+  background: var(--tf-bg-warm);
 }
 
 .payloadPreview {
-  margin: 0.8rem 0 0;
+  margin: 0.75rem 0 0;
   max-height: 18rem;
   overflow: auto;
-  border-radius: 1rem;
+  border-radius: var(--tf-radius);
   padding: 1rem;
-  background: #101a19;
-  color: #def7f2;
-  font-size: 0.82rem;
-  line-height: 1.5;
+  background: var(--tf-ink);
+  color: rgba(255, 255, 255, 0.6);
+  font-family: "SF Mono", "Cascadia Code", monospace;
+  font-size: 0.8125rem;
+  line-height: 1.55;
 }
 
 .exportSection {
   margin-top: 1rem;
-  padding: 1.15rem;
+  padding: 1.25rem;
 }
 
 .exportSummaryGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.85rem;
-  margin-top: 0.8rem;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
 }
 
 .exportSummaryItem {
   display: grid;
-  gap: 0.3rem;
-  padding: 0.85rem 0.9rem;
-  border-radius: 1rem;
-  background: rgba(15, 142, 121, 0.06);
+  gap: 0.25rem;
+  padding: 0.75rem 0.875rem;
+  border-radius: var(--tf-radius);
+  background: var(--tf-accent-soft);
 }
 
 @keyframes pulseCard {
   0%,
   100% {
-    box-shadow: 0 0 0 rgba(15, 142, 121, 0.22);
+    box-shadow: 0 0 0 rgba(208, 90, 54, 0.15);
     transform: translateY(0);
   }
   50% {
-    box-shadow: 0 0 0 12px rgba(15, 142, 121, 0);
+    box-shadow: 0 0 0 12px rgba(208, 90, 54, 0);
     transform: translateY(-2px);
   }
 }
@@ -699,10 +725,10 @@
   }
 
   .title {
-    font-size: 2.6rem;
+    font-size: 2rem;
   }
 
   .panelHeader h2 {
-    font-size: 1.4rem;
+    font-size: 1.25rem;
   }
 }

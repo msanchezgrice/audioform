@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Talkform Widget – Consumer Embed</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0}
+
+:root{
+  --bg:#faf8f5;
+  --bg-warm:#f3efe9;
+  --surface:#fff;
+  --ink:#1a1613;
+  --ink-secondary:#6b6259;
+  --ink-tertiary:#9b9285;
+  --accent:#c45a30;
+  --accent-hover:#b04e28;
+  --accent-soft:rgba(196,90,48,0.08);
+  --accent-glow:rgba(196,90,48,0.12);
+  --green:#3d8c5c;
+  --green-soft:rgba(61,140,92,0.08);
+  --green-glow:rgba(61,140,92,0.12);
+  --line:rgba(26,22,19,0.08);
+  --line-strong:rgba(26,22,19,0.14);
+  --radius:14px;
+  --radius-lg:22px;
+  --radius-xl:28px;
+  --font-display:'Instrument Serif', Georgia, serif;
+  --font-body:'DM Sans', system-ui, sans-serif;
+  --transition:220ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font-body);color:var(--ink);
+  background:var(--bg);line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;
+  padding:1.5rem;
+}
+
+/* ─── Embed context demo ─── */
+.embed-context{
+  width:100%;max-width:800px;text-align:center;
+  margin-bottom:2rem;padding-bottom:1.5rem;
+  border-bottom:1px solid var(--line);
+}
+.embed-context h1{font-family:var(--font-display);font-size:1.75rem;font-weight:400;letter-spacing:-0.02em}
+.embed-context h1 em{font-style:italic;color:var(--accent)}
+.embed-context p{color:var(--ink-secondary);margin-top:0.375rem;font-size:0.9375rem}
+.embed-tabs{display:flex;gap:0.375rem;justify-content:center;margin-top:1rem}
+.embed-tab{
+  padding:0.5rem 1rem;border-radius:999px;border:1px solid var(--line);
+  background:var(--surface);font:inherit;font-size:0.8125rem;font-weight:500;
+  color:var(--ink-secondary);cursor:pointer;transition:all var(--transition);
+}
+.embed-tab:hover{border-color:var(--line-strong);color:var(--ink)}
+.embed-tab.active{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+
+/* ═════════════════════════════════════════════
+   THE CONSUMER WIDGET
+   Everything below this line is what ships
+   inside an iframe or React embed.
+   ═════════════════════════════════════════════ */
+
+.tf-widget{
+  width:100%;max-width:520px;
+  border-radius:var(--radius-xl);
+  overflow:hidden;
+  background:var(--surface);
+  border:1px solid var(--line);
+  box-shadow:0 20px 60px rgba(26,22,19,0.07),0 1px 3px rgba(26,22,19,0.04);
+  display:flex;flex-direction:column;
+  min-height:580px;
+  position:relative;
+}
+
+/* Top bar */
+.tf-bar{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:1rem 1.25rem;border-bottom:1px solid var(--line);
+  background:var(--surface);flex-shrink:0;
+}
+.tf-bar-left{display:flex;align-items:center;gap:0.5rem}
+.tf-dot{
+  width:7px;height:7px;border-radius:50%;
+  transition:all 400ms ease;
+}
+.tf-dot.live{background:var(--green);box-shadow:0 0 0 3px var(--green-soft);animation:pulse 2.4s ease-in-out infinite}
+.tf-dot.processing{background:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);animation:pulse 1.2s ease-in-out infinite}
+.tf-dot.done{background:var(--green);box-shadow:none;animation:none}
+.tf-dot.idle{background:var(--ink-tertiary);box-shadow:none;animation:none}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 3px rgba(61,140,92,0.08)}50%{box-shadow:0 0 0 7px rgba(61,140,92,0.03)}}
+.tf-status{font-size:0.75rem;font-weight:500;transition:color 400ms ease}
+.tf-bar-right{display:flex;align-items:center;gap:0.625rem}
+.tf-progress-label{font-size:0.75rem;font-weight:500;color:var(--ink-tertiary)}
+.tf-progress-track{
+  width:80px;height:4px;border-radius:2px;background:var(--line);overflow:hidden;
+}
+.tf-progress-fill{
+  height:100%;border-radius:2px;background:var(--accent);
+  transition:width 700ms cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ─── Prompt area (center stage) ─── */
+.tf-prompt{
+  flex:1;display:flex;flex-direction:column;
+  justify-content:center;align-items:center;
+  padding:2.5rem 2rem 1.5rem;text-align:center;
+  position:relative;overflow:hidden;
+}
+.tf-prompt::before{
+  content:'';position:absolute;
+  width:320px;height:320px;border-radius:50%;
+  background:radial-gradient(circle, var(--accent-glow), transparent 70%);
+  top:50%;left:50%;transform:translate(-50%,-55%);
+  pointer-events:none;opacity:0.6;
+  transition:opacity 600ms ease;
+}
+.tf-prompt.done::before{
+  background:radial-gradient(circle, var(--green-glow), transparent 70%);
+}
+.tf-step{
+  position:relative;z-index:1;
+  display:inline-flex;align-items:center;gap:0.375rem;
+  padding:0.3rem 0.75rem;border-radius:999px;
+  background:var(--accent-soft);
+  font-size:0.6875rem;font-weight:600;color:var(--accent);
+  letter-spacing:0.04em;text-transform:uppercase;
+  margin-bottom:1.25rem;
+  transition:all 400ms ease;
+}
+.tf-step.done{background:var(--green-soft);color:var(--green)}
+.tf-question{
+  position:relative;z-index:1;
+  font-family:var(--font-display);
+  font-size:2rem;font-weight:400;
+  letter-spacing:-0.02em;line-height:1.15;
+  max-width:400px;
+  transition:opacity 300ms ease;
+}
+.tf-question em{font-style:italic;color:var(--accent)}
+.tf-hint{
+  position:relative;z-index:1;
+  margin-top:0.75rem;font-size:0.9375rem;
+  color:var(--ink-secondary);max-width:360px;line-height:1.6;
+}
+
+/* Waveform */
+.tf-wave{
+  position:relative;z-index:1;
+  display:flex;align-items:center;justify-content:center;
+  gap:2.5px;height:40px;margin-top:1.5rem;
+  transition:opacity 400ms ease;
+}
+.tf-wave.hidden{opacity:0;pointer-events:none;height:0;margin:0}
+.tf-bar-wave{
+  width:2.5px;border-radius:1.5px;background:var(--accent);
+  animation:wave 1.2s ease-in-out infinite;
+}
+.tf-bar-wave:nth-child(1){height:10px;animation-delay:0s}
+.tf-bar-wave:nth-child(2){height:20px;animation-delay:0.1s}
+.tf-bar-wave:nth-child(3){height:30px;animation-delay:0.2s}
+.tf-bar-wave:nth-child(4){height:40px;animation-delay:0.3s}
+.tf-bar-wave:nth-child(5){height:26px;animation-delay:0.4s}
+.tf-bar-wave:nth-child(6){height:36px;animation-delay:0.15s}
+.tf-bar-wave:nth-child(7){height:16px;animation-delay:0.35s}
+.tf-bar-wave:nth-child(8){height:30px;animation-delay:0.05s}
+.tf-bar-wave:nth-child(9){height:14px;animation-delay:0.25s}
+.tf-bar-wave:nth-child(10){height:22px;animation-delay:0.45s}
+@keyframes wave{0%,100%{transform:scaleY(0.35);opacity:0.35}50%{transform:scaleY(1);opacity:1}}
+
+/* ─── Variable pills (inline, below prompt) ─── */
+.tf-vars{
+  position:relative;z-index:1;
+  display:flex;flex-wrap:wrap;gap:0.375rem;
+  justify-content:center;
+  margin-top:1.25rem;padding:0 0.5rem;
+  max-width:440px;
+}
+.tf-var{
+  display:inline-flex;align-items:center;gap:0.3rem;
+  padding:0.375rem 0.75rem;border-radius:999px;
+  font-size:0.75rem;font-weight:500;
+  border:1px solid var(--line);
+  background:var(--surface);color:var(--ink-tertiary);
+  transition:all 500ms cubic-bezier(0.4,0,0.2,1);
+  overflow:hidden;max-width:200px;
+}
+.tf-var.active{
+  border-color:rgba(196,90,48,0.25);
+  background:var(--accent-soft);
+  color:var(--accent);
+  box-shadow:0 0 0 2px rgba(196,90,48,0.06);
+}
+.tf-var.captured{
+  border-color:rgba(61,140,92,0.2);
+  background:var(--green-soft);
+  color:var(--green);
+}
+.tf-var.captured .tf-var-check{display:inline}
+.tf-var .tf-var-check{display:none;margin-right:0.125rem}
+.tf-var.just-captured{animation:popIn 600ms cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes popIn{
+  0%{transform:scale(0.92);background:rgba(61,140,92,0.2)}
+  50%{transform:scale(1.06)}
+  100%{transform:scale(1);background:var(--green-soft)}
+}
+.tf-var-value{
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  max-width:0;opacity:0;
+  transition:all 500ms cubic-bezier(0.4,0,0.2,1);
+}
+.tf-var.captured .tf-var-value{max-width:120px;opacity:1;margin-left:0.125rem}
+
+/* ─── Chat transcript (scrollable) ─── */
+.tf-chat{
+  border-top:1px solid var(--line);
+  max-height:0;overflow:hidden;
+  transition:max-height 400ms cubic-bezier(0.4,0,0.2,1);
+  background:var(--bg);
+}
+.tf-chat.open{max-height:220px;overflow-y:auto}
+.tf-chat-toggle{
+  width:100%;padding:0.625rem 1.25rem;
+  display:flex;align-items:center;justify-content:center;gap:0.375rem;
+  border:none;border-top:1px solid var(--line);
+  background:var(--bg);font:inherit;font-size:0.75rem;
+  font-weight:500;color:var(--ink-tertiary);cursor:pointer;
+  transition:all var(--transition);flex-shrink:0;
+}
+.tf-chat-toggle:hover{color:var(--ink)}
+.tf-chat-toggle svg{width:12px;height:12px;transition:transform var(--transition)}
+.tf-chat-toggle.open svg{transform:rotate(180deg)}
+.tf-chat-list{padding:0.625rem 1rem;display:flex;flex-direction:column;gap:0.375rem}
+.tf-msg{
+  display:flex;gap:0.5rem;align-items:flex-start;
+  padding:0.5rem 0.625rem;border-radius:10px;font-size:0.8125rem;
+  animation:fadeIn 300ms ease;
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.tf-msg.host{background:var(--surface);border:1px solid var(--line)}
+.tf-msg.user{background:var(--accent-soft)}
+.tf-msg-who{
+  font-size:0.5625rem;font-weight:700;letter-spacing:0.06em;
+  text-transform:uppercase;flex-shrink:0;padding-top:2px;
+  color:var(--ink-tertiary);
+}
+.tf-msg.user .tf-msg-who{color:var(--accent)}
+.tf-msg-text{color:var(--ink-secondary);line-height:1.45}
+
+/* ─── Input bar ─── */
+.tf-input-bar{
+  padding:0.75rem 1rem;border-top:1px solid var(--line);
+  display:flex;gap:0.5rem;align-items:center;
+  background:var(--surface);flex-shrink:0;
+}
+.tf-input{
+  flex:1;padding:0.625rem 0.875rem;
+  border:1px solid var(--line);border-radius:10px;
+  background:var(--bg);font:inherit;font-size:0.875rem;
+  color:var(--ink);transition:border-color var(--transition);
+}
+.tf-input:focus{outline:none;border-color:var(--accent)}
+.tf-input::placeholder{color:var(--ink-tertiary)}
+.tf-send{
+  width:36px;height:36px;border-radius:50%;border:none;
+  background:var(--ink);color:var(--surface);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all var(--transition);flex-shrink:0;
+}
+.tf-send:hover{background:var(--accent)}
+.tf-send svg{width:14px;height:14px}
+
+/* ─── Completion state ─── */
+.tf-complete-actions{
+  position:relative;z-index:1;
+  display:flex;gap:0.5rem;margin-top:1.5rem;
+}
+.tf-complete-actions.hidden{display:none}
+.tf-btn-done{
+  padding:0.75rem 1.5rem;border-radius:999px;border:none;
+  font:inherit;font-size:0.875rem;font-weight:600;cursor:pointer;
+  transition:all var(--transition);
+}
+.tf-btn-done.primary{background:var(--ink);color:var(--surface)}
+.tf-btn-done.primary:hover{background:var(--accent)}
+.tf-btn-done.ghost{background:transparent;color:var(--ink-secondary);border:1px solid var(--line)}
+.tf-btn-done.ghost:hover{border-color:var(--line-strong);color:var(--ink)}
+
+/* ═════════════════════════════════════════════
+   DEMO CHROME (outside widget)
+   ═════════════════════════════════════════════ */
+.demo-controls{
+  width:100%;max-width:520px;
+  margin-top:1.5rem;padding:1.25rem;
+  border-radius:var(--radius-lg);
+  background:var(--bg-warm);border:1px solid var(--line);
+}
+.demo-controls h3{font-family:var(--font-display);font-size:1.125rem;font-weight:400;margin-bottom:0.75rem}
+.demo-states{display:flex;gap:0.375rem;flex-wrap:wrap}
+.demo-btn{
+  padding:0.5rem 0.875rem;border-radius:999px;border:1px solid var(--line);
+  background:var(--surface);font:inherit;font-size:0.75rem;font-weight:500;
+  color:var(--ink-secondary);cursor:pointer;transition:all var(--transition);
+}
+.demo-btn:hover{border-color:var(--line-strong);color:var(--ink)}
+.demo-btn.active{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+
+/* ─── Embed method panels ─── */
+.embed-panel{display:none;width:100%;max-width:520px;margin-top:1.5rem}
+.embed-panel.active{display:block}
+.embed-code{
+  padding:1.25rem;border-radius:var(--radius-lg);
+  background:var(--ink);color:rgba(255,255,255,0.75);
+  font-family:'SF Mono','Cascadia Code',monospace;
+  font-size:0.75rem;line-height:1.65;overflow-x:auto;
+  border:1px solid rgba(255,255,255,0.08);
+}
+.embed-code .kw{color:var(--accent)}
+.embed-code .str{color:rgba(61,140,92,0.9)}
+.embed-code .cmt{color:rgba(255,255,255,0.3)}
+.embed-note{
+  margin-top:0.75rem;font-size:0.8125rem;color:var(--ink-secondary);line-height:1.6;
+}
+
+@media(max-width:560px){
+  .tf-widget{border-radius:var(--radius-lg)}
+  .tf-question{font-size:1.625rem}
+  .tf-vars{gap:0.25rem}
+  .tf-var{font-size:0.6875rem;padding:0.3rem 0.625rem}
+}
+</style>
+</head>
+<body>
+
+<div class="embed-context">
+  <h1>Consumer <em>widget</em></h1>
+  <p>What your users see — no export buttons, no developer chrome.</p>
+  <div class="embed-tabs">
+    <button class="embed-tab active" onclick="showEmbed('preview')">Preview</button>
+    <button class="embed-tab" onclick="showEmbed('iframe')">Iframe embed</button>
+    <button class="embed-tab" onclick="showEmbed('react')">React embed</button>
+    <button class="embed-tab" onclick="showEmbed('script')">Script tag</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     THE CONSUMER WIDGET
+     ═══════════════════════════════════════ -->
+<div class="tf-widget" id="widget">
+
+  <div class="tf-bar">
+    <div class="tf-bar-left">
+      <span class="tf-dot" id="dot"></span>
+      <span class="tf-status" id="status">Listening</span>
+    </div>
+    <div class="tf-bar-right">
+      <span class="tf-progress-label" id="progLabel">2 / 5</span>
+      <div class="tf-progress-track"><div class="tf-progress-fill" id="progFill" style="width:40%"></div></div>
+    </div>
+  </div>
+
+  <div class="tf-prompt" id="prompt">
+    <div class="tf-step" id="step">Question 3 of 5</div>
+    <h2 class="tf-question" id="question">Which part of the <em>product?</em></h2>
+    <p class="tf-hint" id="hint">Say the area that fits best.</p>
+
+    <div class="tf-wave" id="wave">
+      <div class="tf-bar-wave"></div><div class="tf-bar-wave"></div>
+      <div class="tf-bar-wave"></div><div class="tf-bar-wave"></div>
+      <div class="tf-bar-wave"></div><div class="tf-bar-wave"></div>
+      <div class="tf-bar-wave"></div><div class="tf-bar-wave"></div>
+      <div class="tf-bar-wave"></div><div class="tf-bar-wave"></div>
+    </div>
+
+    <div class="tf-vars" id="vars"></div>
+
+    <div class="tf-complete-actions hidden" id="completeActions">
+      <button class="tf-btn-done primary">Submit</button>
+      <button class="tf-btn-done ghost">Review answers</button>
+    </div>
+  </div>
+
+  <button class="tf-chat-toggle" id="chatToggle" onclick="toggleChat()">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg>
+    Conversation
+  </button>
+  <div class="tf-chat" id="chat">
+    <div class="tf-chat-list" id="chatList"></div>
+  </div>
+
+  <div class="tf-input-bar">
+    <input type="text" class="tf-input" placeholder="Or type your answer..." />
+    <button class="tf-send">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 8h12M10 4l4 4-4 4"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- Demo controls -->
+<div class="demo-controls" id="demoControls">
+  <h3>Preview <em>states</em></h3>
+  <div class="demo-states">
+    <button class="demo-btn" onclick="go('idle')">Idle</button>
+    <button class="demo-btn" onclick="go('q1')">Q1: Name</button>
+    <button class="demo-btn active" onclick="go('q3')">Q3: Product area</button>
+    <button class="demo-btn" onclick="go('q4')">Q4: Rating</button>
+    <button class="demo-btn" onclick="go('q5')">Q5: Open feedback</button>
+    <button class="demo-btn" onclick="go('done')">Complete</button>
+  </div>
+</div>
+
+<!-- Embed method panels -->
+<div class="embed-panel" id="panel-iframe">
+  <pre class="embed-code"><span class="cmt">&lt;!-- Drop this anywhere in your HTML --&gt;</span>
+<span class="kw">&lt;iframe</span>
+  src=<span class="str">"https://talkform.ai/embed/customer-feedback"</span>
+  width=<span class="str">"520"</span>
+  height=<span class="str">"640"</span>
+  frameborder=<span class="str">"0"</span>
+  allow=<span class="str">"microphone; autoplay"</span>
+  style=<span class="str">"border-radius:28px;border:1px solid #eee"</span>
+<span class="kw">/&gt;</span></pre>
+  <p class="embed-note">Works like Typeform or Calendly embeds. The iframe hosts the full widget — audio capture, transcript, variable extraction — and posts the completed result back via <code style="background:var(--bg-warm);padding:0.1rem 0.3rem;border-radius:4px;font-size:0.8em">postMessage</code> when done. The host page just listens for the result event. Microphone permission is scoped to the iframe origin.</p>
+</div>
+
+<div class="embed-panel" id="panel-react">
+  <pre class="embed-code"><span class="kw">import</span> { TalkformEmbed } <span class="kw">from</span> <span class="str">'@talkform/react'</span>;
+
+<span class="kw">function</span> FeedbackPage() {
+  <span class="kw">return</span> (
+    &lt;<span class="kw">TalkformEmbed</span>
+      formId=<span class="str">"customer-feedback"</span>
+      onComplete={(result) =&gt; {
+        <span class="cmt">// result is AudioformSessionResult</span>
+        console.log(result.fields);
+      }}
+    /&gt;
+  );
+}</pre>
+  <p class="embed-note">The React component renders the widget inline (no iframe). It manages audio, WebRTC, and field extraction internally. The <code style="background:var(--bg-warm);padding:0.1rem 0.3rem;border-radius:4px;font-size:0.8em">onComplete</code> callback fires with the full session result when all required fields are captured. Style it with CSS variables or the <code style="background:var(--bg-warm);padding:0.1rem 0.3rem;border-radius:4px;font-size:0.8em">theme</code> prop.</p>
+</div>
+
+<div class="embed-panel" id="panel-script">
+  <pre class="embed-code"><span class="cmt">&lt;!-- Load the script --&gt;</span>
+<span class="kw">&lt;script</span> src=<span class="str">"https://talkform.ai/embed.js"</span><span class="kw">&gt;&lt;/script&gt;</span>
+
+<span class="cmt">&lt;!-- Mount point --&gt;</span>
+<span class="kw">&lt;div</span> id=<span class="str">"talkform"</span><span class="kw">&gt;&lt;/div&gt;</span>
+
+<span class="kw">&lt;script&gt;</span>
+  Talkform.mount(<span class="str">'#talkform'</span>, {
+    formId: <span class="str">'customer-feedback'</span>,
+    onComplete: (result) =&gt; {
+      <span class="cmt">// Send to your backend</span>
+      fetch(<span class="str">'/api/feedback'</span>, {
+        method: <span class="str">'POST'</span>,
+        body: JSON.stringify(result)
+      });
+    }
+  });
+<span class="kw">&lt;/script&gt;</span></pre>
+  <p class="embed-note">Framework-agnostic. Load the script, call <code style="background:var(--bg-warm);padding:0.1rem 0.3rem;border-radius:4px;font-size:0.8em">Talkform.mount()</code> with a CSS selector and config. Works in WordPress, Webflow, plain HTML, or any CMS. The script bundles the same React widget internally.</p>
+</div>
+
+<script>
+const F = [
+  {id:'name',label:'Name',q:'What should we <em>call you?</em>',h:'Say your name out loud.'},
+  {id:'company',label:'Company',q:'Which <em>company</em> do you work at?',h:'Your company name helps us understand context.'},
+  {id:'area',label:'Product area',q:'Which part of the <em>product?</em>',h:'Say the area that fits best.'},
+  {id:'satisfaction',label:'Satisfaction',q:'How <em>satisfied</em> are you?',h:'Rate from 1 to 5.'},
+  {id:'feedback',label:'Open feedback',q:'Anything else to <em>share?</em>',h:'Say whatever comes to mind.'},
+];
+
+const S = {
+  idle:{cap:{},ai:null,st:'idle',pct:0,step:null,q:'Ready to <em>start?</em>',h:'Tap to begin your feedback session.',msgs:[]},
+  q1:{cap:{},ai:0,st:'live',pct:0,step:'Question 1 of 5',q:'What should we <em>call you?</em>',h:'Say your name out loud.',msgs:[
+    {w:'Host',t:'Hi! I\'ll walk you through a quick feedback session. What should we call you?'},
+  ]},
+  q3:{cap:{name:'Avery Stone',company:'Acme Corp'},ai:2,st:'live',pct:40,step:'Question 3 of 5',q:'Which part of the <em>product?</em>',h:'Say the area that fits best.',msgs:[
+    {w:'Host',t:'Which part of the product are you giving feedback about?'},
+    {w:'You',t:'Acme Corp — we\'re a B2B SaaS startup.'},
+    {w:'Host',t:'Great. Which part of the product are you talking about?'},
+  ]},
+  q4:{cap:{name:'Avery Stone',company:'Acme Corp',area:'Dashboard'},ai:3,st:'live',pct:60,step:'Question 4 of 5',q:'How <em>satisfied</em> are you?',h:'Give a rating from 1 to 5.',msgs:[
+    {w:'Host',t:'How satisfied are you overall? From 1 to 5.'},
+  ]},
+  q5:{cap:{name:'Avery Stone',company:'Acme Corp',area:'Dashboard',satisfaction:4},ai:4,st:'live',pct:80,step:'Question 5 of 5',q:'Anything else to <em>share?</em>',h:'Say whatever comes to mind.',msgs:[
+    {w:'Host',t:'Last one! Anything else you\'d like to share?'},
+  ]},
+  done:{cap:{name:'Avery Stone',company:'Acme Corp',area:'Dashboard',satisfaction:'4/5',feedback:'Love the redesign. Need keyboard shortcuts.'},ai:null,st:'done',pct:100,step:null,q:'All <em>done!</em>',h:'Your feedback has been captured. Thanks, Avery!',msgs:[
+    {w:'You',t:'The new dashboard redesign is great but I wish there were keyboard shortcuts.'},
+    {w:'Host',t:'Thanks Avery! That\'s everything — your feedback has been captured.'},
+  ]},
+};
+
+let cur='q3',justId=null;
+
+function render(){
+  const s=S[cur];
+  const dot=document.getElementById('dot');
+  const cls=s.st==='live'?'live':s.st==='done'?'done':'idle';
+  dot.className='tf-dot '+cls;
+  const st=document.getElementById('status');
+  st.textContent=s.st==='live'?'Listening':s.st==='done'?'Complete':'Ready';
+  st.style.color=s.st==='live'?'var(--green)':s.st==='done'?'var(--green)':'var(--ink-tertiary)';
+
+  const n=Object.keys(s.cap).length;
+  document.getElementById('progLabel').textContent=n+' / '+F.length;
+  document.getElementById('progFill').style.width=s.pct+'%';
+
+  const step=document.getElementById('step');
+  if(s.step){step.textContent=s.step;step.style.display='';step.className='tf-step'}
+  else if(s.st==='done'){step.textContent='Complete';step.style.display='';step.className='tf-step done'}
+  else{step.style.display='none'}
+
+  document.getElementById('question').innerHTML=s.q;
+  document.getElementById('hint').textContent=s.h;
+
+  const prompt=document.getElementById('prompt');
+  prompt.className=s.st==='done'?'tf-prompt done':'tf-prompt';
+
+  const wave=document.getElementById('wave');
+  wave.className=s.st==='live'?'tf-wave':'tf-wave hidden';
+
+  document.getElementById('completeActions').className=s.st==='done'?'tf-complete-actions':'tf-complete-actions hidden';
+
+  // Variable pills
+  const vc=document.getElementById('vars');
+  vc.innerHTML='';
+  F.forEach((f,i)=>{
+    const v=s.cap[f.id];
+    const cap=v!==undefined&&v!==null&&v!=='';
+    const active=i===s.ai;
+    const jc=f.id===justId;
+    const pill=document.createElement('span');
+    let c='tf-var';
+    if(cap)c+=' captured';
+    else if(active)c+=' active';
+    if(jc)c+=' just-captured';
+    pill.className=c;
+
+    let inner='<span class="tf-var-check">✓</span>'+f.label;
+    if(cap) inner+='<span class="tf-var-value"> · '+v+'</span>';
+    pill.innerHTML=inner;
+    vc.appendChild(pill);
+  });
+  justId=null;
+
+  // Chat
+  const cl=document.getElementById('chatList');
+  cl.innerHTML='';
+  s.msgs.forEach(m=>{
+    const u=m.w==='You';
+    cl.innerHTML+=`<div class="tf-msg ${u?'user':'host'}"><span class="tf-msg-who">${m.w}</span><span class="tf-msg-text">${m.t}</span></div>`;
+  });
+
+  document.querySelectorAll('.demo-btn').forEach(b=>b.classList.remove('active'));
+}
+
+function go(name){
+  const prev=S[cur],next=S[name];
+  if(prev&&next){
+    const pk=Object.keys(prev.cap),nk=Object.keys(next.cap);
+    const nw=nk.filter(k=>!pk.includes(k));
+    if(nw.length)justId=nw[nw.length-1];
+  }
+  cur=name;
+  document.querySelectorAll('.demo-btn').forEach(b=>b.classList.remove('active'));
+  if(event&&event.target)event.target.classList.add('active');
+  render();
+}
+
+function toggleChat(){
+  const chat=document.getElementById('chat');
+  const toggle=document.getElementById('chatToggle');
+  const open=chat.classList.toggle('open');
+  toggle.classList.toggle('open',open);
+}
+
+function showEmbed(id){
+  document.querySelectorAll('.embed-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.embed-tab').forEach(t=>t.classList.remove('active'));
+  if(id==='preview'){
+    document.getElementById('widget').style.display='';
+    document.getElementById('demoControls').style.display='';
+  } else {
+    document.getElementById('widget').style.display='';
+    document.getElementById('demoControls').style.display='';
+    const panel=document.getElementById('panel-'+id);
+    if(panel)panel.classList.add('active');
+  }
+  if(event&&event.target)event.target.classList.add('active');
+}
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Talkform – Direction B: Swiss Precision</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0}
+:root{
+  --bg:#0c0c0c;
+  --bg-elevated:#141414;
+  --bg-card:#1a1a1a;
+  --surface:#222;
+  --ink:#f0ede8;
+  --ink-secondary:#9e9a93;
+  --ink-tertiary:#5e5b56;
+  --accent:#e86833;
+  --accent-muted:rgba(232,104,51,0.12);
+  --green:#3ab06a;
+  --green-muted:rgba(58,176,106,0.1);
+  --line:rgba(240,237,232,0.08);
+  --line-strong:rgba(240,237,232,0.15);
+  --radius:8px;
+  --radius-lg:16px;
+  --shadow:0 1px 0 rgba(255,255,255,0.03);
+  --font-display:'Libre Franklin', Helvetica, sans-serif;
+  --font-body:'Libre Franklin', Helvetica, sans-serif;
+  --font-mono:'JetBrains Mono', monospace;
+  --transition:160ms ease;
+  --grid-line:rgba(240,237,232,0.04);
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font-body);color:var(--ink);
+  background:var(--bg);line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  background-image:
+    linear-gradient(var(--grid-line) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid-line) 1px,transparent 1px);
+  background-size:80px 80px;
+}
+
+.container{max-width:1120px;margin:0 auto;padding:0 2rem}
+
+/* ─── Header ─── */
+header{
+  position:sticky;top:0;z-index:100;
+  background:rgba(12,12,12,0.88);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--line);
+}
+.header-inner{display:flex;align-items:center;justify-content:space-between;height:56px}
+.brand{
+  font-family:var(--font-mono);font-size:0.875rem;font-weight:500;
+  color:var(--ink);text-decoration:none;letter-spacing:0.04em;
+  text-transform:uppercase;
+}
+.brand .dot{
+  display:inline-block;width:6px;height:6px;
+  border-radius:50%;background:var(--accent);margin-right:0.4rem;
+  vertical-align:middle;
+}
+nav{display:flex;gap:0;align-items:center}
+nav a{
+  padding:0.5rem 0.75rem;
+  font-size:0.8125rem;font-weight:500;letter-spacing:0.02em;
+  color:var(--ink-secondary);text-decoration:none;
+  transition:color var(--transition);
+}
+nav a:hover,nav a.active{color:var(--ink)}
+nav .cta-nav{
+  margin-left:0.75rem;padding:0.4rem 0.9rem;
+  border:1px solid var(--line-strong);border-radius:6px;
+  color:var(--ink);font-size:0.8125rem;
+}
+nav .cta-nav:hover{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+
+/* ─── Tabs ─── */
+.page-tabs{
+  display:flex;gap:0;padding:1rem 0 0;
+  border-bottom:1px solid var(--line);
+}
+.page-tabs button{
+  padding:0.625rem 1rem;border:none;background:none;cursor:pointer;
+  font:inherit;font-family:var(--font-mono);font-size:0.75rem;
+  letter-spacing:0.04em;text-transform:uppercase;
+  color:var(--ink-tertiary);border-bottom:2px solid transparent;
+  margin-bottom:-1px;transition:all var(--transition);
+}
+.page-tabs button:hover{color:var(--ink-secondary)}
+.page-tabs button.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* ─── Hero ─── */
+.hero{padding:8rem 0 6rem}
+.hero-label{
+  font-family:var(--font-mono);font-size:0.6875rem;font-weight:500;
+  letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:2rem;
+  display:flex;align-items:center;gap:0.75rem;
+}
+.hero-label::before{content:'//';color:var(--ink-tertiary)}
+.hero h1{
+  font-family:var(--font-display);font-size:clamp(3.5rem,7vw,5.5rem);
+  font-weight:300;letter-spacing:-0.04em;line-height:0.95;
+  max-width:800px;
+}
+.hero h1 strong{font-weight:700;color:var(--accent)}
+.hero p{
+  margin-top:2rem;font-size:1.0625rem;color:var(--ink-secondary);
+  line-height:1.75;max-width:520px;font-weight:300;
+}
+.hero-actions{display:flex;gap:0.75rem;margin-top:2.5rem}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:0.75rem 1.25rem;border-radius:var(--radius);font-weight:500;
+  font-size:0.875rem;text-decoration:none;cursor:pointer;
+  border:none;font-family:inherit;transition:all var(--transition);
+}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:#d45d2d}
+.btn-secondary{background:var(--accent-muted);color:var(--accent)}
+.btn-secondary:hover{background:rgba(232,104,51,0.2)}
+.btn-ghost{border:1px solid var(--line-strong);color:var(--ink-secondary);background:transparent}
+.btn-ghost:hover{border-color:var(--ink-tertiary);color:var(--ink)}
+
+/* ─── Section ─── */
+.section{padding:5rem 0}
+.section + .section{border-top:1px solid var(--line)}
+.section-label{
+  font-family:var(--font-mono);font-size:0.6875rem;font-weight:500;
+  letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--ink-tertiary);margin-bottom:0.75rem;
+}
+.section-title{
+  font-family:var(--font-display);font-size:clamp(2rem,4vw,3rem);
+  font-weight:300;letter-spacing:-0.03em;line-height:1.1;
+}
+.section-title strong{font-weight:700;color:var(--accent)}
+.section-intro{
+  margin-top:0.75rem;font-size:1rem;color:var(--ink-secondary);
+  max-width:44rem;line-height:1.7;font-weight:300;
+}
+
+/* ─── Comparison ─── */
+.comparison{
+  display:grid;grid-template-columns:1fr 1fr;gap:1px;margin-top:2.5rem;
+  background:var(--line);border-radius:var(--radius-lg);overflow:hidden;
+}
+.compare-card{padding:2rem;background:var(--bg-card)}
+.compare-card.new{background:var(--bg-elevated)}
+.compare-card h3{
+  font-family:var(--font-display);font-size:1.375rem;
+  font-weight:400;margin:0.75rem 0 1.25rem;letter-spacing:-0.02em;
+}
+.metric{
+  padding:0.75rem 0;border-top:1px solid var(--line);
+  display:flex;justify-content:space-between;gap:1rem;align-items:baseline;
+}
+.metric-label{
+  font-family:var(--font-mono);font-size:0.6875rem;
+  text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-tertiary);
+  flex-shrink:0;
+}
+.metric-value{font-size:0.9375rem;font-weight:400;color:var(--ink-secondary);text-align:right}
+.compare-card.new .metric-value{color:var(--green)}
+
+/* ─── Steps ─── */
+.steps{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:2.5rem;
+  background:var(--line);border-radius:var(--radius-lg);overflow:hidden;
+}
+.step{padding:2rem;background:var(--bg-card)}
+.step-num{
+  font-family:var(--font-mono);font-size:0.6875rem;font-weight:500;
+  color:var(--accent);letter-spacing:0.08em;
+}
+.step h3{font-family:var(--font-display);font-size:1.125rem;font-weight:500;margin:1rem 0 0.5rem;letter-spacing:-0.01em}
+.step p{color:var(--ink-secondary);font-size:0.875rem;font-weight:300}
+
+/* ─── Preview ─── */
+.preview-frame{
+  margin-top:2.5rem;border-radius:var(--radius-lg);overflow:hidden;
+  border:1px solid var(--line);background:var(--bg-elevated);
+}
+.preview-titlebar{
+  display:flex;align-items:center;gap:6px;
+  padding:0.75rem 1rem;border-bottom:1px solid var(--line);
+}
+.preview-dot{width:8px;height:8px;border-radius:50%;background:var(--surface)}
+.preview-dot:first-child{background:var(--accent)}
+.preview-stage{
+  display:grid;grid-template-columns:0.5fr 1fr 0.65fr;gap:1px;
+  min-height:300px;background:var(--line);
+}
+.preview-pane{padding:1.25rem;background:var(--bg-card)}
+.pane-label{
+  font-family:var(--font-mono);font-size:0.625rem;font-weight:500;
+  letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-tertiary);
+}
+.preview-line{
+  margin-top:0.625rem;height:6px;border-radius:3px;
+  background:var(--surface);
+}
+.preview-line.short{width:60%}
+.preview-center{
+  background:var(--bg-elevated);padding:1.5rem;
+  display:flex;flex-direction:column;justify-content:center;
+}
+.preview-center h4{
+  font-family:var(--font-display);font-size:1.625rem;
+  font-weight:400;color:var(--ink);letter-spacing:-0.02em;
+}
+.preview-center p{color:var(--ink-secondary);margin-top:0.5rem;font-size:0.875rem;font-weight:300}
+.preview-chips{display:flex;gap:0.375rem;flex-wrap:wrap;margin-top:1rem}
+.preview-chip{
+  padding:0.3rem 0.65rem;border-radius:4px;
+  background:var(--accent-muted);color:var(--accent);
+  font-family:var(--font-mono);font-size:0.6875rem;font-weight:500;
+}
+.preview-field{
+  margin-top:0.625rem;height:2.25rem;border-radius:6px;
+  background:var(--surface);border:1px solid var(--line);
+}
+
+/* ─── Integrations ─── */
+.integrations{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin-top:2.5rem;
+  background:var(--line);border-radius:var(--radius-lg);overflow:hidden;
+}
+.integration{padding:1.5rem;background:var(--bg-card);transition:background var(--transition)}
+.integration:hover{background:var(--bg-elevated)}
+.integration-label{
+  font-family:var(--font-mono);font-size:0.625rem;font-weight:500;
+  letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);
+}
+.integration h3{font-size:1rem;font-weight:500;margin:0.75rem 0 0.375rem;letter-spacing:-0.01em}
+.integration p{color:var(--ink-secondary);font-size:0.8125rem;font-weight:300}
+
+/* ─── Output ─── */
+.output-block{
+  margin-top:2.5rem;border-radius:var(--radius-lg);overflow:hidden;
+  border:1px solid var(--line);
+}
+.output-header{
+  padding:1.25rem 1.5rem;background:var(--bg-card);
+  border-bottom:1px solid var(--line);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.output-header h3{font-size:1rem;font-weight:500}
+.output-header .tag{
+  font-family:var(--font-mono);font-size:0.625rem;
+  letter-spacing:0.08em;text-transform:uppercase;
+  padding:0.25rem 0.5rem;border-radius:4px;
+  background:var(--green-muted);color:var(--green);
+}
+pre.code-block{
+  margin:0;padding:1.5rem;background:var(--bg-elevated);
+  color:var(--ink-secondary);font-family:var(--font-mono);
+  font-size:0.75rem;line-height:1.7;overflow:auto;
+}
+pre.code-block .key{color:var(--ink)}
+pre.code-block .str{color:var(--green)}
+pre.code-block .num{color:var(--accent)}
+
+/* ─── Demo Gallery ─── */
+.gallery-header{padding:5rem 0 2.5rem}
+.gallery-header h1{font-family:var(--font-display);font-size:2.5rem;font-weight:300;letter-spacing:-0.03em}
+.gallery-header h1 strong{font-weight:700;color:var(--accent)}
+.gallery-header p{color:var(--ink-secondary);margin-top:0.5rem;font-weight:300}
+.template-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border-radius:var(--radius-lg);overflow:hidden}
+.template-card{
+  padding:1.75rem;background:var(--bg-card);cursor:pointer;
+  transition:background var(--transition);
+}
+.template-card:hover{background:var(--bg-elevated)}
+.template-category{
+  font-family:var(--font-mono);font-size:0.625rem;font-weight:500;
+  letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);
+}
+.template-card h3{font-size:1.125rem;font-weight:500;margin:0.75rem 0 0.5rem;letter-spacing:-0.01em}
+.template-card p{color:var(--ink-secondary);font-size:0.875rem;font-weight:300}
+.template-meta{
+  display:flex;gap:1rem;margin-top:1rem;
+  font-family:var(--font-mono);font-size:0.6875rem;color:var(--ink-tertiary);
+  letter-spacing:0.02em;
+}
+
+/* ─── Import ─── */
+.import-layout{display:grid;grid-template-columns:1fr 1fr;gap:3rem;padding:5rem 0;align-items:start}
+.import-intro h1{font-family:var(--font-display);font-size:2.5rem;font-weight:300;letter-spacing:-0.03em}
+.import-intro h1 strong{font-weight:700;color:var(--accent)}
+.import-intro p{color:var(--ink-secondary);margin-top:0.75rem;line-height:1.75;font-weight:300}
+.import-form{
+  padding:2rem;border-radius:var(--radius-lg);border:1px solid var(--line);
+  background:var(--bg-card);
+}
+.import-form label{
+  display:block;font-family:var(--font-mono);font-size:0.6875rem;
+  font-weight:500;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--ink-secondary);margin-bottom:0.5rem;
+}
+.import-form input{
+  width:100%;padding:0.75rem 1rem;border:1px solid var(--line-strong);
+  border-radius:var(--radius);font:inherit;font-size:0.875rem;
+  background:var(--bg);color:var(--ink);transition:border-color var(--transition);
+}
+.import-form input:focus{outline:none;border-color:var(--accent)}
+.import-form .hint{font-size:0.75rem;color:var(--ink-tertiary);margin-top:0.5rem}
+.import-form .btn{margin-top:1.25rem;width:100%}
+
+/* ─── Docs ─── */
+.docs-layout{display:grid;grid-template-columns:200px 1fr;gap:3rem;padding:5rem 0;align-items:start}
+.docs-sidebar{position:sticky;top:72px}
+.docs-sidebar a{
+  display:block;padding:0.4rem 0.75rem;border-radius:6px;
+  font-size:0.8125rem;color:var(--ink-secondary);text-decoration:none;
+  margin-bottom:2px;transition:all var(--transition);
+  border-left:2px solid transparent;
+}
+.docs-sidebar a:hover{color:var(--ink)}
+.docs-sidebar a.active{color:var(--accent);border-left-color:var(--accent);background:var(--accent-muted)}
+.docs-content h1{font-family:var(--font-display);font-size:2.25rem;font-weight:300;letter-spacing:-0.03em}
+.docs-content h2{font-size:1.25rem;font-weight:600;margin:2.5rem 0 0.75rem;letter-spacing:-0.01em}
+.docs-content p{color:var(--ink-secondary);line-height:1.75;margin:0.75rem 0;font-weight:300}
+.docs-content code{
+  padding:0.15rem 0.4rem;border-radius:4px;background:var(--bg-card);
+  font-size:0.875em;font-family:var(--font-mono);color:var(--accent);
+}
+
+/* ─── Footer ─── */
+footer{
+  margin-top:5rem;padding:1.5rem 0;border-top:1px solid var(--line);
+}
+.footer-inner{display:flex;justify-content:space-between;align-items:center}
+.footer-brand{font-family:var(--font-mono);font-size:0.75rem;color:var(--ink-tertiary);letter-spacing:0.04em;text-transform:uppercase}
+.footer-links{display:flex;gap:1.5rem}
+.footer-links a{font-size:0.8125rem;color:var(--ink-tertiary);text-decoration:none;transition:color var(--transition)}
+.footer-links a:hover{color:var(--ink)}
+
+@media(max-width:960px){
+  .comparison,.steps,.integrations,.template-grid{grid-template-columns:1fr}
+  .preview-stage{grid-template-columns:1fr}
+  .import-layout,.docs-layout{grid-template-columns:1fr}
+  .integrations{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="container header-inner">
+    <a href="#" class="brand"><span class="dot"></span>TALKFORM</a>
+    <nav>
+      <a href="#" class="active">Home</a>
+      <a href="#">Import</a>
+      <a href="#">Docs</a>
+      <a href="#">Agents</a>
+      <a href="#" class="cta-nav">Try demo</a>
+    </nav>
+  </div>
+</header>
+
+<div class="container">
+  <div class="page-tabs">
+    <button class="active" onclick="showTab('landing')">01 Landing</button>
+    <button onclick="showTab('demo')">02 Demo</button>
+    <button onclick="showTab('import')">03 Import</button>
+    <button onclick="showTab('docs')">04 Docs</button>
+  </div>
+</div>
+
+<!-- ═══ LANDING ═══ -->
+<div id="tab-landing" class="tab-content active">
+<div class="container">
+  <div class="hero">
+    <div class="hero-label">Audio-first forms</div>
+    <h1>Turn any form into a live <strong>audio interview</strong></h1>
+    <p>Talkform asks questions aloud, fills structured fields from the conversation, and exports clean JSON for your apps, workflows, and agents.</p>
+    <div class="hero-actions">
+      <a href="#" class="btn btn-primary">Try the demo</a>
+      <a href="#" class="btn btn-secondary">Import a form</a>
+      <a href="#" class="btn btn-ghost">Read docs</a>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">01 / Comparison</div>
+    <h2 class="section-title">Old way vs. <strong>new way</strong></h2>
+    <p class="section-intro">Import your existing form, refine the copy, and give people a conversational path that's easier to finish.</p>
+    <div class="comparison">
+      <div class="compare-card old">
+        <div class="section-label">Old way</div>
+        <h3>Static forms demand attention every screen</h3>
+        <div class="metric"><span class="metric-label">Steps</span><span class="metric-value">Open, read, scan, type, submit</span></div>
+        <div class="metric"><span class="metric-label">Duration</span><span class="metric-value">Longer — easier to abandon</span></div>
+        <div class="metric"><span class="metric-label">Completion</span><span class="metric-value">Lower when it feels like work</span></div>
+      </div>
+      <div class="compare-card new">
+        <div class="section-label">New way</div>
+        <h3>Talkform carries the interview</h3>
+        <div class="metric"><span class="metric-label">Steps</span><span class="metric-value">Open, answer aloud, review</span></div>
+        <div class="metric"><span class="metric-label">Duration</span><span class="metric-value">Shorter — host keeps momentum</span></div>
+        <div class="metric"><span class="metric-label">Completion</span><span class="metric-value">Higher — feels guided</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">02 / Process</div>
+    <h2 class="section-title">How it <strong>works</strong></h2>
+    <p class="section-intro">You keep the schema. Talkform owns the interview, extraction, and export.</p>
+    <div class="steps">
+      <div class="step"><span class="step-num">STEP_01</span><h3>Define the fields</h3><p>Describe variables, prompt copy, options, and validation in your config.</p></div>
+      <div class="step"><span class="step-num">STEP_02</span><h3>Run the interview</h3><p>Talkform asks one question at a time over live audio and writes the form.</p></div>
+      <div class="step"><span class="step-num">STEP_03</span><h3>Export the result</h3><p>Download JSON, pull through HTTP API, CLI, or MCP server.</p></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">03 / Product</div>
+    <h2 class="section-title">The <strong>surface</strong></h2>
+    <p class="section-intro">Transcript on the left, live question flow in the middle, captured answers on the right.</p>
+    <div class="preview-frame">
+      <div class="preview-titlebar">
+        <span class="preview-dot"></span><span class="preview-dot"></span><span class="preview-dot"></span>
+      </div>
+      <div class="preview-stage">
+        <div class="preview-pane"><div class="pane-label">Transcript</div><div class="preview-line"></div><div class="preview-line short"></div><div class="preview-line"></div><div class="preview-line short"></div></div>
+        <div class="preview-pane preview-center">
+          <h4>Lock the learner identity</h4>
+          <p>Ask for the person's name, confirm it, and keep the interview moving one question at a time.</p>
+          <div class="preview-chips">
+            <span class="preview-chip">Name</span><span class="preview-chip">Role</span>
+            <span class="preview-chip">Goals</span><span class="preview-chip">AI comfort</span>
+          </div>
+        </div>
+        <div class="preview-pane"><div class="pane-label">Form answers</div><div class="preview-field"></div><div class="preview-field"></div><div class="preview-field"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">04 / Connect</div>
+    <h2 class="section-title"><strong>Integrations</strong></h2>
+    <p class="section-intro">Use Talkform from a product UI, backend, terminal, or agent runtime.</p>
+    <div class="integrations">
+      <div class="integration"><div class="integration-label">React</div><h3>Embed the widget</h3><p>Drop the full audio form experience into any React product.</p></div>
+      <div class="integration"><div class="integration-label">HTTP API</div><h3>Create & export</h3><p>Bootstrap sessions and pull exports over JSON endpoints.</p></div>
+      <div class="integration"><div class="integration-label">CLI</div><h3>Scaffold & validate</h3><p>Generate configs, run demos, and export results.</p></div>
+      <div class="integration"><div class="integration-label">MCP</div><h3>Agent-usable</h3><p>Expose templates, schemas, and sessions to coding agents.</p></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">05 / Output</div>
+    <h2 class="section-title">Canonical <strong>result</strong></h2>
+    <p class="section-intro">One stable schema so downstream systems can adapt it into plans, CRM records, or onboarding flows.</p>
+    <div class="output-block">
+      <div class="output-header">
+        <h3>AudioformSessionResult</h3>
+        <span class="tag">Stable schema</span>
+      </div>
+      <pre class="code-block">{
+  <span class="key">"schemaVersion"</span>: <span class="str">"1.0"</span>,
+  <span class="key">"formId"</span>: <span class="str">"customer-intake"</span>,
+  <span class="key">"sessionId"</span>: <span class="str">"session_3e2z1f0c"</span>,
+  <span class="key">"status"</span>: <span class="str">"completed"</span>,
+  <span class="key">"completion"</span>: { <span class="key">"required"</span>: <span class="num">5</span>, <span class="key">"captured"</span>: <span class="num">5</span>, <span class="key">"percent"</span>: <span class="num">100</span> },
+  <span class="key">"fields"</span>: {
+    <span class="key">"fullName"</span>: <span class="str">"Avery Stone"</span>,
+    <span class="key">"role"</span>: <span class="str">"Product Lead"</span>,
+    <span class="key">"goal"</span>: [<span class="str">"upskill_current_job"</span>, <span class="str">"ship_ai_projects"</span>],
+    <span class="key">"aiComfort"</span>: <span class="num">4</span>
+  }
+}</pre>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ DEMO ═══ -->
+<div id="tab-demo" class="tab-content">
+<div class="container">
+  <div class="gallery-header">
+    <div class="hero-label">Templates</div>
+    <h1>Choose a template to <strong>try</strong></h1>
+    <p>Pick a starting point and experience the live audio interview.</p>
+  </div>
+  <div class="template-grid">
+    <div class="template-card">
+      <span class="template-category">Feedback</span>
+      <h3>Customer Feedback</h3>
+      <p>Collect product feedback through a guided audio conversation.</p>
+      <div class="template-meta"><span>5 fields</span><span>~2 min</span></div>
+    </div>
+    <div class="template-card">
+      <span class="template-category">Sales</span>
+      <h3>Lead Generation</h3>
+      <p>Qualify leads with a conversational intake form.</p>
+      <div class="template-meta"><span>6 fields</span><span>~3 min</span></div>
+    </div>
+    <div class="template-card">
+      <span class="template-category">HR</span>
+      <h3>Job Application</h3>
+      <p>Screen candidates with structured audio questions.</p>
+      <div class="template-meta"><span>7 fields</span><span>~4 min</span></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ IMPORT ═══ -->
+<div id="tab-import" class="tab-content">
+<div class="container">
+  <div class="import-layout">
+    <div class="import-intro">
+      <div class="hero-label">Import</div>
+      <h1>Import an existing <strong>form</strong></h1>
+      <p>Paste a public form URL from Typeform, Google Forms, Jotform, or HubSpot. We'll extract the fields and create an editable Talkform draft.</p>
+    </div>
+    <div class="import-form">
+      <label for="url">Form URL</label>
+      <input type="url" id="url" placeholder="https://forms.google.com/..." />
+      <p class="hint">Supports Typeform, Google Forms, Jotform, HubSpot, and most public form URLs.</p>
+      <button class="btn btn-primary">Extract fields</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ DOCS ═══ -->
+<div id="tab-docs" class="tab-content">
+<div class="container">
+  <div class="docs-layout">
+    <aside class="docs-sidebar">
+      <a href="#" class="active">Getting started</a>
+      <a href="#">Configuration</a>
+      <a href="#">React</a>
+      <a href="#">HTTP API</a>
+      <a href="#">CLI</a>
+      <a href="#">MCP</a>
+      <a href="#">Agents</a>
+    </aside>
+    <div class="docs-content">
+      <h1>Getting started</h1>
+      <p>Talkform turns any form definition into a live audio interview. Define your fields in a config, embed the widget or call the API, and get structured JSON back.</p>
+      <h2>Install</h2>
+      <p>Add the React package:</p>
+      <pre class="code-block" style="border-radius:var(--radius);margin:1rem 0">npm install @talkform/react</pre>
+      <h2>Basic usage</h2>
+      <p>Import the widget and pass your config:</p>
+      <pre class="code-block" style="border-radius:var(--radius);margin:1rem 0">import { AudioformWidget } from '@talkform/react';
+
+&lt;AudioformWidget
+  config={myFormConfig}
+  onComplete={(result) =&gt; console.log(result)}
+/&gt;</pre>
+      <h2>Configuration</h2>
+      <p>The <code>AudioformConfig</code> object describes the fields you want to capture, the prompt, and validation rules.</p>
+    </div>
+  </div>
+</div>
+</div>
+
+<footer>
+  <div class="container footer-inner">
+    <span class="footer-brand">Talkform</span>
+    <div class="footer-links">
+      <a href="#">Docs</a>
+      <a href="#">API</a>
+      <a href="#">GitHub</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+function showTab(id){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.page-tabs button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  event.target.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>

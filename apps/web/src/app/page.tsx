@@ -39,19 +39,17 @@ export default function HomePage() {
       <section className={styles.hero}>
         <article className={styles.heroCard}>
           <div className={styles.eyebrow}>Audio-first forms</div>
-          <h1>Turn any form into a live audio interview.</h1>
+          <h1>Turn any form into a live <em>audio interview</em></h1>
           <p className={styles.lede}>
-            Talkform asks questions out loud, fills structured variables directly from the conversation,
-            and exports product-friendly JSON for apps, workflows, and AI agents. Bring over an existing
-            Typeform, Google Form, Jotform, HubSpot form, or any public form URL and turn it into an
-            editable live interview.
+            Talkform asks questions aloud, fills structured fields from the conversation,
+            and exports clean JSON for your apps, workflows, and agents.
           </p>
           <div className={styles.heroActions}>
             <Link href="/app" className={styles.primaryAction}>
               Try the demo
             </Link>
             <Link href="/import" className={styles.secondaryAction}>
-              Import an existing form
+              Import a form
             </Link>
             <Link href="/docs" className={styles.ghostAction}>
               Read docs
@@ -61,11 +59,11 @@ export default function HomePage() {
 
         <div className={styles.heroAside}>
           <div className={styles.ctaCard}>
-            <strong>Move faster from what you already have</strong>
-            <p>Import a public form URL, review the extracted draft, and launch the audio version without rebuilding from scratch.</p>
+            <strong>Import existing forms</strong>
+            <p>Paste a public URL from Typeform, Google Forms, Jotform, or HubSpot and launch the audio version without rebuilding.</p>
           </div>
           <div className={styles.surface}>
-            <strong>Built for agents</strong>
+            <strong>Developer-first integrations</strong>
             <p>MCP tools, a CLI, JSON schemas, and docs that explain exactly how to configure and consume Talkform.</p>
           </div>
         </div>
@@ -74,52 +72,48 @@ export default function HomePage() {
       <section className={styles.section}>
         <div className={styles.sectionHeaderRow}>
           <div>
-            <h2 className={styles.sectionTitle}>Old way / New way</h2>
+            <h2 className={styles.sectionTitle}>Old way vs. <em>new way</em></h2>
             <p className={styles.sectionIntro}>
-              Most teams already have a form. The win is importing that starting point, tightening the copy,
-              and giving people a conversational path that feels easier to finish.
+              Import your existing form and give people a conversational path that&apos;s easier to finish.
             </p>
           </div>
-          <Link href="/import" className={styles.secondaryAction}>
-            Import a public form
-          </Link>
         </div>
 
         <div className={styles.comparisonGrid}>
           <article className={`${styles.compareCard} ${styles.compareOld}`}>
             <div className={styles.eyebrow}>Old way</div>
-            <h3>Static form rebuilds attention every screen</h3>
+            <h3>Static forms demand attention every screen</h3>
             <div className={styles.metricList}>
               <div className={styles.metricRow}>
                 <span>Steps</span>
-                <strong>Open page, read, scan, type, submit</strong>
+                <strong>Open, read, scan, type, submit</strong>
               </div>
               <div className={styles.metricRow}>
-                <span>Time to finish</span>
-                <strong>Longer and easier to abandon mid-way</strong>
+                <span>Duration</span>
+                <strong>Longer — easier to abandon</strong>
               </div>
               <div className={styles.metricRow}>
-                <span>Completion likelihood</span>
-                <strong>More friction when the form feels like work</strong>
+                <span>Completion</span>
+                <strong>Lower when the form feels like work</strong>
               </div>
             </div>
           </article>
 
           <article className={`${styles.compareCard} ${styles.compareNew}`}>
             <div className={styles.eyebrow}>New way</div>
-            <h3>Talkform carries the interview and writes the fields for them</h3>
+            <h3>Talkform carries the interview and writes the answers</h3>
             <div className={styles.metricList}>
               <div className={styles.metricRow}>
                 <span>Steps</span>
-                <strong>Open, answer out loud, review the captured draft</strong>
+                <strong>Open, answer aloud, review draft</strong>
               </div>
               <div className={styles.metricRow}>
-                <span>Time to finish</span>
-                <strong>Shorter because the host keeps momentum</strong>
+                <span>Duration</span>
+                <strong>Shorter — the host keeps momentum</strong>
               </div>
               <div className={styles.metricRow}>
-                <span>Completion likelihood</span>
-                <strong>Higher when the flow feels guided instead of manual</strong>
+                <span>Completion</span>
+                <strong>Higher when the flow feels guided</strong>
               </div>
             </div>
           </article>
@@ -127,34 +121,42 @@ export default function HomePage() {
       </section>
 
       <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>How it works</h2>
-        <p className={styles.sectionIntro}>
-          Products keep the schema they need. Talkform owns the interview, structured extraction, and export surface.
-        </p>
+        <div className={styles.sectionHeaderRow}>
+          <div>
+            <h2 className={styles.sectionTitle}>How it <em>works</em></h2>
+            <p className={styles.sectionIntro}>
+              You keep the schema. Talkform owns the interview, extraction, and export.
+            </p>
+          </div>
+        </div>
         <div className={styles.threeUp}>
           <article className={styles.stepCard}>
             <span className={styles.stepNumber}>1</span>
             <h3>Define the fields</h3>
-            <p>Describe the required variables, prompt copy, options, and validation in `AudioformConfig`.</p>
+            <p>Describe variables, prompt copy, options, and validation in your config.</p>
           </article>
           <article className={styles.stepCard}>
             <span className={styles.stepNumber}>2</span>
-            <h3>Run the audio intake</h3>
-            <p>Talkform asks one question at a time over live audio and updates the structured form directly.</p>
+            <h3>Run the interview</h3>
+            <p>Talkform asks one question at a time over live audio and writes the form.</p>
           </article>
           <article className={styles.stepCard}>
             <span className={styles.stepNumber}>3</span>
             <h3>Export the result</h3>
-            <p>Download JSON or markdown exports, or pull the same data through the HTTP API, CLI, or MCP server.</p>
+            <p>Download JSON, pull through the HTTP API, CLI, or MCP server.</p>
           </article>
         </div>
       </section>
 
       <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>The product surface</h2>
-        <p className={styles.sectionIntro}>
-          Your answers on the left, the live question flow in the middle, and captured form answers on the right.
-        </p>
+        <div className={styles.sectionHeaderRow}>
+          <div>
+            <h2 className={styles.sectionTitle}>The <em>surface</em></h2>
+            <p className={styles.sectionIntro}>
+              Transcript on the left, live question flow in the middle, captured answers on the right.
+            </p>
+          </div>
+        </div>
         <article className={styles.previewCard}>
           <div className={styles.previewStage}>
             <div className={styles.previewPanel}>
@@ -168,7 +170,7 @@ export default function HomePage() {
               <div className={styles.eyebrow}>Prompt canvas</div>
               <div className={styles.previewHeroTitle}>Lock the learner identity</div>
               <div className={styles.previewHeroBody}>
-                Ask for the person’s name first, confirm it, and keep the interview moving one question at a time.
+                Ask for the person&apos;s name first, confirm it, and keep the interview moving one question at a time.
               </div>
               <div className={styles.previewChipRow}>
                 <span className={styles.previewChip}>Name</span>
@@ -189,70 +191,55 @@ export default function HomePage() {
       </section>
 
       <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>Integrations</h2>
-        <p className={styles.sectionIntro}>
-          Use Talkform from a product UI, a backend, the terminal, or an agent runtime.
-        </p>
+        <div className={styles.sectionHeaderRow}>
+          <div>
+            <h2 className={styles.sectionTitle}><em>Integrations</em></h2>
+            <p className={styles.sectionIntro}>
+              Use Talkform from a product UI, backend, terminal, or agent runtime.
+            </p>
+          </div>
+        </div>
         <div className={styles.fourUp}>
           <article className={styles.integrationCard}>
-            <div className={styles.eyebrow}>React</div>
-            <h3>Embed the widget</h3>
-            <p>Use `@talkform/react` to drop the full audio form experience into a React product.</p>
+            <div className={styles.eyebrow}>R</div>
+            <h3>React</h3>
+            <p>Embed the widget in any React product.</p>
           </article>
           <article className={styles.integrationCard}>
-            <div className={styles.eyebrow}>HTTP API</div>
-            <h3>Create and export sessions</h3>
-            <p>Bootstrap sessions, validate configs, and pull exports over simple JSON endpoints.</p>
+            <div className={styles.eyebrow}>API</div>
+            <h3>HTTP API</h3>
+            <p>Bootstrap sessions and pull exports.</p>
           </article>
           <article className={styles.integrationCard}>
             <div className={styles.eyebrow}>CLI</div>
-            <h3>Scaffold and validate</h3>
-            <p>Generate starter configs, run the demo locally, and export results from the command line.</p>
+            <h3>CLI</h3>
+            <p>Generate configs and export results.</p>
           </article>
           <article className={styles.integrationCard}>
             <div className={styles.eyebrow}>MCP</div>
-            <h3>Make it agent-usable</h3>
-            <p>Expose templates, schemas, validation, session creation, and exports to coding agents.</p>
+            <h3>MCP</h3>
+            <p>Expose to coding agents.</p>
           </article>
         </div>
       </section>
 
       <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>Agent quickstart</h2>
-        <p className={styles.sectionIntro}>
-          Agents can discover Talkform from `llms.txt`, create configs, validate them, and consume session results.
-        </p>
-        <div className={styles.docGrid}>
-          <article className={styles.docCard}>
-            <div className={styles.eyebrow}>CLI</div>
-            <h3>`audioform validate ./customer-intake.json`</h3>
-            <p>Validate a form definition before any product wiring happens.</p>
-          </article>
-          <article className={styles.docCard}>
-            <div className={styles.eyebrow}>MCP</div>
-            <h3>`audioform.create_session`</h3>
-            <p>Launch a browser-driven intake session and then fetch it back through MCP or HTTP export endpoints.</p>
-          </article>
-          <article className={styles.docCard}>
-            <div className={styles.eyebrow}>JSON</div>
-            <h3>Canonical export</h3>
-            <p>The same `AudioformSessionResult` shape is used by the UI, HTTP API, CLI, and MCP server.</p>
-          </article>
+        <div className={styles.sectionHeaderRow}>
+          <div>
+            <h2 className={styles.sectionTitle}>Canonical <em>result</em></h2>
+            <p className={styles.sectionIntro}>
+              One stable schema so downstream systems can adapt it into plans, CRM records, or onboarding flows.
+            </p>
+          </div>
         </div>
-      </section>
-
-      <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>Canonical output</h2>
-        <p className={styles.sectionIntro}>
-          Talkform exports one stable result schema so downstream products can adapt it into plans, CRM records, or onboarding flows.
-        </p>
         <article className={styles.outputCard}>
           <h3>AudioformSessionResult</h3>
-          <p>The hosted app also publishes the JSON schemas at `/schemas/audioform-config.json` and `/schemas/audioform-session-result.json`.</p>
+          <p>Same shape across UI, HTTP API, CLI, and MCP.</p>
           <pre className={styles.jsonBlock}>{JSON.stringify(sampleResult, null, 2)}</pre>
         </article>
         <article className={styles.outputCard}>
           <h3>Schema availability</h3>
+          <p>Published at <code>/schemas/audioform-session-result.json</code></p>
           <pre className={styles.jsonBlock}>{JSON.stringify(audioformSessionResultJsonSchema, null, 2)}</pre>
         </article>
       </section>

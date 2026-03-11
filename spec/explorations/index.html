@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Talkform – Design Explorations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0}
+:root{
+  --bg:#faf8f5;
+  --ink:#1a1613;
+  --ink-secondary:#7a7268;
+  --accent:#c45a30;
+  --line:rgba(26,22,19,0.1);
+}
+body{
+  font-family:'DM Sans',system-ui,sans-serif;
+  color:var(--ink);background:var(--bg);
+  min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:4rem 2rem;
+  -webkit-font-smoothing:antialiased;
+}
+h1{
+  font-family:'Instrument Serif',Georgia,serif;
+  font-size:2.5rem;font-weight:400;letter-spacing:-0.025em;
+  text-align:center;margin-bottom:0.5rem;
+}
+h1 em{font-style:italic;color:var(--accent)}
+.subtitle{
+  text-align:center;color:var(--ink-secondary);
+  font-size:1.0625rem;margin-bottom:3rem;font-weight:300;
+}
+.grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:1.5rem;max-width:960px;width:100%;
+}
+.card{
+  display:block;text-decoration:none;color:inherit;
+  border:1px solid var(--line);border-radius:20px;
+  overflow:hidden;background:#fff;
+  transition:all 200ms ease;
+}
+.card:hover{
+  box-shadow:0 16px 48px rgba(26,22,19,0.1);
+  transform:translateY(-3px);
+}
+.card-preview{
+  height:200px;display:flex;align-items:center;justify-content:center;
+  font-size:3rem;
+}
+.card-preview.a{background:#faf8f5;color:var(--accent)}
+.card-preview.b{background:#0c0c0c;color:#e86833}
+.card-preview.c{background:#fdfcfa;color:#d05a36}
+.card-body{padding:1.5rem;border-top:1px solid var(--line)}
+.card-label{
+  font-size:0.6875rem;font-weight:600;letter-spacing:0.1em;
+  text-transform:uppercase;color:var(--accent);margin-bottom:0.5rem;
+}
+.card h2{
+  font-family:'Instrument Serif',Georgia,serif;
+  font-size:1.375rem;font-weight:400;margin-bottom:0.5rem;
+}
+.card p{color:var(--ink-secondary);font-size:0.875rem;line-height:1.6;font-weight:300}
+.card-details{
+  display:flex;gap:0.75rem;margin-top:1rem;flex-wrap:wrap;
+}
+.detail{
+  padding:0.25rem 0.6rem;border-radius:999px;
+  background:rgba(26,22,19,0.04);
+  font-size:0.75rem;color:var(--ink-secondary);font-weight:500;
+}
+footer{
+  margin-top:4rem;text-align:center;
+  font-size:0.8125rem;color:var(--ink-secondary);
+}
+</style>
+</head>
+<body>
+  <h1>Design <em>Explorations</em></h1>
+  <p class="subtitle">Three directions for Talkform's new visual identity. Each includes all pages.</p>
+
+  <div class="grid">
+    <a href="a-warm-editorial.html" class="card">
+      <div class="card-preview a">
+        <span style="font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-size:2rem">Aa</span>
+      </div>
+      <div class="card-body">
+        <div class="card-label">Direction A</div>
+        <h2>Warm Editorial</h2>
+        <p>Serif display type, warm neutrals, terracotta accent. Feels like a well-designed magazine — confident, readable, human.</p>
+        <div class="card-details">
+          <span class="detail">Light theme</span>
+          <span class="detail">Instrument Serif</span>
+          <span class="detail">Warm tones</span>
+        </div>
+      </div>
+    </a>
+
+    <a href="b-swiss-precision.html" class="card">
+      <div class="card-preview b">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:1.25rem;letter-spacing:0.04em">01_TF</span>
+      </div>
+      <div class="card-body">
+        <div class="card-label">Direction B</div>
+        <h2>Swiss Precision</h2>
+        <p>Dark canvas, tight grid, monospace accents. Feels like a developer tool that earns trust through clarity and craft.</p>
+        <div class="card-details">
+          <span class="detail">Dark theme</span>
+          <span class="detail">Libre Franklin</span>
+          <span class="detail">Grid system</span>
+        </div>
+      </div>
+    </a>
+
+    <a href="c-soft-studio.html" class="card">
+      <div class="card-preview c">
+        <span style="font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:2rem">tf</span>
+      </div>
+      <div class="card-body">
+        <div class="card-label">Direction C</div>
+        <h2>Soft Studio</h2>
+        <p>Cream backgrounds, rounded shapes, olive green accents. Feels approachable and crafted — like a well-designed product studio.</p>
+        <div class="card-details">
+          <span class="detail">Light theme</span>
+          <span class="detail">Fraunces + Outfit</span>
+          <span class="detail">Organic</span>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <div style="width:100%;max-width:960px;margin-top:3rem;padding-top:2rem;border-top:1px solid var(--line)">
+    <h2 style="font-family:var(--font-display);font-size:1.75rem;font-weight:400;margin-bottom:1rem">Widget <em style="font-style:italic;color:var(--accent)">Exploration</em></h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;max-width:960px">
+    <a href="widget-reimagined.html" class="card">
+      <div class="card-preview a" style="height:140px">
+        <span style="font-family:'Instrument Serif',Georgia,serif;font-size:1.5rem">🎙️ → 📋</span>
+      </div>
+      <div class="card-body">
+        <div class="card-label">Widget Redesign</div>
+        <h2>Reimagined Interview UI</h2>
+        <p>Consumer-friendly, focused layout. Big prompt area with waveform, variable capture sidebar with live state transitions and celebration animations.</p>
+        <div class="card-details">
+          <span class="detail">Interactive states</span>
+          <span class="detail">Warm Editorial palette</span>
+          <span class="detail">2-panel layout</span>
+        </div>
+      </div>
+    </a>
+
+    <a href="widget-consumer.html" class="card">
+      <div class="card-preview c" style="height:140px">
+        <span style="font-family:'Instrument Serif',Georgia,serif;font-size:1.5rem">🎙️</span>
+      </div>
+      <div class="card-body">
+        <div class="card-label">Consumer Embed</div>
+        <h2>Single-column widget</h2>
+        <p>What end users see. No exports, no developer chrome. Variable pills inline with the prompt. Plus iframe, React, and script-tag embed examples.</p>
+        <div class="card-details">
+          <span class="detail">520px wide</span>
+          <span class="detail">Embeddable</span>
+          <span class="detail">Iframe / React / JS</span>
+        </div>
+      </div>
+    </a>
+    </div>
+  </div>
+
+  <footer style="margin-top:3rem">spec/explorations — isolated from main codebase</footer>
+</body>
+</html>

@@ -1,10 +1,10 @@
 .shell {
   display: grid;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
 .header {
-  max-width: 1440px;
+  max-width: 1200px;
   margin: 0 auto;
   display: grid;
   gap: 0.75rem;
@@ -13,70 +13,79 @@
 .eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 0.55rem;
-  font-size: 0.82rem;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  font-weight: 700;
-  color: #0f8e79;
+  gap: 0.5rem;
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  background: var(--bg-warm);
+  border: 1px solid var(--line);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--muted);
 }
 
 .eyebrow::before {
   content: "";
-  width: 0.68rem;
-  height: 0.68rem;
-  border-radius: 999px;
-  background: #d68a3b;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
 }
 
 .header h2 {
   margin: 0;
-  font-family: var(--font-display), sans-serif;
-  letter-spacing: -0.04em;
-  font-size: clamp(1.8rem, 3vw, 3rem);
-  line-height: 0.95;
+  font-family: var(--font-display), Georgia, serif;
+  letter-spacing: -0.025em;
+  font-size: clamp(1.8rem, 3vw, 2.75rem);
+  font-weight: 400;
+  line-height: 1.15;
 }
 
 .header p {
   margin: 0;
   max-width: 54rem;
-  color: rgba(18, 36, 32, 0.72);
+  color: var(--muted);
   line-height: 1.7;
+  font-weight: 300;
 }
 
 .templateGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.85rem;
+  gap: 1.25rem;
 }
 
 .templateCard {
-  border-radius: 1.5rem;
-  border: 1px solid rgba(18, 36, 32, 0.12);
-  background: rgba(255, 255, 255, 0.82);
-  padding: 1rem;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--line);
+  background: var(--bg-warm);
+  padding: 1.5rem;
   text-align: left;
+  cursor: pointer;
   transition:
-    transform 180ms ease,
-    border-color 180ms ease,
-    box-shadow 180ms ease,
-    background 180ms ease;
+    background 200ms ease,
+    box-shadow 200ms ease,
+    border-color 200ms ease;
 }
 
 .templateCard:hover {
-  transform: translateY(-1px);
+  background: var(--bg-cream);
+  box-shadow: var(--shadow);
 }
 
 .templateCard strong {
   display: block;
-  margin-top: 0.55rem;
-  font-size: 1.1rem;
+  margin-top: 0.625rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.125rem;
+  font-weight: 400;
 }
 
 .templateCard p {
-  margin: 0.55rem 0 0;
-  color: rgba(18, 36, 32, 0.68);
-  line-height: 1.55;
+  margin: 0.5rem 0 0;
+  color: var(--muted);
+  line-height: 1.6;
+  font-weight: 300;
+  font-size: 0.9375rem;
 }
 
 .templateMeta {
@@ -84,19 +93,19 @@
   align-items: center;
   gap: 0.45rem;
   border-radius: 999px;
-  padding: 0.35rem 0.7rem;
-  background: rgba(15, 142, 121, 0.08);
-  color: #0f8e79;
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  padding: 0.3rem 0.7rem;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .templateCardActive {
-  border-color: rgba(15, 142, 121, 0.42);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(235, 247, 243, 0.96));
-  box-shadow: 0 18px 44px rgba(15, 107, 142, 0.12);
+  border-color: var(--accent);
+  background: var(--surface);
+  box-shadow: var(--shadow);
 }
 
 @media (max-width: 960px) {

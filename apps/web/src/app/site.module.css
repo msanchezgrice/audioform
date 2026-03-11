@@ -1,122 +1,171 @@
 .page {
-  max-width: 1440px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
+/* ─── Hero ─── */
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
-  gap: 1.2rem;
-  align-items: stretch;
-  margin-top: 1rem;
-}
-
-.heroCard,
-.surface,
-.ctaCard,
-.docCard,
-.previewCard,
-.stepCard,
-.integrationCard,
-.outputCard {
-  border: 1px solid var(--line);
-  border-radius: 2rem;
-  background: var(--panel);
-  box-shadow: var(--shadow);
-  backdrop-filter: blur(20px);
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  padding: 6rem 0 5rem;
+  text-align: center;
+  max-width: 740px;
+  margin: 0 auto;
 }
 
 .heroCard {
-  padding: 2.4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.heroCard h1 {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(2.75rem, 5.5vw, 4.25rem);
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.heroCard h1 em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.heroAside {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  max-width: 740px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 0.55rem;
-  font-size: 0.82rem;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  font-weight: 700;
-  color: var(--accent);
+  gap: 0.5rem;
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  background: var(--bg-warm);
+  border: 1px solid var(--line);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--muted);
+  margin-bottom: 1.5rem;
 }
 
 .eyebrow::before {
   content: "";
-  width: 0.68rem;
-  height: 0.68rem;
-  border-radius: 999px;
-  background: #d68a3b;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 2s ease infinite;
 }
 
-.heroCard h1,
-.sectionTitle {
-  font-family: var(--font-display), sans-serif;
-  letter-spacing: -0.04em;
-}
-
-.heroCard h1 {
-  margin: 0.7rem 0 0;
-  font-size: clamp(3rem, 6vw, 5.8rem);
-  line-height: 0.93;
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }
 
 .lede {
-  margin: 1rem 0 0;
-  font-size: 1.08rem;
-  line-height: 1.7;
+  margin: 1.5rem auto 0;
+  font-size: 1.0625rem;
   color: var(--muted);
-  max-width: 50rem;
+  line-height: 1.75;
+  max-width: 520px;
+  font-weight: 300;
 }
 
 .heroActions {
   display: flex;
-  gap: 0.8rem;
+  gap: 0.625rem;
+  margin-top: 2rem;
+  justify-content: center;
   flex-wrap: wrap;
-  margin-top: 1.4rem;
 }
 
+/* ─── Buttons ─── */
 .primaryAction,
 .secondaryAction,
 .ghostAction {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 3.1rem;
-  padding: 0.9rem 1.25rem;
+  padding: 0.875rem 1.5rem;
   border-radius: 999px;
-  font-weight: 700;
+  font-weight: 500;
+  font-size: 0.9375rem;
+  transition: all 200ms ease;
 }
 
 .primaryAction {
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-  color: white;
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.primaryAction:hover {
+  background: var(--accent);
+  color: #fff;
 }
 
 .secondaryAction {
-  background: rgba(15, 142, 121, 0.08);
-  color: var(--accent);
+  background: var(--bg-warm);
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+
+.secondaryAction:hover {
+  background: var(--bg-cream);
+  border-color: var(--line-strong);
 }
 
 .ghostAction {
-  border: 1px solid var(--line);
   color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
-.heroAside {
-  display: grid;
-  gap: 1rem;
+.ghostAction:hover {
+  color: var(--ink);
 }
 
+/* ─── Feature cards (hero aside) ─── */
 .ctaCard,
 .surface {
-  padding: 1.4rem;
+  padding: 2rem;
+  border-radius: var(--radius-xl);
+  background: var(--bg-warm);
+  transition: all 200ms ease;
+}
+
+.ctaCard:hover,
+.surface:hover {
+  background: var(--bg-cream);
 }
 
 .ctaCard strong,
 .surface strong {
   display: block;
-  font-size: 1.3rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.375rem;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+.ctaCard strong::before {
+  content: "";
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-family: var(--font-body), system-ui, sans-serif;
+  margin-bottom: 0.75rem;
 }
 
 .ctaCard p,
@@ -128,26 +177,17 @@
 .stepCard p {
   color: var(--muted);
   line-height: 1.65;
+  font-size: 0.9375rem;
+  font-weight: 300;
 }
 
-.threeUp,
-.fourUp {
-  display: grid;
-  gap: 1rem;
-}
-
-.threeUp {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-top: 1rem;
-}
-
-.fourUp {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin-top: 1rem;
-}
-
+/* ─── Section ─── */
 .section {
-  margin-top: 1rem;
+  padding: 5rem 0;
+}
+
+.section + .section {
+  border-top: none;
 }
 
 .sectionHeaderRow {
@@ -155,206 +195,388 @@
   gap: 1rem;
   justify-content: space-between;
   align-items: end;
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto 2.5rem;
+  flex-direction: column;
+  align-items: center;
 }
 
 .sectionTitle {
   margin: 0;
-  font-size: clamp(2rem, 3.8vw, 3.4rem);
-  line-height: 0.96;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.sectionTitle em {
+  font-style: italic;
+  color: var(--accent);
 }
 
 .sectionIntro {
-  margin: 0.85rem 0 0;
-  max-width: 46rem;
+  margin: 0.75rem 0 0;
+  max-width: 48rem;
   color: var(--muted);
   line-height: 1.7;
+  font-weight: 300;
 }
 
-.stepCard,
-.integrationCard,
-.docCard,
-.outputCard,
-.compareCard {
-  padding: 1.2rem;
-}
-
+/* ─── Comparison ─── */
 .comparisonGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
+  gap: 1.25rem;
+  margin-top: 0;
 }
 
 .compareCard {
-  border: 1px solid var(--line);
-  border-radius: 2rem;
-  box-shadow: var(--shadow);
+  padding: 2rem;
+  border-radius: var(--radius-xl);
 }
 
 .compareOld {
-  background:
-    linear-gradient(180deg, rgba(255, 244, 235, 0.96), rgba(255, 255, 255, 0.92));
+  background: var(--bg-warm);
 }
 
 .compareNew {
-  background:
-    radial-gradient(circle at top right, rgba(15, 142, 121, 0.16), transparent 18rem),
-    linear-gradient(180deg, rgba(239, 249, 247, 0.98), rgba(255, 255, 255, 0.92));
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
 }
 
 .compareCard h3 {
-  margin: 0.75rem 0 0;
-  font-size: 1.7rem;
-  font-family: var(--font-display), sans-serif;
-  letter-spacing: -0.04em;
+  margin: 1rem 0;
+  font-size: 1.375rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.01em;
 }
 
 .metricList {
   display: grid;
-  gap: 0.8rem;
-  margin-top: 1rem;
+  gap: 0;
 }
 
 .metricRow {
   display: grid;
-  gap: 0.2rem;
-  padding: 0.9rem 1rem;
-  border-radius: 1.2rem;
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(18, 36, 32, 0.08);
+  gap: 0.15rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--line);
 }
 
 .metricRow span {
-  color: var(--muted);
-  font-size: 0.92rem;
+  font-size: 0.75rem;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.06em;
+  color: var(--ink-tertiary);
 }
 
 .metricRow strong {
-  font-size: 1.05rem;
+  font-size: 0.9375rem;
+  font-weight: 400;
   line-height: 1.5;
+}
+
+.compareNew .metricRow strong {
+  color: var(--olive);
+}
+
+/* ─── Steps ─── */
+.threeUp {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-top: 0;
+}
+
+.stepCard {
+  padding: 2rem;
+  border-radius: var(--radius-xl);
+  background: var(--bg-warm);
+  text-align: center;
 }
 
 .stepNumber {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.15rem;
-  height: 2.15rem;
-  border-radius: 999px;
-  background: rgba(15, 142, 121, 0.1);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.25rem;
   color: var(--accent);
-  font-weight: 800;
+  box-shadow: 0 1px 4px rgba(44, 40, 37, 0.05);
 }
 
+.stepCard h3 {
+  margin: 1rem 0 0.5rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.125rem;
+  font-weight: 400;
+}
+
+/* ─── Preview ─── */
 .previewCard {
-  margin-top: 1rem;
-  padding: 1.1rem;
+  margin-top: 0;
+  padding: 0;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  background: var(--ink);
+  box-shadow: 0 32px 80px rgba(44, 40, 37, 0.08);
+  border: 1px solid rgba(44, 40, 37, 0.2);
 }
 
 .previewStage {
   display: grid;
-  grid-template-columns: 0.6fr 1fr 0.8fr;
-  gap: 0.8rem;
+  grid-template-columns: 0.5fr 1fr 0.65fr;
   min-height: 22rem;
 }
 
-.previewPanel,
-.previewCenter {
-  border-radius: 1.4rem;
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.7);
-  padding: 1rem;
+.previewPanel {
+  padding: 1.25rem;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.previewPanel:last-child {
+  border-right: none;
+}
+
+.previewPanel .eyebrow {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.previewPanel .eyebrow::before {
+  display: none;
 }
 
 .previewCenter {
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: rgba(208, 90, 54, 0.06);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
   color: white;
-  background:
-    radial-gradient(circle at 20% 20%, rgba(15, 142, 121, 0.42), transparent 18rem),
-    linear-gradient(160deg, #082522 0%, #051a28 60%, #0d2830 100%);
 }
 
-.previewTranscriptLine,
-.previewFormLine,
-.previewChip {
-  border-radius: 999px;
-  min-height: 0.8rem;
-  background: rgba(15, 142, 121, 0.12);
+.previewCenter .eyebrow {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0 0 1rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.previewCenter .eyebrow::before {
+  display: none;
 }
 
 .previewTranscriptLine {
-  margin-top: 0.75rem;
-  height: 0.75rem;
+  margin-top: 0.625rem;
+  height: 7px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .previewFormLine {
-  margin-top: 0.9rem;
-  height: 2.8rem;
-  border-radius: 1rem;
+  margin-top: 0.625rem;
+  height: 2.25rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .previewHeroTitle {
-  font-family: var(--font-display), sans-serif;
-  font-size: 2.2rem;
-  line-height: 0.95;
-  letter-spacing: -0.04em;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.75rem;
+  color: rgba(255, 255, 255, 0.88);
+  font-weight: 400;
+  letter-spacing: -0.01em;
 }
 
 .previewHeroBody {
-  margin-top: 0.9rem;
+  margin-top: 0.5rem;
   max-width: 22rem;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.9375rem;
+  font-weight: 300;
 }
 
 .previewChipRow {
   display: flex;
-  gap: 0.55rem;
+  gap: 0.375rem;
   flex-wrap: wrap;
   margin-top: 1rem;
 }
 
 .previewChip {
   display: inline-flex;
-  min-height: 2rem;
-  padding: 0 0.8rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
   align-items: center;
-  color: white;
-  background: rgba(255, 255, 255, 0.14);
+  color: rgba(208, 90, 54, 0.7);
+  background: rgba(208, 90, 54, 0.15);
+  font-size: 0.75rem;
+  font-weight: 500;
 }
 
-.jsonBlock {
-  margin-top: 1rem;
-  padding: 1rem;
-  border-radius: 1.3rem;
-  background: #0e1a18;
-  color: #dff7f2;
-  overflow: auto;
-  font-size: 0.9rem;
-  line-height: 1.55;
+/* ─── Integrations ─── */
+.fourUp {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  margin-top: 0;
 }
 
+.integrationCard {
+  padding: 1.75rem;
+  border-radius: var(--radius-xl);
+  background: var(--bg-warm);
+  text-align: center;
+  transition: all 200ms ease;
+}
+
+.integrationCard:hover {
+  background: var(--bg-cream);
+}
+
+.integrationCard .eyebrow {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0 0 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: 0 1px 4px rgba(44, 40, 37, 0.05);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.integrationCard .eyebrow::before {
+  display: none;
+}
+
+.integrationCard h3 {
+  margin: 0 0 0.375rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.0625rem;
+  font-weight: 400;
+}
+
+/* ─── Doc grid / Agent quickstart ─── */
 .docGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
+  gap: 1.25rem;
+  margin-top: 0;
+}
+
+.docCard {
+  padding: 1.75rem;
+  border-radius: var(--radius-xl);
+  background: var(--bg-warm);
+  transition: all 200ms ease;
+}
+
+.docCard:hover {
+  background: var(--bg-cream);
+}
+
+.docCard .eyebrow {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0 0 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.docCard .eyebrow::before {
+  display: none;
 }
 
 .docCard h3,
 .integrationCard h3,
 .stepCard h3,
 .outputCard h3 {
-  margin: 0.75rem 0 0;
-  font-size: 1.3rem;
-  font-family: var(--font-display), sans-serif;
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 400;
 }
 
+.docCard h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.125rem;
+}
+
+/* ─── Output ─── */
+.outputCard {
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  margin-top: 1.25rem;
+}
+
+.outputCard h3 {
+  padding: 1.5rem 2rem 0;
+  font-size: 1.125rem;
+  margin: 0;
+}
+
+.outputCard p {
+  padding: 0 2rem;
+  margin: 0.25rem 0 0;
+}
+
+.jsonBlock {
+  margin: 1rem 0 0;
+  padding: 1.5rem 2rem;
+  background: var(--ink);
+  color: rgba(255, 255, 255, 0.65);
+  font-family: "SF Mono", "Cascadia Code", monospace;
+  font-size: 0.8125rem;
+  line-height: 1.65;
+  overflow: auto;
+}
+
+/* ─── Misc shared ─── */
 .docLink {
   display: inline-flex;
   margin-top: 0.9rem;
   color: var(--accent);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .docList {
@@ -372,16 +594,16 @@
 }
 
 .docRowIndex {
-  font-family: var(--font-display), sans-serif;
+  font-family: var(--font-display), Georgia, serif;
   font-size: 1.4rem;
   letter-spacing: -0.04em;
-  color: rgba(18, 36, 32, 0.38);
+  color: var(--ink-tertiary);
 }
 
 .docRowBody h3 {
   margin: 0.35rem 0 0;
   font-size: 1.3rem;
-  font-family: var(--font-display), sans-serif;
+  font-family: var(--font-display), Georgia, serif;
 }
 
 .docRowBody p {
@@ -395,42 +617,63 @@
   align-self: center;
 }
 
+/* ─── Markdown ─── */
 .markdown {
   margin-top: 1rem;
-  padding: 1.4rem;
-  border-radius: 1.6rem;
+  padding: 2rem;
+  border-radius: var(--radius-xl);
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.82);
+  background: var(--surface);
   box-shadow: var(--shadow);
 }
 
 .markdown h1,
 .markdown h2,
 .markdown h3 {
-  font-family: var(--font-display), sans-serif;
-  letter-spacing: -0.03em;
+  font-family: var(--font-display), Georgia, serif;
+  letter-spacing: -0.02em;
+  font-weight: 400;
 }
 
 .markdown p,
 .markdown li {
   line-height: 1.75;
   color: var(--ink);
+  font-weight: 300;
 }
 
 .markdown pre {
   overflow: auto;
   padding: 1rem;
-  border-radius: 1rem;
-  background: #0f1a18;
-  color: #dff7f2;
+  border-radius: var(--radius);
+  background: var(--ink);
+  color: rgba(255, 255, 255, 0.65);
 }
 
 .markdown code {
-  font-family: ui-monospace, "SFMono-Regular", monospace;
+  font-family: "SF Mono", "Cascadia Code", monospace;
+  padding: 0.2rem 0.45rem;
+  border-radius: 6px;
+  background: var(--bg-warm);
+  font-size: 0.875em;
+  color: var(--accent);
 }
 
 @media (max-width: 1180px) {
-  .hero,
+  .hero {
+    padding: 4rem 0 3rem;
+    text-align: left;
+  }
+
+  .heroCard {
+    align-items: flex-start;
+  }
+
+  .heroActions {
+    justify-content: flex-start;
+  }
+
+  .heroAside,
   .threeUp,
   .fourUp,
   .docGrid,
@@ -442,6 +685,7 @@
   .sectionHeaderRow {
     flex-direction: column;
     align-items: stretch;
+    text-align: left;
   }
 
   .docRow {

@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Manrope, Space_Grotesk } from "next/font/google";
+import { Outfit, Fraunces } from "next/font/google";
 import "./globals.css";
 
-const bodyFont = Manrope({
+const bodyFont = Outfit({
   variable: "--font-body",
   subsets: ["latin"],
 });
 
-const displayFont = Space_Grotesk({
+const displayFont = Fraunces({
   variable: "--font-display",
   subsets: ["latin"],
 });
@@ -41,6 +41,7 @@ const navItems = [
   { href: "/", label: "Home" },
   { href: "/import", label: "Import a form" },
   { href: "/app", label: "Try the demo" },
+  { href: "/embed", label: "Embed" },
   { href: "/docs", label: "Docs" },
   { href: "/docs/agents", label: "Agents" },
   { href: "/examples/ai-skill-tutor", label: "Example" },
@@ -53,8 +54,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="siteShell">
           <header className="siteHeader">
             <Link href="/" className="brandMark">
-              <span className="brandDot"></span>
-              <span>Talkform</span>
+              <span className="brandDot">tf</span>
+              Talkform
             </Link>
             <nav className="siteNav" aria-label="Primary">
               {navItems.map((item) => (

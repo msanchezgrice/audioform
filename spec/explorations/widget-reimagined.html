@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Talkform Widget – Reimagined</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0}
+
+:root{
+  --bg:#faf8f5;
+  --bg-warm:#f3efe9;
+  --surface:#fff;
+  --ink:#1a1613;
+  --ink-secondary:#6b6259;
+  --ink-tertiary:#9b9285;
+  --accent:#c45a30;
+  --accent-hover:#b04e28;
+  --accent-soft:rgba(196,90,48,0.08);
+  --accent-glow:rgba(196,90,48,0.15);
+  --green:#3d8c5c;
+  --green-soft:rgba(61,140,92,0.08);
+  --green-glow:rgba(61,140,92,0.15);
+  --line:rgba(26,22,19,0.08);
+  --line-strong:rgba(26,22,19,0.14);
+  --radius:16px;
+  --radius-lg:24px;
+  --radius-xl:32px;
+  --shadow-sm:0 1px 3px rgba(26,22,19,0.04);
+  --shadow-md:0 8px 32px rgba(26,22,19,0.06);
+  --shadow-lg:0 24px 80px rgba(26,22,19,0.08);
+  --font-display:'Instrument Serif', Georgia, serif;
+  --font-body:'DM Sans', system-ui, sans-serif;
+  --transition:220ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font-body);color:var(--ink);
+  background:var(--bg);line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;
+  padding:2rem;
+}
+
+/* ─── Page chrome ─── */
+.page-header{
+  width:100%;max-width:1100px;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:0 0 1.5rem;margin-bottom:1.5rem;
+  border-bottom:1px solid var(--line);
+}
+.brand{
+  font-family:var(--font-display);font-size:1.375rem;
+  text-decoration:none;color:var(--ink);
+}
+.brand em{font-style:italic;color:var(--accent)}
+.page-meta{
+  display:flex;gap:0.75rem;align-items:center;
+  font-size:0.8125rem;color:var(--ink-tertiary);
+}
+
+/* ─── Widget shell ─── */
+.widget{
+  width:100%;max-width:1100px;
+  display:grid;
+  grid-template-columns:1fr 380px;
+  grid-template-rows:auto 1fr auto;
+  gap:0;
+  min-height:680px;
+  border-radius:var(--radius-xl);
+  overflow:hidden;
+  background:var(--surface);
+  border:1px solid var(--line);
+  box-shadow:var(--shadow-lg);
+}
+
+/* ─── Left: Prompt area ─── */
+.prompt-area{
+  grid-column:1;grid-row:1/4;
+  display:flex;flex-direction:column;
+  border-right:1px solid var(--line);
+}
+
+/* Top bar */
+.prompt-bar{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:1.25rem 1.75rem;border-bottom:1px solid var(--line);
+}
+.prompt-status{display:flex;align-items:center;gap:0.625rem}
+.status-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 0 3px var(--green-soft);
+  animation:breathe 2.4s ease-in-out infinite;
+}
+@keyframes breathe{
+  0%,100%{box-shadow:0 0 0 3px var(--green-soft)}
+  50%{box-shadow:0 0 0 8px rgba(61,140,92,0.05)}
+}
+.status-text{font-size:0.8125rem;font-weight:500;color:var(--green)}
+.prompt-progress{
+  display:flex;align-items:center;gap:0.75rem;
+}
+.progress-text{
+  font-size:0.8125rem;font-weight:500;color:var(--ink-tertiary);
+}
+.progress-bar-track{
+  width:120px;height:4px;border-radius:2px;background:var(--line);
+  overflow:hidden;
+}
+.progress-bar-fill{
+  height:100%;border-radius:2px;background:var(--accent);
+  transition:width 600ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Prompt body */
+.prompt-body{
+  flex:1;display:flex;flex-direction:column;
+  justify-content:center;align-items:center;
+  padding:3rem 2.5rem;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+.prompt-body::before{
+  content:'';position:absolute;
+  width:400px;height:400px;border-radius:50%;
+  background:radial-gradient(circle, var(--accent-glow), transparent 70%);
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  pointer-events:none;
+  opacity:0.5;
+}
+.prompt-step-label{
+  position:relative;z-index:1;
+  display:inline-flex;align-items:center;gap:0.5rem;
+  padding:0.375rem 0.875rem;border-radius:999px;
+  background:var(--accent-soft);
+  font-size:0.75rem;font-weight:600;color:var(--accent);
+  letter-spacing:0.04em;text-transform:uppercase;
+  margin-bottom:1.5rem;
+}
+.prompt-question{
+  position:relative;z-index:1;
+  font-family:var(--font-display);
+  font-size:clamp(2rem, 4vw, 2.75rem);
+  font-weight:400;letter-spacing:-0.025em;
+  line-height:1.15;max-width:480px;
+}
+.prompt-question em{font-style:italic;color:var(--accent)}
+.prompt-hint{
+  position:relative;z-index:1;
+  margin-top:1rem;font-size:1rem;
+  color:var(--ink-secondary);max-width:400px;line-height:1.65;
+}
+
+/* Waveform visualizer */
+.waveform{
+  position:relative;z-index:1;
+  display:flex;align-items:center;justify-content:center;
+  gap:3px;height:48px;margin-top:2rem;
+}
+.waveform-bar{
+  width:3px;border-radius:2px;background:var(--accent);
+  animation:wave 1.2s ease-in-out infinite;
+}
+.waveform-bar:nth-child(1){height:12px;animation-delay:0s}
+.waveform-bar:nth-child(2){height:24px;animation-delay:0.1s}
+.waveform-bar:nth-child(3){height:36px;animation-delay:0.2s}
+.waveform-bar:nth-child(4){height:48px;animation-delay:0.3s}
+.waveform-bar:nth-child(5){height:32px;animation-delay:0.4s}
+.waveform-bar:nth-child(6){height:44px;animation-delay:0.15s}
+.waveform-bar:nth-child(7){height:20px;animation-delay:0.35s}
+.waveform-bar:nth-child(8){height:36px;animation-delay:0.05s}
+.waveform-bar:nth-child(9){height:16px;animation-delay:0.25s}
+.waveform-bar:nth-child(10){height:28px;animation-delay:0.45s}
+.waveform-bar:nth-child(11){height:40px;animation-delay:0.08s}
+.waveform-bar:nth-child(12){height:20px;animation-delay:0.32s}
+@keyframes wave{
+  0%,100%{transform:scaleY(0.4);opacity:0.4}
+  50%{transform:scaleY(1);opacity:1}
+}
+
+/* Bottom input */
+.prompt-input-area{
+  padding:1rem 1.5rem;border-top:1px solid var(--line);
+  display:flex;gap:0.625rem;align-items:center;
+  background:var(--bg);
+}
+.prompt-input{
+  flex:1;padding:0.75rem 1rem;
+  border:1px solid var(--line);border-radius:12px;
+  background:var(--surface);font:inherit;font-size:0.9375rem;
+  color:var(--ink);transition:border-color var(--transition);
+}
+.prompt-input:focus{outline:none;border-color:var(--accent)}
+.prompt-input::placeholder{color:var(--ink-tertiary)}
+.send-btn{
+  width:40px;height:40px;border-radius:50%;border:none;
+  background:var(--ink);color:var(--surface);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all var(--transition);flex-shrink:0;
+}
+.send-btn:hover{background:var(--accent)}
+.send-btn svg{width:16px;height:16px}
+
+/* ─── Right sidebar: Variables ─── */
+.sidebar-header{
+  grid-column:2;grid-row:1;
+  padding:1.25rem 1.5rem;border-bottom:1px solid var(--line);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.sidebar-title{font-size:0.9375rem;font-weight:600}
+.sidebar-count{
+  font-size:0.75rem;font-weight:600;color:var(--accent);
+  padding:0.25rem 0.625rem;border-radius:999px;
+  background:var(--accent-soft);
+}
+
+.variables{
+  grid-column:2;grid-row:2;
+  overflow-y:auto;padding:1rem 1.5rem;
+  display:flex;flex-direction:column;gap:0.5rem;
+}
+
+/* Variable card */
+.var-card{
+  border-radius:var(--radius);
+  border:1px solid var(--line);
+  padding:0.875rem 1rem;
+  transition:all 400ms cubic-bezier(0.4,0,0.2,1);
+  position:relative;overflow:hidden;
+}
+.var-card::after{
+  content:'';position:absolute;top:0;left:0;
+  width:3px;height:100%;border-radius:0 2px 2px 0;
+  background:var(--line);transition:all 400ms cubic-bezier(0.4,0,0.2,1);
+}
+.var-card.waiting{background:var(--surface)}
+.var-card.waiting::after{background:var(--line)}
+.var-card.active{
+  background:var(--accent-soft);
+  border-color:rgba(196,90,48,0.2);
+  box-shadow:0 0 0 3px rgba(196,90,48,0.06);
+}
+.var-card.active::after{background:var(--accent)}
+.var-card.captured{
+  background:var(--green-soft);
+  border-color:rgba(61,140,92,0.15);
+}
+.var-card.captured::after{background:var(--green)}
+.var-card.just-captured{animation:captureFlash 800ms cubic-bezier(0.4,0,0.2,1)}
+
+@keyframes captureFlash{
+  0%{background:rgba(61,140,92,0.2);transform:scale(1.01)}
+  100%{background:var(--green-soft);transform:scale(1)}
+}
+
+.var-top{display:flex;justify-content:space-between;align-items:center;gap:0.5rem}
+.var-label{font-size:0.6875rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-tertiary)}
+.var-badge{
+  font-size:0.625rem;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;
+  padding:0.2rem 0.5rem;border-radius:999px;
+}
+.var-badge.waiting{background:var(--bg-warm);color:var(--ink-tertiary)}
+.var-badge.active{background:var(--accent-soft);color:var(--accent)}
+.var-badge.captured{background:var(--green-soft);color:var(--green)}
+.var-value{
+  margin-top:0.375rem;font-size:0.9375rem;font-weight:500;
+  color:var(--ink);min-height:1.25em;
+}
+.var-value.empty{color:var(--ink-tertiary);font-weight:400;font-style:italic}
+.var-value .check{color:var(--green);margin-right:0.25rem}
+
+/* Options for multi-select */
+.var-options{
+  display:flex;flex-wrap:wrap;gap:0.375rem;margin-top:0.5rem;
+}
+.var-option{
+  display:inline-flex;align-items:center;gap:0.3rem;
+  padding:0.3rem 0.625rem;border-radius:999px;
+  font-size:0.75rem;font-weight:500;
+  border:1px solid var(--line);background:var(--surface);
+  color:var(--ink-secondary);transition:all var(--transition);
+}
+.var-option.selected{
+  background:var(--green-soft);border-color:rgba(61,140,92,0.2);
+  color:var(--green);
+}
+.var-option.selected::before{content:'✓ '}
+
+/* Rating stars */
+.var-rating{display:flex;gap:0.25rem;margin-top:0.375rem}
+.star{
+  width:24px;height:24px;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.875rem;border:1px solid var(--line);
+  background:var(--surface);color:var(--ink-tertiary);
+  transition:all var(--transition);
+}
+.star.filled{background:rgba(196,90,48,0.1);border-color:rgba(196,90,48,0.2);color:var(--accent)}
+
+/* ─── Sidebar footer ─── */
+.sidebar-footer{
+  grid-column:2;grid-row:3;
+  padding:1rem 1.5rem;border-top:1px solid var(--line);
+  display:flex;flex-direction:column;gap:0.625rem;
+}
+.summary-block{
+  padding:0.75rem 0.875rem;border-radius:12px;
+  background:var(--bg);font-size:0.8125rem;
+  color:var(--ink-secondary);line-height:1.55;
+}
+.summary-label{
+  font-size:0.625rem;font-weight:600;letter-spacing:0.08em;
+  text-transform:uppercase;color:var(--ink-tertiary);
+  margin-bottom:0.25rem;display:block;
+}
+.export-row{display:flex;gap:0.5rem}
+.btn-export{
+  flex:1;padding:0.625rem;border-radius:10px;border:1px solid var(--line);
+  background:var(--surface);font:inherit;font-size:0.8125rem;
+  font-weight:500;color:var(--ink-secondary);cursor:pointer;
+  transition:all var(--transition);
+}
+.btn-export:hover{border-color:var(--line-strong);color:var(--ink)}
+.btn-export.primary{
+  background:var(--ink);color:var(--surface);border-color:var(--ink);
+}
+.btn-export.primary:hover{background:var(--accent);border-color:var(--accent)}
+
+/* ─── State selector for demo ─── */
+.demo-controls{
+  width:100%;max-width:1100px;
+  margin-top:2rem;padding:1.5rem;
+  border-radius:var(--radius-lg);
+  background:var(--bg-warm);border:1px solid var(--line);
+}
+.demo-controls h3{
+  font-family:var(--font-display);font-size:1.25rem;
+  font-weight:400;margin-bottom:1rem;
+}
+.demo-states{display:flex;gap:0.5rem;flex-wrap:wrap}
+.demo-state-btn{
+  padding:0.625rem 1rem;border-radius:999px;border:1px solid var(--line);
+  background:var(--surface);font:inherit;font-size:0.8125rem;font-weight:500;
+  color:var(--ink-secondary);cursor:pointer;transition:all var(--transition);
+}
+.demo-state-btn:hover{border-color:var(--line-strong);color:var(--ink)}
+.demo-state-btn.active{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+
+/* ─── Transcript drawer (collapsed by default) ─── */
+.transcript-toggle{
+  position:relative;z-index:1;
+  display:flex;align-items:center;gap:0.5rem;
+  margin-top:0.75rem;
+  font-size:0.8125rem;font-weight:500;color:var(--ink-tertiary);
+  cursor:pointer;background:none;border:none;font-family:inherit;
+  padding:0.375rem 0;
+  transition:color var(--transition);
+}
+.transcript-toggle:hover{color:var(--ink)}
+.transcript-toggle svg{width:14px;height:14px;transition:transform var(--transition)}
+.transcript-toggle.open svg{transform:rotate(180deg)}
+.transcript-drawer{
+  position:relative;z-index:1;
+  max-height:0;overflow:hidden;
+  transition:max-height 400ms cubic-bezier(0.4,0,0.2,1);
+}
+.transcript-drawer.open{max-height:300px;overflow-y:auto}
+.transcript-list{
+  display:flex;flex-direction:column;gap:0.375rem;
+  padding:0.5rem 0;
+}
+.transcript-entry{
+  display:flex;gap:0.625rem;align-items:flex-start;
+  padding:0.5rem 0.75rem;border-radius:10px;
+  font-size:0.875rem;
+}
+.transcript-entry.user{background:var(--accent-soft)}
+.transcript-entry.assistant{background:var(--bg-warm)}
+.transcript-speaker{
+  font-size:0.625rem;font-weight:700;letter-spacing:0.06em;
+  text-transform:uppercase;flex-shrink:0;padding-top:0.125rem;
+  color:var(--ink-tertiary);
+}
+.transcript-entry.user .transcript-speaker{color:var(--accent)}
+.transcript-text{color:var(--ink-secondary);line-height:1.5}
+
+@media(max-width:800px){
+  .widget{grid-template-columns:1fr;grid-template-rows:auto auto auto auto auto}
+  .prompt-area{grid-column:1;grid-row:1/4}
+  .sidebar-header{grid-column:1;grid-row:4}
+  .variables{grid-column:1;grid-row:5;max-height:400px}
+  .sidebar-footer{grid-column:1;grid-row:6}
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <a href="index.html" class="brand">Talk<em>form</em></a>
+  <div class="page-meta">
+    <span>Widget Exploration</span>
+    <span>·</span>
+    <span>Consumer-friendly interface</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     THE WIDGET
+     ═══════════════════════════════════════════ -->
+<div class="widget" id="widget">
+
+  <!-- LEFT: Prompt area -->
+  <div class="prompt-area">
+    <div class="prompt-bar">
+      <div class="prompt-status">
+        <span class="status-dot" id="statusDot"></span>
+        <span class="status-text" id="statusText">Listening</span>
+      </div>
+      <div class="prompt-progress">
+        <span class="progress-text" id="progressText">2 of 5</span>
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" id="progressFill" style="width:40%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="prompt-body">
+      <div class="prompt-step-label" id="stepLabel">Question 2 of 5</div>
+      <h2 class="prompt-question" id="promptQuestion">What should we <em>call you?</em></h2>
+      <p class="prompt-hint" id="promptHint">Say your name out loud and we'll capture it for you.</p>
+
+      <div class="waveform" id="waveform">
+        <div class="waveform-bar"></div><div class="waveform-bar"></div>
+        <div class="waveform-bar"></div><div class="waveform-bar"></div>
+        <div class="waveform-bar"></div><div class="waveform-bar"></div>
+        <div class="waveform-bar"></div><div class="waveform-bar"></div>
+        <div class="waveform-bar"></div><div class="waveform-bar"></div>
+        <div class="waveform-bar"></div><div class="waveform-bar"></div>
+      </div>
+
+      <button class="transcript-toggle" id="transcriptToggle" onclick="toggleTranscript()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg>
+        Show transcript
+      </button>
+      <div class="transcript-drawer" id="transcriptDrawer">
+        <div class="transcript-list" id="transcriptList">
+          <div class="transcript-entry assistant">
+            <span class="transcript-speaker">Host</span>
+            <span class="transcript-text">Hi there! I'll be walking you through a quick feedback form. Let's start — what should we call you?</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="prompt-input-area">
+      <input type="text" class="prompt-input" placeholder="Type if you'd rather not speak..." />
+      <button class="send-btn">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 8h12M10 4l4 4-4 4"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- RIGHT: Variable sidebar -->
+  <div class="sidebar-header">
+    <span class="sidebar-title">Captured answers</span>
+    <span class="sidebar-count" id="sidebarCount">2 / 5</span>
+  </div>
+
+  <div class="variables" id="variables">
+    <!-- JS populates these -->
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="summary-block">
+      <span class="summary-label">Live summary</span>
+      <span id="summaryText">Avery is a product lead at a B2B SaaS startup, interested in shipping AI projects.</span>
+    </div>
+    <div class="export-row">
+      <button class="btn-export primary">Export JSON</button>
+      <button class="btn-export">Export Markdown</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     DEMO STATE CONTROLS
+     ═══════════════════════════════════════════ -->
+<div class="demo-controls">
+  <h3>Preview different <em>states</em></h3>
+  <div class="demo-states">
+    <button class="demo-state-btn active" onclick="setState('listening')">Listening (2/5)</button>
+    <button class="demo-state-btn" onclick="setState('responding')">Responding</button>
+    <button class="demo-state-btn" onclick="setState('midway')">Midway (3/5)</button>
+    <button class="demo-state-btn" onclick="setState('almost')">Almost done (4/5)</button>
+    <button class="demo-state-btn" onclick="setState('complete')">Complete (5/5)</button>
+    <button class="demo-state-btn" onclick="setState('idle')">Idle / Not started</button>
+  </div>
+</div>
+
+<script>
+const fields = [
+  {id:'name',label:'Customer Name',type:'text',question:'What should we <em>call you?</em>',hint:'Say your name out loud and we\'ll capture it for you.'},
+  {id:'company',label:'Company',type:'text',question:'Which <em>company</em> do you work at?',hint:'Your company name helps us understand the context better.'},
+  {id:'area',label:'Product Area',type:'select',question:'Which part of the <em>product</em> are you talking about?',hint:'Say the area that fits best.',options:['Dashboard','API','Mobile App','Billing','Onboarding']},
+  {id:'satisfaction',label:'Overall Satisfaction',type:'rating',question:'How <em>satisfied</em> are you overall?',hint:'Give a rating from 1 to 5, where 5 is very satisfied.',max:5},
+  {id:'feedback',label:'Open Feedback',type:'text',question:'Anything else you\'d like to <em>share?</em>',hint:'Free-form — say whatever comes to mind.'},
+];
+
+const states = {
+  idle: {
+    captured:{},activeIdx:null,status:'idle',progress:0,step:null,
+    question:'Ready to <em>begin?</em>',hint:'Click start and answer questions by speaking aloud.',
+    summary:'No answers captured yet.',transcript:[],
+  },
+  listening: {
+    captured:{name:'Avery Stone',company:'Acme Corp'},activeIdx:2,status:'live',progress:40,step:'Question 3 of 5',
+    question:'Which part of the <em>product</em> are you talking about?',hint:'Say the area that fits best.',
+    summary:'Avery Stone from Acme Corp is providing product feedback.',
+    transcript:[
+      {speaker:'Host',text:'Hi there! I\'ll walk you through a quick feedback form. What should we call you?'},
+      {speaker:'You',text:'I\'m Avery Stone.'},
+      {speaker:'Host',text:'Nice to meet you, Avery! Which company do you work at?'},
+      {speaker:'You',text:'Acme Corp — we\'re a B2B SaaS startup.'},
+      {speaker:'Host',text:'Great. Which part of the product are you giving feedback about?'},
+    ],
+  },
+  responding: {
+    captured:{name:'Avery Stone',company:'Acme Corp'},activeIdx:2,status:'responding',progress:40,step:'Question 3 of 5',
+    question:'Which part of the <em>product</em> are you talking about?',hint:'Processing your answer...',
+    summary:'Avery Stone from Acme Corp is providing product feedback.',
+    transcript:[
+      {speaker:'Host',text:'Which part of the product are you giving feedback about?'},
+      {speaker:'You',text:'Mostly the dashboard — I use it every day.'},
+    ],
+  },
+  midway: {
+    captured:{name:'Avery Stone',company:'Acme Corp',area:'Dashboard'},activeIdx:3,status:'live',progress:60,step:'Question 4 of 5',
+    question:'How <em>satisfied</em> are you overall?',hint:'Give a rating from 1 to 5, where 5 is very satisfied.',
+    summary:'Avery from Acme Corp has feedback about the Dashboard experience.',
+    transcript:[
+      {speaker:'Host',text:'How satisfied are you overall with the product? From 1 to 5.'},
+    ],
+  },
+  almost: {
+    captured:{name:'Avery Stone',company:'Acme Corp',area:'Dashboard',satisfaction:4},activeIdx:4,status:'live',progress:80,step:'Question 5 of 5',
+    question:'Anything else you\'d like to <em>share?</em>',hint:'Free-form — say whatever comes to mind.',
+    summary:'Avery rated satisfaction 4/5 for the Dashboard. Awaiting open feedback.',
+    transcript:[
+      {speaker:'Host',text:'Last one! Anything else you\'d like to share?'},
+    ],
+  },
+  complete: {
+    captured:{name:'Avery Stone',company:'Acme Corp',area:'Dashboard',satisfaction:4,feedback:'The new dashboard redesign is great. Would love keyboard shortcuts.'},
+    activeIdx:null,status:'complete',progress:100,step:null,
+    question:'All <em>done!</em>',hint:'Every field is captured. You can export or review below.',
+    summary:'Avery Stone from Acme Corp rates the Dashboard 4/5. Wants keyboard shortcuts in the redesign.',
+    transcript:[
+      {speaker:'You',text:'The new dashboard redesign is great but I wish there were keyboard shortcuts.'},
+      {speaker:'Host',text:'Thanks Avery! That\'s everything. Your feedback has been captured.'},
+    ],
+  },
+};
+
+let currentState = 'listening';
+let justCapturedId = null;
+
+function render(){
+  const s = states[currentState];
+
+  // Status
+  const dot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  dot.style.background = s.status==='live' ? 'var(--green)' : s.status==='responding' ? 'var(--accent)' : s.status==='complete' ? 'var(--green)' : 'var(--ink-tertiary)';
+  dot.style.boxShadow = s.status==='live' ? '0 0 0 3px var(--green-soft)' : s.status==='responding' ? '0 0 0 3px var(--accent-soft)' : 'none';
+  dot.style.animation = (s.status==='live'||s.status==='responding') ? 'breathe 2.4s ease-in-out infinite' : 'none';
+  statusText.textContent = s.status==='live' ? 'Listening' : s.status==='responding' ? 'Processing...' : s.status==='complete' ? 'Complete' : 'Ready';
+  statusText.style.color = s.status==='live' ? 'var(--green)' : s.status==='responding' ? 'var(--accent)' : s.status==='complete' ? 'var(--green)' : 'var(--ink-tertiary)';
+
+  // Progress
+  document.getElementById('progressText').textContent = Object.keys(s.captured).length + ' of ' + fields.length;
+  document.getElementById('progressFill').style.width = s.progress + '%';
+
+  // Prompt
+  const stepLabel = document.getElementById('stepLabel');
+  stepLabel.textContent = s.step || (s.status==='complete' ? 'Complete' : 'Ready');
+  stepLabel.style.display = s.step || s.status==='complete' ? '' : 'none';
+  document.getElementById('promptQuestion').innerHTML = s.question;
+  document.getElementById('promptHint').textContent = s.hint;
+
+  // Waveform
+  const waveform = document.getElementById('waveform');
+  waveform.style.display = (s.status==='live'||s.status==='responding') ? 'flex' : 'none';
+  waveform.querySelectorAll('.waveform-bar').forEach(bar => {
+    bar.style.background = s.status==='responding' ? 'var(--accent)' : 'var(--accent)';
+    bar.style.opacity = s.status==='responding' ? '0.4' : '';
+  });
+
+  // Sidebar count
+  document.getElementById('sidebarCount').textContent = Object.keys(s.captured).length + ' / ' + fields.length;
+
+  // Summary
+  document.getElementById('summaryText').textContent = s.summary;
+
+  // Variables
+  const container = document.getElementById('variables');
+  container.innerHTML = '';
+  fields.forEach((f,i) => {
+    const value = s.captured[f.id];
+    const isCaptured = value !== undefined && value !== null && value !== '';
+    const isActive = i === s.activeIdx;
+    const isJustCaptured = f.id === justCapturedId;
+
+    const card = document.createElement('div');
+    let cls = 'var-card';
+    if(isCaptured) cls += ' captured';
+    else if(isActive) cls += ' active';
+    else cls += ' waiting';
+    if(isJustCaptured) cls += ' just-captured';
+    card.className = cls;
+
+    let badgeClass = isCaptured ? 'captured' : isActive ? 'active' : 'waiting';
+    let badgeText = isCaptured ? 'Captured' : isActive ? 'Now' : 'Waiting';
+
+    let valueHtml = '';
+    if(f.type === 'rating'){
+      let stars = '';
+      for(let s=1;s<=5;s++){
+        stars += `<div class="star${isCaptured && s<=value ? ' filled' : ''}">${s}</div>`;
+      }
+      valueHtml = `<div class="var-rating">${stars}</div>`;
+    } else if(f.type === 'select'){
+      let opts = '';
+      (f.options||[]).forEach(o => {
+        const sel = isCaptured && value===o;
+        opts += `<span class="var-option${sel?' selected':''}">${o}</span>`;
+      });
+      valueHtml = `<div class="var-options">${opts}</div>`;
+    } else {
+      if(isCaptured){
+        valueHtml = `<div class="var-value"><span class="check">✓</span> ${value}</div>`;
+      } else if(isActive){
+        valueHtml = `<div class="var-value empty">Listening...</div>`;
+      } else {
+        valueHtml = `<div class="var-value empty">Waiting</div>`;
+      }
+    }
+
+    card.innerHTML = `
+      <div class="var-top">
+        <span class="var-label">${f.label}</span>
+        <span class="var-badge ${badgeClass}">${badgeText}</span>
+      </div>
+      ${valueHtml}
+    `;
+    container.appendChild(card);
+  });
+
+  justCapturedId = null;
+
+  // Transcript
+  const list = document.getElementById('transcriptList');
+  list.innerHTML = '';
+  s.transcript.forEach(t => {
+    const isUser = t.speaker === 'You';
+    list.innerHTML += `
+      <div class="transcript-entry ${isUser?'user':'assistant'}">
+        <span class="transcript-speaker">${t.speaker}</span>
+        <span class="transcript-text">${t.text}</span>
+      </div>
+    `;
+  });
+
+  // Demo buttons
+  document.querySelectorAll('.demo-state-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.textContent.toLowerCase().includes(currentState));
+  });
+}
+
+function setState(name){
+  const prev = states[currentState];
+  const next = states[name];
+  if(prev && next){
+    const prevKeys = Object.keys(prev.captured);
+    const nextKeys = Object.keys(next.captured);
+    const newKeys = nextKeys.filter(k => !prevKeys.includes(k));
+    if(newKeys.length) justCapturedId = newKeys[newKeys.length - 1];
+  }
+  currentState = name;
+  document.querySelectorAll('.demo-state-btn').forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+  render();
+}
+
+function toggleTranscript(){
+  const drawer = document.getElementById('transcriptDrawer');
+  const toggle = document.getElementById('transcriptToggle');
+  const isOpen = drawer.classList.toggle('open');
+  toggle.classList.toggle('open', isOpen);
+  toggle.childNodes[toggle.childNodes.length - 1].textContent = isOpen ? ' Hide transcript' : ' Show transcript';
+}
+
+render();
+</script>
+</body>
+</html>
