@@ -9,12 +9,13 @@ import {
 } from "@talkform/core";
 import {
   buildLocalExport,
+  getCompanionSummary,
   getPendingPromptQueue,
   getTranscriptResponses,
   getVisualPromptState,
 } from "./AudioformWidget.helpers";
 
-const TEST_CONFIG: AudioformConfig = {
+const TEST_CONFIG = {
   id: "support-intake",
   title: "Support intake",
   fields: [
@@ -25,6 +26,8 @@ const TEST_CONFIG: AudioformConfig = {
       required: true,
       promptTitle: "Get the customer's name",
       promptDetail: "Ask for their full name before anything else.",
+      visualTitle: "What should we call you?",
+      visualDetail: "Say your name out loud and we'll fill it in for you.",
     },
     {
       id: "issueType",
@@ -33,6 +36,8 @@ const TEST_CONFIG: AudioformConfig = {
       required: true,
       promptTitle: "Classify the problem",
       promptDetail: "Ask what kind of issue they need help with.",
+      visualTitle: "What kind of issue is this?",
+      visualDetail: "Choose the option that fits best by saying it out loud.",
       options: [
         { value: "billing", label: "Billing" },
         { value: "technical", label: "Technical" },
@@ -45,9 +50,11 @@ const TEST_CONFIG: AudioformConfig = {
       required: false,
       promptTitle: "Capture any extra context",
       promptDetail: "Collect additional notes if they volunteer them.",
+      visualTitle: "Anything else we should know?",
+      visualDetail: "Add any extra detail you want us to capture.",
     },
   ],
-};
+} as AudioformConfig;
 
 test("getTranscriptResponses keeps only user transcript entries", () => {
   const transcript = [
@@ -70,10 +77,22 @@ test("getPendingPromptQueue keeps required questions in order and removes comple
     getPendingPromptQueue(TEST_CONFIG, emptyValues).map((entry) => ({
       fieldId: entry.fieldId,
       isActive: entry.isActive,
+      title: entry.title,
+      detail: entry.detail,
     })),
     [
-      { fieldId: "name", isActive: true },
-      { fieldId: "issueType", isActive: false },
+      {
+        fieldId: "name",
+        isActive: true,
+        title: "What should we call you?",
+        detail: "Say your name out loud and we'll fill it in for you.",
+      },
+      {
+        fieldId: "issueType",
+        isActive: false,
+        title: "What kind of issue is this?",
+        detail: "Choose the option that fits best by saying it out loud.",
+      },
     ],
   );
 
@@ -99,7 +118,18 @@ test("getVisualPromptState prefers the actual host question when available", () 
   );
 
   assert.equal(state.title, "What type of issue are you running into right now?");
-  assert.equal(state.detail, "Ask for their full name before anything else.");
+  assert.equal(state.detail, "Say your name out loud and we'll fill it in for you.");
+});
+
+test("getCompanionSummary rewrites agent-style summaries into end-user copy", () => {
+  assert.equal(
+    getCompanionSummary("The user rated their overall satisfaction with onboarding as 5."),
+    "You rated your overall satisfaction with onboarding as 5.",
+  );
+  assert.equal(
+    getCompanionSummary(""),
+    "Your answers will build a quick recap here as you go.",
+  );
 });
 
 test("buildLocalExport returns local json and markdown documents", () => {

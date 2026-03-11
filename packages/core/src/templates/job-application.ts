@@ -27,6 +27,8 @@ export const JOB_APPLICATION_TEMPLATE: AudioformConfig = {
       required: true,
       promptTitle: "Get the candidate name",
       promptDetail: "Start by asking for the candidate's full name.",
+      visualTitle: "What is your full name?",
+      visualDetail: "Say your name out loud and we'll fill it in for you.",
     },
     {
       id: "email",
@@ -35,6 +37,8 @@ export const JOB_APPLICATION_TEMPLATE: AudioformConfig = {
       required: true,
       promptTitle: "Capture the contact email",
       promptDetail: "Ask for the best email address to use for updates.",
+      visualTitle: "What email should we use to contact you?",
+      visualDetail: "Say your email address out loud.",
     },
     {
       id: "targetRole",
@@ -43,6 +47,8 @@ export const JOB_APPLICATION_TEMPLATE: AudioformConfig = {
       required: true,
       promptTitle: "Confirm the target role",
       promptDetail: "Ask what role they are applying for so the record is routed correctly.",
+      visualTitle: "Which role are you applying for?",
+      visualDetail: "Say the role title you're applying for.",
     },
     {
       id: "yearsExperience",
@@ -51,6 +57,8 @@ export const JOB_APPLICATION_TEMPLATE: AudioformConfig = {
       required: true,
       promptTitle: "Measure experience quickly",
       promptDetail: "Capture the candidate's experience band before going deeper.",
+      visualTitle: "How many years of experience do you have?",
+      visualDetail: "Say the range that fits best.",
       options: [
         { value: "0-1", label: "0-1 years" },
         { value: "2-4", label: "2-4 years" },
@@ -65,6 +73,8 @@ export const JOB_APPLICATION_TEMPLATE: AudioformConfig = {
       required: true,
       promptTitle: "Surface the strongest skill",
       promptDetail: "Ask what they are strongest at and capture the explanation in their own words.",
+      visualTitle: "What would you say is your strongest skill?",
+      visualDetail: "Answer in your own words.",
     },
     {
       id: "workAuthorization",
@@ -73,6 +83,8 @@ export const JOB_APPLICATION_TEMPLATE: AudioformConfig = {
       required: true,
       promptTitle: "Confirm work authorization",
       promptDetail: "Ask whether they are authorized to work in the hiring region.",
+      visualTitle: "Are you authorized to work in this hiring region?",
+      visualDetail: "Just say the option that applies to you.",
       options: [
         { value: "authorized", label: "Authorized" },
         { value: "requires-sponsorship", label: "Requires sponsorship" },
@@ -85,6 +97,8 @@ export const JOB_APPLICATION_TEMPLATE: AudioformConfig = {
       required: true,
       promptTitle: "Get the start timeline",
       promptDetail: "Ask when they could start if selected.",
+      visualTitle: "When could you start?",
+      visualDetail: "Say the timing that fits best.",
       options: [
         { value: "immediately", label: "Immediately" },
         { value: "2-weeks", label: "2 weeks" },
@@ -99,6 +113,8 @@ export const JOB_APPLICATION_TEMPLATE: AudioformConfig = {
       required: false,
       promptTitle: "Optional portfolio link",
       promptDetail: "Capture a portfolio or LinkedIn URL if they want to share one.",
+      visualTitle: "Would you like to share a portfolio or LinkedIn link?",
+      visualDetail: "You can read it out loud or skip it.",
     },
     {
       id: "resumeNote",
@@ -107,6 +123,8 @@ export const JOB_APPLICATION_TEMPLATE: AudioformConfig = {
       required: false,
       promptTitle: "Optional resume note",
       promptDetail: "Capture a note if they mention a resume or file they want to send later.",
+      visualTitle: "Do you want to mention a resume or file to send later?",
+      visualDetail: "Mention it only if you want us to note it.",
     },
   ],
 };

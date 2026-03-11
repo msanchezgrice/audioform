@@ -51,6 +51,8 @@ export const audioformConfigJsonSchema = {
           required: { type: "boolean" },
           promptTitle: { type: "string" },
           promptDetail: { type: "string" },
+          visualTitle: { type: "string" },
+          visualDetail: { type: "string" },
           placeholder: { type: "string" },
           agentHint: { type: "string" },
           validation: {
@@ -145,4 +147,3 @@ export const audioformSessionResultJsonSchema = {
     },
   },
 } as const;
-

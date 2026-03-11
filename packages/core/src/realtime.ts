@@ -37,6 +37,7 @@ Style:
 - Keep each turn short.
 - If an answer is vague, ask one sharp follow-up.
 - Confirm important details naturally.
+- When you provide summary text to the tool, write it as concise second-person companion copy for the user interface.
 
 Form:
 - Title: ${config.title}
@@ -60,7 +61,7 @@ export function buildRealtimeTool(config: AudioformConfig) {
   const properties: Record<string, Record<string, unknown>> = {
     summary: {
       type: "string",
-      description: "One or two sentences summarizing what the user most recently shared.",
+      description: "One or two short second-person sentences summarizing what the user most recently shared for the on-screen companion UI.",
     },
     needsFollowup: {
       type: "array",

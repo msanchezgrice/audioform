@@ -21,6 +21,8 @@ export const audioformFieldSchema = z.object({
   required: z.boolean(),
   promptTitle: z.string().min(1),
   promptDetail: z.string().min(1),
+  visualTitle: z.string().min(1).optional(),
+  visualDetail: z.string().min(1).optional(),
   options: z.array(audioformFieldOptionSchema).optional(),
   validation: z
     .object({
@@ -84,4 +86,3 @@ export const audioformConfigSchema = z
   });
 
 export type AudioformConfigInput = z.input<typeof audioformConfigSchema>;
-

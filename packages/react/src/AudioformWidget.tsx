@@ -26,6 +26,7 @@ import {
 } from "@talkform/core";
 import {
   buildLocalExport,
+  getCompanionSummary,
   getPendingPromptQueue,
   getTranscriptResponses,
   getVisualPromptState,
@@ -184,6 +185,7 @@ export function AudioformWidget({
     () => getVisualPromptState(config, values, currentHostQuestion),
     [config, currentHostQuestion, values],
   );
+  const companionSummary = useMemo(() => getCompanionSummary(summary), [summary]);
   const latestRequiredFields = useMemo(
     () =>
       (lastStructuredUpdate?.fields ?? []).filter((fieldId) =>
@@ -373,7 +375,6 @@ export function AudioformWidget({
         const nextSummary = update.summary || summaryRef.current;
         applyStructuredUpdate(nextValues, nextSummary, pendingInputSourceRef.current ?? "voice");
         pendingInputSourceRef.current = null;
-        setCurrentHostQuestion(null);
         setStatusMessage(nextSummary || "Structured fields updated live from the conversation.");
 
         const callId = typeof event.call_id === "string" ? event.call_id : "";
@@ -799,12 +800,12 @@ export function AudioformWidget({
           <article className={styles.promptStagePanel}>
             <div className={styles.panelHeader}>
               <div>
-                <div className={styles.panelEyebrow}>Prompt canvas</div>
-                <h2>Live question flow</h2>
+                <div className={styles.panelEyebrow}>Follow along</div>
+                <h2>Answer out loud</h2>
               </div>
               <div className={styles.notesBoardMeta}>
                 <div className={styles.coveragePill}>
-                  {completion.captured}/{completion.required} locked
+                  {completion.captured} of {completion.required} answered
                 </div>
                 <div className={waitingForAssistant ? styles.liveBadgeHot : styles.liveBadge}>
                   {waitingForAssistant ? "Responding" : connectionState === "live" ? "Listening" : "Waiting"}
@@ -819,7 +820,7 @@ export function AudioformWidget({
                   <span className={styles.visualDot}></span>
                   <span className={styles.visualDotTeal}></span>
                 </div>
-                <span className={styles.visualFrameLabel}>Live question flow</span>
+                <span className={styles.visualFrameLabel}>Current question</span>
               </div>
 
               <div className={styles.visualFrameBody}>
@@ -838,22 +839,20 @@ export function AudioformWidget({
 
                 <div className={styles.visualOverlay}>
                   <div className={styles.visualHeroCard}>
-                    <span className={styles.summaryLabel}>{pendingPromptQueue.length ? "Asking now" : "Ready to export"}</span>
+                    <span className={styles.summaryLabel}>{pendingPromptQueue.length ? "Current question" : "You're all set"}</span>
                     <h3>{visualPromptState.title}</h3>
                     <p>{visualPromptState.detail}</p>
 
                     <div className={styles.visualMetaRow}>
                       <span className={styles.visualMetaChip}>{visualPromptState.fieldLabel ?? "Export-ready"}</span>
                       <span className={styles.visualMetaChip}>
-                        {lastStructuredUpdate
-                          ? `Last sync: ${lastStructuredUpdate.source}`
-                          : "Waiting for the next captured field"}
+                        {lastStructuredUpdate ? "Saved live" : "Updates as you speak"}
                       </span>
                     </div>
 
                     <div className={styles.visualSummaryBand}>
-                      <span className={styles.footerLabel}>Live summary</span>
-                      <strong>{summary || "Talkform will tighten this summary as answers come in."}</strong>
+                      <span className={styles.footerLabel}>What we've heard so far</span>
+                      <strong>{companionSummary}</strong>
                     </div>
                   </div>
 
@@ -868,8 +867,8 @@ export function AudioformWidget({
                               : `${styles.visualTopicCard} ${styles.visualTopicPending}`
                           }
                         >
-                          <span>{item.isActive ? "Current" : "Next"}</span>
-                          <strong>{item.label}</strong>
+                          <span>{item.isActive ? "Now" : "Coming up"}</span>
+                          <strong>{item.title}</strong>
                           <p>{item.detail}</p>
                         </div>
                       ))}

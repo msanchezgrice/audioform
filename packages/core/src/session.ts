@@ -108,8 +108,8 @@ export function getCurrentPrompt(config: AudioformConfig, values: AudioformField
   return nextField
     ? {
         fieldId: nextField.id,
-        title: nextField.promptTitle,
-        detail: nextField.promptDetail,
+        title: nextField.visualTitle ?? nextField.promptTitle,
+        detail: nextField.visualDetail ?? nextField.promptDetail,
       }
     : null;
 }

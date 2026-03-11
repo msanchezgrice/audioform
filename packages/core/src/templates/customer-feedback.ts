@@ -27,6 +27,8 @@ export const CUSTOMER_FEEDBACK_TEMPLATE: AudioformConfig = {
       required: true,
       promptTitle: "Get the customer name",
       promptDetail: "Ask who is sharing the feedback so the team can follow up with the right person.",
+      visualTitle: "What should we call you?",
+      visualDetail: "Say your name out loud and we'll fill it in for you.",
     },
     {
       id: "companyName",
@@ -35,6 +37,8 @@ export const CUSTOMER_FEEDBACK_TEMPLATE: AudioformConfig = {
       required: false,
       promptTitle: "Capture company context",
       promptDetail: "If they mention a company, capture it for segmentation and follow-up.",
+      visualTitle: "What company are you with?",
+      visualDetail: "You can say it out loud or skip this one.",
     },
     {
       id: "productArea",
@@ -43,6 +47,8 @@ export const CUSTOMER_FEEDBACK_TEMPLATE: AudioformConfig = {
       required: true,
       promptTitle: "Pin down the product area",
       promptDetail: "Find the part of the product they are reacting to before asking for details.",
+      visualTitle: "Which part of the product are you talking about?",
+      visualDetail: "Say the area that fits best.",
       options: [
         { value: "onboarding", label: "Onboarding" },
         { value: "dashboard", label: "Dashboard" },
@@ -58,6 +64,8 @@ export const CUSTOMER_FEEDBACK_TEMPLATE: AudioformConfig = {
       required: true,
       promptTitle: "Get a quick satisfaction score",
       promptDetail: "Ask for a simple 1 to 5 rating before moving into open feedback.",
+      visualTitle: "How would you rate your overall satisfaction?",
+      visualDetail: "Say a number from 1 to 5.",
       validation: {
         min: 1,
         max: 5,
@@ -70,6 +78,8 @@ export const CUSTOMER_FEEDBACK_TEMPLATE: AudioformConfig = {
       required: false,
       promptTitle: "Capture what is working",
       promptDetail: "Ask what they like most so the team can preserve the strongest parts of the product.",
+      visualTitle: "What has been working best for you?",
+      visualDetail: "Answer in your own words.",
     },
     {
       id: "biggestPainPoint",
@@ -78,6 +88,8 @@ export const CUSTOMER_FEEDBACK_TEMPLATE: AudioformConfig = {
       required: true,
       promptTitle: "Surface the biggest pain point",
       promptDetail: "Ask for the most frustrating part in their own words and capture the detail clearly.",
+      visualTitle: "What has been the biggest pain point so far?",
+      visualDetail: "Tell us the most frustrating part in your own words.",
     },
     {
       id: "followUpRequested",
@@ -86,6 +98,8 @@ export const CUSTOMER_FEEDBACK_TEMPLATE: AudioformConfig = {
       required: true,
       promptTitle: "Confirm whether follow-up is needed",
       promptDetail: "Ask if they want someone from the team to reach back out.",
+      visualTitle: "Would you like a follow-up?",
+      visualDetail: "Just say yes or no.",
       options: [
         { value: "yes", label: "Yes" },
         { value: "no", label: "No" },
@@ -98,6 +112,8 @@ export const CUSTOMER_FEEDBACK_TEMPLATE: AudioformConfig = {
       required: false,
       promptTitle: "Capture follow-up contact details",
       promptDetail: "If they want follow-up, capture the best email address to use.",
+      visualTitle: "What email should we use for follow-up?",
+      visualDetail: "Say the best email to reach you.",
     },
   ],
 };

@@ -26,6 +26,8 @@ export type AudioformField = {
   required: boolean;
   promptTitle: string;
   promptDetail: string;
+  visualTitle?: string;
+  visualDetail?: string;
   options?: AudioformFieldOption[];
   validation?: AudioformFieldValidation;
   agentHint?: string;
@@ -113,4 +115,3 @@ export type AudioformRealtimeUpdate = {
   values: AudioformFieldMap;
   needsFollowup: string[];
 };
-

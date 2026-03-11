@@ -27,6 +27,8 @@ export const LEAD_GENERATION_TEMPLATE: AudioformConfig = {
       required: true,
       promptTitle: "Get the lead name",
       promptDetail: "Ask for the person's full name so the sales team can identify the lead cleanly.",
+      visualTitle: "What should we call you?",
+      visualDetail: "Say your full name out loud and we'll fill it in for you.",
     },
     {
       id: "workEmail",
@@ -35,6 +37,8 @@ export const LEAD_GENERATION_TEMPLATE: AudioformConfig = {
       required: true,
       promptTitle: "Capture the best email",
       promptDetail: "Ask for the email they want the team to use for follow-up.",
+      visualTitle: "What work email should we use?",
+      visualDetail: "Say the email address you want us to use.",
     },
     {
       id: "companyName",
@@ -43,6 +47,8 @@ export const LEAD_GENERATION_TEMPLATE: AudioformConfig = {
       required: true,
       promptTitle: "Capture the company",
       promptDetail: "Get the company name before discussing the use case or timeline.",
+      visualTitle: "What company are you with?",
+      visualDetail: "Say your company name out loud.",
     },
     {
       id: "teamSize",
@@ -51,6 +57,8 @@ export const LEAD_GENERATION_TEMPLATE: AudioformConfig = {
       required: true,
       promptTitle: "Size the buying team",
       promptDetail: "Ask how large the team or company is so the lead can be qualified properly.",
+      visualTitle: "How large is your team?",
+      visualDetail: "Say the range that fits best.",
       options: [
         { value: "1-10", label: "1-10" },
         { value: "11-50", label: "11-50" },
@@ -66,6 +74,8 @@ export const LEAD_GENERATION_TEMPLATE: AudioformConfig = {
       required: true,
       promptTitle: "Understand why they are interested",
       promptDetail: "Ask what they want the product to help them do right away.",
+      visualTitle: "What are you hoping to solve?",
+      visualDetail: "Answer in your own words and we'll capture the important details.",
     },
     {
       id: "timeline",
@@ -74,6 +84,8 @@ export const LEAD_GENERATION_TEMPLATE: AudioformConfig = {
       required: true,
       promptTitle: "Get the timeline",
       promptDetail: "Find out whether they need a solution this week, this quarter, or later on.",
+      visualTitle: "What is your timeline?",
+      visualDetail: "Say the timing that fits best.",
       options: [
         { value: "this-week", label: "This week" },
         { value: "this-month", label: "This month" },
@@ -88,6 +100,8 @@ export const LEAD_GENERATION_TEMPLATE: AudioformConfig = {
       required: false,
       promptTitle: "Check the rough budget",
       promptDetail: "Budget is optional, but useful if the lead volunteers it.",
+      visualTitle: "Do you already have a budget range in mind?",
+      visualDetail: "You can say the range or skip this one.",
       options: [
         { value: "under-5k", label: "Under $5k" },
         { value: "5k-20k", label: "$5k-$20k" },
@@ -102,6 +116,8 @@ export const LEAD_GENERATION_TEMPLATE: AudioformConfig = {
       required: true,
       promptTitle: "Lock the next sales step",
       promptDetail: "Ask whether they want a demo, pricing follow-up, or written information.",
+      visualTitle: "What would you like to do next?",
+      visualDetail: "Say the next step that sounds best.",
       options: [
         { value: "book-demo", label: "Book a demo" },
         { value: "pricing-info", label: "Send pricing info" },
