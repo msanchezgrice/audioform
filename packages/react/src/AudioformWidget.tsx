@@ -686,433 +686,222 @@ export function AudioformWidget({
     setStatusMessage(`${format === "json" ? "JSON" : "Markdown"} export downloaded.`);
   }
 
+  const [transcriptOpen, setTranscriptOpen] = useState(false);
+
+  const isLive = connectionState === "live";
+  const isConnecting = connectionState === "connecting";
+
+  function fieldStatus(fieldId: string): "captured" | "active" | "waiting" {
+    const value = values[fieldId];
+    const isCaptured = value !== null && value !== undefined && value !== "" && !(Array.isArray(value) && value.length === 0);
+    if (isCaptured) return "captured";
+    if (activeMissingFieldId === fieldId) return "active";
+    return "waiting";
+  }
+
   return (
-    <main className={styles.shell}>
+    <div className={styles.shell}>
       <audio ref={audioRef} autoPlay playsInline hidden />
 
-      <section className={styles.hero}>
-        <div>
-          <div className={styles.eyebrow}>Talkform</div>
-          <h1 className={styles.title}>{heading ?? config.title}</h1>
-          <p className={styles.subtitle}>
-            {subheading ??
-              config.description ??
-              "Transcript on the left, active prompt canvas in the center, and a bound form on the right."}
-          </p>
-        </div>
-
-        <div className={styles.heroActions}>
-          <button
-            type="button"
-            className={styles.primaryButton}
-            onClick={startOnboardingCall}
-            disabled={connectionState === "connecting" || connectionState === "live"}
-          >
-            {connectionState === "connecting"
-              ? "Connecting..."
-              : connectionState === "live"
-                ? "Live call active"
-                : "Start onboarding"}
-          </button>
-          <button
-            type="button"
-            className={styles.secondaryButton}
-            onClick={endOnboardingCall}
-            disabled={connectionState !== "live" && connectionState !== "connecting"}
-          >
-            End call
-          </button>
-          <button type="button" className={styles.ghostButton} onClick={resetSession}>
-            Reset
-          </button>
-        </div>
-      </section>
-
-      <section className={styles.statusStrip}>
-        <div className={styles.statusCard}>
-          <span className={styles.statusLabel}>Connection</span>
-          <strong>
-            {connectionState === "live"
-              ? "Live"
-              : connectionState === "connecting"
-                ? "Connecting"
-                : connectionState === "error"
-                  ? "Needs attention"
-                  : "Idle"}
-          </strong>
-        </div>
-        <div className={styles.statusCard}>
-          <span className={styles.statusLabel}>Coverage</span>
-          <strong>{completion.percent}%</strong>
-        </div>
-        <div className={styles.statusCard}>
-          <span className={styles.statusLabel}>Session</span>
-          <strong>{sessionId ? sessionId.slice(0, 10) : "Not started"}</strong>
-        </div>
-        <div className={styles.statusMessage}>{statusMessage}</div>
-      </section>
-
-      {error ? <div className={styles.errorBanner}>{error}</div> : null}
-
-      <div className={styles.layout}>
-        <aside className={styles.transcriptColumn}>
-          <article className={styles.transcriptPanel}>
-            <div className={styles.panelHeader}>
-              <div>
-                <div className={styles.panelEyebrow}>Transcript</div>
-                <h2>Your answers</h2>
-              </div>
-              <span className={styles.transcriptMeta}>{transcriptResponses.length} responses</span>
-            </div>
-
-            <div className={styles.transcriptFeed}>
-              {transcriptResponses.length ? (
-                transcriptResponses.map((entry, index) => (
-                  <div key={entry.id} className={styles.transcriptEntry}>
-                    <span className={styles.transcriptSpeaker}>Response {index + 1}</span>
-                    <p>{entry.text}</p>
-                  </div>
-                ))
-              ) : (
-                <div className={styles.transcriptEmpty}>
-                  Your spoken and typed answers will show up here as soon as the session starts.
-                </div>
-              )}
-            </div>
-
-            <form
-              className={styles.replyComposer}
-              onSubmit={(event) => {
-                event.preventDefault();
-                sendTypedReply();
-              }}
-            >
-              <input
-                className={styles.replyInput}
-                value={draftReply}
-                onChange={(event) => setDraftReply(event.target.value)}
-                placeholder="Typed fallback if you want to answer without speaking"
+      <div className={styles.widget}>
+        {/* ─── LEFT: Prompt area ─── */}
+        <div className={styles.promptArea}>
+          <div className={styles.promptBar}>
+            <div className={styles.promptStatus}>
+              <span
+                className={styles.statusDot}
+                data-state={waitingForAssistant ? "responding" : isLive ? "live" : completion.percent === 100 ? "complete" : "idle"}
               />
-              <button type="submit" className={styles.secondaryButton}>
-                Send
-              </button>
-            </form>
-          </article>
-        </aside>
-
-        <section className={styles.visualColumn}>
-          <article className={styles.promptStagePanel}>
-            <div className={styles.panelHeader}>
-              <div>
-                <div className={styles.panelEyebrow}>Follow along</div>
-                <h2>Answer out loud</h2>
-              </div>
-              <div className={styles.notesBoardMeta}>
-                <div className={styles.coveragePill}>
-                  {completion.captured} of {completion.required} answered
-                </div>
-                <div className={waitingForAssistant ? styles.liveBadgeHot : styles.liveBadge}>
-                  {waitingForAssistant ? "Responding" : connectionState === "live" ? "Listening" : "Waiting"}
-                </div>
+              <span className={styles.statusText} data-state={waitingForAssistant ? "responding" : isLive ? "live" : completion.percent === 100 ? "complete" : "idle"}>
+                {waitingForAssistant ? "Processing..." : isLive ? "Listening" : completion.percent === 100 ? "Complete" : "Ready"}
+              </span>
+            </div>
+            <div className={styles.promptProgress}>
+              <span className={styles.progressText}>{completion.captured} of {completion.required}</span>
+              <div className={styles.progressTrack}>
+                <div className={styles.progressFill} style={{ width: `${completion.percent}%` }} />
               </div>
             </div>
+          </div>
 
-            <div className={styles.visualFrame}>
-              <div className={styles.visualFrameBar}>
-                <div className={styles.visualDots}>
-                  <span className={styles.visualDotAmber}></span>
-                  <span className={styles.visualDot}></span>
-                  <span className={styles.visualDotTeal}></span>
-                </div>
-                <span className={styles.visualFrameLabel}>Current question</span>
+          <div className={styles.promptBody}>
+            {pendingPromptQueue.length > 0 && (
+              <div className={styles.stepLabel}>
+                Question {completion.captured + 1} of {completion.required}
               </div>
+            )}
+            <h2 className={styles.promptQuestion}>{visualPromptState.title}</h2>
+            <p className={styles.promptHint}>{visualPromptState.detail}</p>
 
-              <div className={styles.visualFrameBody}>
-                {isHttpUrl(vendorUrl) ? (
-                  <iframe
-                    className={styles.visualBackdropFrame}
-                    src={vendorUrl}
-                    title="Prompt backdrop"
-                    allow="camera; microphone; autoplay; encrypted-media"
-                  />
-                ) : (
-                  <div className={styles.visualBackdropGradient}></div>
-                )}
+            {(isLive || isConnecting) && (
+              <div className={styles.waveform}>
+                {Array.from({ length: 12 }).map((_, i) => (
+                  <div key={i} className={styles.waveformBar} style={{ animationDelay: `${i * 0.08}s` }} />
+                ))}
+              </div>
+            )}
 
-                <div className={styles.visualBackdropGlow}></div>
+            {completedPrompts.length > 0 && (
+              <div className={styles.completionRail}>
+                {completedPrompts.map((prompt) => (
+                  <span key={prompt.id} className={styles.completedChip}>
+                    {String.fromCharCode(10003)} {config.fields.find((f) => f.id === prompt.fieldId)?.label ?? prompt.fieldId}
+                  </span>
+                ))}
+              </div>
+            )}
 
-                <div className={styles.visualOverlay}>
-                  <div className={styles.visualHeroCard}>
-                    <span className={styles.summaryLabel}>{pendingPromptQueue.length ? "Current question" : "You're all set"}</span>
-                    <h3>{visualPromptState.title}</h3>
-                    <p>{visualPromptState.detail}</p>
-
-                    <div className={styles.visualMetaRow}>
-                      <span className={styles.visualMetaChip}>{visualPromptState.fieldLabel ?? "Export-ready"}</span>
-                      <span className={styles.visualMetaChip}>
-                        {lastStructuredUpdate ? "Saved live" : "Updates as you speak"}
-                      </span>
-                    </div>
-
-                    <div className={styles.visualSummaryBand}>
-                      <span className={styles.footerLabel}>What we've heard so far</span>
-                      <strong>{companionSummary}</strong>
-                    </div>
+            <button
+              type="button"
+              className={`${styles.transcriptToggle} ${transcriptOpen ? styles.transcriptToggleOpen : ""}`}
+              onClick={() => setTranscriptOpen(!transcriptOpen)}
+            >
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
+                <path d="M4 6l4 4 4-4" />
+              </svg>
+              {transcriptOpen ? "Hide transcript" : "Show transcript"}
+            </button>
+            <div className={`${styles.transcriptDrawer} ${transcriptOpen ? styles.transcriptDrawerOpen : ""}`}>
+              <div className={styles.transcriptList}>
+                {transcript.length > 0 ? transcript.map((entry) => (
+                  <div key={entry.id} className={`${styles.transcriptEntry} ${entry.speaker === "user" ? styles.transcriptUser : styles.transcriptAssistant}`}>
+                    <span className={styles.transcriptSpeaker}>{entry.speaker === "user" ? "You" : "Host"}</span>
+                    <span className={styles.transcriptText}>{entry.text}</span>
                   </div>
-
-                  {pendingPromptQueue.length ? (
-                    <div className={styles.visualTopicGrid}>
-                      {pendingPromptQueue.map((item) => (
-                        <div
-                          key={item.fieldId}
-                          className={
-                            item.isActive
-                              ? `${styles.visualTopicCard} ${styles.visualTopicActive}`
-                              : `${styles.visualTopicCard} ${styles.visualTopicPending}`
-                          }
-                        >
-                          <span>{item.isActive ? "Now" : "Coming up"}</span>
-                          <strong>{item.title}</strong>
-                          <p>{item.detail}</p>
-                        </div>
-                      ))}
-                    </div>
-                  ) : null}
-
-                  {latestRequiredFields.length ? (
-                    <div className={styles.visualUpdateRow}>
-                      {latestRequiredFields.map((fieldId) => (
-                        <span key={`${fieldId}-${lastStructuredUpdate?.timestamp ?? 0}`} className={styles.syncChip}>
-                          {config.fields.find((field) => field.id === fieldId)?.label ?? fieldId} updated
-                        </span>
-                      ))}
-                    </div>
-                  ) : null}
-
-                  {completedPrompts.length ? (
-                    <div className={styles.visualCompletionRail}>
-                      {completedPrompts.map((prompt) => (
-                        <span key={prompt.id} className={styles.completedChip}>
-                          {String.fromCharCode(10003)} {config.fields.find((field) => field.id === prompt.fieldId)?.label ?? prompt.fieldId}
-                        </span>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-            </div>
-          </article>
-        </section>
-
-        <aside className={styles.formColumn}>
-          <article className={styles.notesPanel}>
-            <div className={styles.panelHeader}>
-              <div>
-                <div className={styles.panelEyebrow}>Captured answers</div>
-                <h2>Form answers</h2>
-              </div>
-              <div className={styles.notesBoardMeta}>
-                <div className={styles.coveragePill}>{completion.percent}% captured</div>
-                <div className={waitingForAssistant ? styles.liveBadgeHot : styles.liveBadge}>
-                  {waitingForAssistant ? "Responding" : connectionState === "live" ? "Listening" : "Waiting"}
-                </div>
-              </div>
-            </div>
-
-            <div className={styles.summaryCard}>
-              <span className={styles.summaryLabel}>Session summary</span>
-              <p>{summary || "The host will keep this summary updated as answers come in."}</p>
-            </div>
-
-            <div className={styles.variablePanel}>
-              <div className={styles.variableHeader}>
-                <div>
-                  <span className={styles.summaryLabel}>Exported fields</span>
-                  <p className={styles.variableCopy}>
-                    These are the exact form values Talkform will export from the session.
-                  </p>
-                </div>
-                <div className={styles.syncBadge}>
-                  {lastStructuredUpdate
-                    ? `${lastStructuredUpdate.source === "voice" ? "Voice" : lastStructuredUpdate.source === "typed" ? "Typed" : "Manual"} update`
-                    : "Waiting"}
-                </div>
-              </div>
-
-              <div className={styles.syncTrail}>
-                {lastStructuredUpdate?.fields.length ? (
-                  lastStructuredUpdate.fields.map((fieldId) => (
-                    <span key={`${fieldId}-${lastStructuredUpdate.timestamp}`} className={styles.syncChip}>
-                      {config.fields.find((field) => field.id === fieldId)?.label ?? fieldId}
-                    </span>
-                  ))
-                ) : (
-                  <span className={styles.emptyInline}>No answers captured yet.</span>
+                )) : (
+                  <div className={styles.transcriptEmpty}>Transcript will appear once the session starts.</div>
                 )}
               </div>
-
-              <div className={styles.fieldGrid}>
-                {config.fields.map((field) => {
-                  const value = values[field.id];
-
-                  if (field.type === "multi_select") {
-                    const selected = Array.isArray(value) ? value : [];
-                    return (
-                      <div key={field.id} className={`${styles.fieldCard} ${styles.fieldCardWide}`}>
-                        <span className={styles.fieldLabel}>{field.label}</span>
-                        <div className={styles.goalChecklist}>
-                          {(field.options ?? []).map((option) => (
-                            <label key={option.value} className={styles.goalOption}>
-                              <input
-                                type="checkbox"
-                                checked={selected.includes(option.value)}
-                                onChange={() => toggleMultiSelect(field, option.value)}
-                              />
-                              <span>{option.label}</span>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  }
-
-                  if (field.type === "long_text") {
-                    return (
-                      <label key={field.id} className={`${styles.fieldCard} ${styles.fieldCardWide}`}>
-                        <span className={styles.fieldLabel}>{field.label}</span>
-                        <textarea
-                          className={styles.fieldTextarea}
-                          rows={4}
-                          value={typeof value === "string" ? value : ""}
-                          onChange={(event) => updateField(field, event.target.value)}
-                          placeholder={field.placeholder ?? "Captured from chat"}
-                        />
-                      </label>
-                    );
-                  }
-
-                  if (field.type === "single_select" || field.type === "rating") {
-                    const options =
-                      field.type === "rating"
-                        ? Array.from(
-                            {
-                              length:
-                                (field.validation?.max ?? 5) - (field.validation?.min ?? 1) + 1,
-                            },
-                            (_, index) => {
-                              const number = index + (field.validation?.min ?? 1);
-                              return { value: String(number), label: `${number}/5` };
-                            },
-                          )
-                        : (field.options ?? []);
-
-                    return (
-                      <label key={field.id} className={styles.fieldCard}>
-                        <span className={styles.fieldLabel}>{field.label}</span>
-                        <select
-                          className={styles.fieldInput}
-                          value={typeof value === "number" ? String(value) : typeof value === "string" ? value : ""}
-                          onChange={(event) => {
-                            updateField(field, field.type === "rating" ? Number(event.target.value) || null : event.target.value);
-                          }}
-                        >
-                          <option value="">{field.required ? "Waiting to capture" : "Optional"}</option>
-                          {options.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                    );
-                  }
-
-                  if (field.type === "number") {
-                    return (
-                      <label key={field.id} className={styles.fieldCard}>
-                        <span className={styles.fieldLabel}>{field.label}</span>
-                        <input
-                          className={styles.fieldInput}
-                          type="number"
-                          value={typeof value === "number" ? String(value) : ""}
-                          onChange={(event) => updateField(field, event.target.value ? Number(event.target.value) : null)}
-                          placeholder={field.placeholder ?? "Captured from chat"}
-                        />
-                      </label>
-                    );
-                  }
-
-                  return (
-                    <label key={field.id} className={styles.fieldCard}>
-                      <span className={styles.fieldLabel}>{field.label}</span>
-                      <input
-                        className={styles.fieldInput}
-                        type={field.type === "url" ? "url" : "text"}
-                        value={typeof value === "string" ? value : ""}
-                        onChange={(event) => updateField(field, event.target.value)}
-                        placeholder={field.placeholder ?? (field.required ? "Captured from chat" : "Optional")}
-                      />
-                    </label>
-                  );
-                })}
-
-                <div className={`${styles.fieldCard} ${styles.fieldCardWide}`}>
-                  <span className={styles.fieldLabel}>Session JSON preview</span>
-                  <pre className={styles.payloadPreview}>{payloadPreview}</pre>
-                </div>
-              </div>
             </div>
-          </article>
-        </aside>
+          </div>
+
+          <div className={styles.promptInputArea}>
+            {connectionState === "idle" || connectionState === "ended" || connectionState === "error" ? (
+              <div className={styles.startRow}>
+                <button type="button" className={styles.primaryButton} onClick={startOnboardingCall} disabled={isConnecting}>
+                  {isConnecting ? "Connecting..." : connectionState === "ended" ? "Restart" : "Start interview"}
+                </button>
+                {connectionState === "ended" && (
+                  <button type="button" className={styles.ghostButton} onClick={resetSession}>Reset</button>
+                )}
+              </div>
+            ) : (
+              <form
+                className={styles.replyComposer}
+                onSubmit={(event) => { event.preventDefault(); sendTypedReply(); }}
+              >
+                <input
+                  className={styles.promptInput}
+                  value={draftReply}
+                  onChange={(event) => setDraftReply(event.target.value)}
+                  placeholder="Type if you'd rather not speak..."
+                />
+                <button type="submit" className={styles.sendButton} aria-label="Send">
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" width="16" height="16">
+                    <path d="M2 8h12M10 4l4 4-4 4" />
+                  </svg>
+                </button>
+                <button type="button" className={styles.endButton} onClick={endOnboardingCall}>End</button>
+              </form>
+            )}
+          </div>
+        </div>
+
+        {/* ─── RIGHT: Variable sidebar ─── */}
+        <div className={styles.sidebarHeader}>
+          <span className={styles.sidebarTitle}>Captured answers</span>
+          <span className={styles.sidebarCount}>{completion.captured} / {completion.required}</span>
+        </div>
+
+        <div className={styles.variables}>
+          {config.fields.map((field) => {
+            const value = values[field.id];
+            const status = fieldStatus(field.id);
+
+            return (
+              <div key={field.id} className={`${styles.varCard} ${styles[`varCard_${status}`]}`}>
+                <div className={styles.varTop}>
+                  <span className={styles.varLabel}>{field.label}</span>
+                  <span className={`${styles.varBadge} ${styles[`varBadge_${status}`]}`}>
+                    {status === "captured" ? "Captured" : status === "active" ? "Now" : "Waiting"}
+                  </span>
+                </div>
+
+                {field.type === "rating" ? (
+                  <div className={styles.varRating}>
+                    {Array.from({ length: field.validation?.max ?? 5 }).map((_, i) => {
+                      const n = i + (field.validation?.min ?? 1);
+                      const filled = typeof value === "number" && n <= value;
+                      return (
+                        <button
+                          key={n}
+                          type="button"
+                          className={`${styles.star} ${filled ? styles.starFilled : ""}`}
+                          onClick={() => updateField(field, n)}
+                        >
+                          {n}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : field.type === "single_select" ? (
+                  <div className={styles.varOptions}>
+                    {(field.options ?? []).map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        className={`${styles.varOption} ${value === option.value ? styles.varOptionSelected : ""}`}
+                        onClick={() => updateField(field, option.value)}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                ) : field.type === "multi_select" ? (
+                  <div className={styles.varOptions}>
+                    {(field.options ?? []).map((option) => {
+                      const selected = Array.isArray(value) && value.includes(option.value);
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          className={`${styles.varOption} ${selected ? styles.varOptionSelected : ""}`}
+                          onClick={() => toggleMultiSelect(field, option.value)}
+                        >
+                          {option.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className={`${styles.varValue} ${status !== "captured" ? styles.varValueEmpty : ""}`}>
+                    {status === "captured"
+                      ? <><span className={styles.check}>{String.fromCharCode(10003)}</span> {labelForValue(field, value)}</>
+                      : status === "active" ? "Listening..." : "Waiting"}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <div className={styles.sidebarFooter}>
+          <div className={styles.summaryBlock}>
+            <span className={styles.summaryLabel}>Live summary</span>
+            <span>{summary || "Answers will be summarized here as they come in."}</span>
+          </div>
+          <div className={styles.exportRow}>
+            <button type="button" className={`${styles.btnExport} ${styles.btnExportPrimary}`} onClick={() => downloadExport("json")}>
+              Export JSON
+            </button>
+            <button type="button" className={styles.btnExport} onClick={() => downloadExport("markdown")}>
+              Export MD
+            </button>
+          </div>
+        </div>
       </div>
 
-      <section className={styles.exportSection}>
-        <div className={styles.panelHeader}>
-          <div>
-            <div className={styles.panelEyebrow}>Output</div>
-            <h2>Export-ready session result</h2>
-          </div>
-          <div className={styles.notesBoardMeta}>
-            <div className={styles.coveragePill}>{completion.percent}% complete</div>
-          </div>
-        </div>
-
-        <div className={styles.exportGrid}>
-          <div className={styles.exportCard}>
-            <span className={styles.fieldLabel}>Current prompt</span>
-            <strong>{visualPromptState.fieldLabel ?? "All required fields captured"}</strong>
-            <p>
-              {pendingPromptQueue.length
-                ? visualPromptState.detail
-                : "The local export buttons download the exact session state shown on this page."}
-            </p>
-          </div>
-
-          <div className={styles.exportCard}>
-            <span className={styles.fieldLabel}>Export actions</span>
-            <div className={styles.exportActions}>
-              <button type="button" className={styles.primaryButton} onClick={() => downloadExport("json")}>
-                Download JSON
-              </button>
-              <button type="button" className={styles.secondaryButton} onClick={() => downloadExport("markdown")}>
-                Download Markdown
-              </button>
-            </div>
-          </div>
-
-          <div className={`${styles.exportCard} ${styles.exportCardWide}`}>
-            <span className={styles.fieldLabel}>Field summary</span>
-            <div className={styles.exportSummaryGrid}>
-              {config.fields.map((field) => (
-                <div key={field.id} className={styles.exportSummaryItem}>
-                  <strong>{field.label}</strong>
-                  <span>{labelForValue(field, values[field.id]) || (field.required ? "Waiting" : "Optional")}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
+      {error && <div className={styles.errorBanner}>{error}</div>}
+    </div>
   );
 }
