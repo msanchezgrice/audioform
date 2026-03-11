@@ -39,6 +39,7 @@ export const metadata: Metadata = {
 
 const navItems = [
   { href: "/", label: "Home" },
+  { href: "/import", label: "Import a form" },
   { href: "/app", label: "Try the demo" },
   { href: "/docs", label: "Docs" },
   { href: "/docs/agents", label: "Agents" },
@@ -84,4 +85,3 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
-

@@ -42,30 +42,87 @@ export default function HomePage() {
           <h1>Turn any form into a live audio interview.</h1>
           <p className={styles.lede}>
             Talkform asks questions out loud, fills structured variables directly from the conversation,
-            and exports product-friendly JSON for apps, workflows, and AI agents.
+            and exports product-friendly JSON for apps, workflows, and AI agents. Bring over an existing
+            Typeform, Google Form, Jotform, HubSpot form, or any public form URL and turn it into an
+            editable live interview.
           </p>
           <div className={styles.heroActions}>
             <Link href="/app" className={styles.primaryAction}>
               Try the demo
             </Link>
-            <Link href="/docs" className={styles.secondaryAction}>
-              Read docs
+            <Link href="/import" className={styles.secondaryAction}>
+              Import an existing form
             </Link>
-            <Link href="/docs/agents" className={styles.ghostAction}>
-              Use with agents
+            <Link href="/docs" className={styles.ghostAction}>
+              Read docs
             </Link>
           </div>
         </article>
 
         <div className={styles.heroAside}>
           <div className={styles.ctaCard}>
-            <strong>How it works</strong>
-            <p>Define fields, run the audio intake, export structured results.</p>
+            <strong>Move faster from what you already have</strong>
+            <p>Import a public form URL, review the extracted draft, and launch the audio version without rebuilding from scratch.</p>
           </div>
           <div className={styles.surface}>
             <strong>Built for agents</strong>
             <p>MCP tools, a CLI, JSON schemas, and docs that explain exactly how to configure and consume Talkform.</p>
           </div>
+        </div>
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeaderRow}>
+          <div>
+            <h2 className={styles.sectionTitle}>Old way / New way</h2>
+            <p className={styles.sectionIntro}>
+              Most teams already have a form. The win is importing that starting point, tightening the copy,
+              and giving people a conversational path that feels easier to finish.
+            </p>
+          </div>
+          <Link href="/import" className={styles.secondaryAction}>
+            Import a public form
+          </Link>
+        </div>
+
+        <div className={styles.comparisonGrid}>
+          <article className={`${styles.compareCard} ${styles.compareOld}`}>
+            <div className={styles.eyebrow}>Old way</div>
+            <h3>Static form rebuilds attention every screen</h3>
+            <div className={styles.metricList}>
+              <div className={styles.metricRow}>
+                <span>Steps</span>
+                <strong>Open page, read, scan, type, submit</strong>
+              </div>
+              <div className={styles.metricRow}>
+                <span>Time to finish</span>
+                <strong>Longer and easier to abandon mid-way</strong>
+              </div>
+              <div className={styles.metricRow}>
+                <span>Completion likelihood</span>
+                <strong>More friction when the form feels like work</strong>
+              </div>
+            </div>
+          </article>
+
+          <article className={`${styles.compareCard} ${styles.compareNew}`}>
+            <div className={styles.eyebrow}>New way</div>
+            <h3>Talkform carries the interview and writes the fields for them</h3>
+            <div className={styles.metricList}>
+              <div className={styles.metricRow}>
+                <span>Steps</span>
+                <strong>Open, answer out loud, review the captured draft</strong>
+              </div>
+              <div className={styles.metricRow}>
+                <span>Time to finish</span>
+                <strong>Shorter because the host keeps momentum</strong>
+              </div>
+              <div className={styles.metricRow}>
+                <span>Completion likelihood</span>
+                <strong>Higher when the flow feels guided instead of manual</strong>
+              </div>
+            </div>
+          </article>
         </div>
       </section>
 

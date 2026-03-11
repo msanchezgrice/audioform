@@ -13,7 +13,17 @@ import {
   type AudioformFieldMap,
 } from "@talkform/core";
 
-const sessions = new Map<string, AudioformSession>();
+const sessions = new Map<string, { config: AudioformConfig; session: AudioformSession }>();
+
+export function createConfiguredSession(config: AudioformConfig) {
+  const session = createSession(config);
+  sessions.set(session.sessionId, { config, session });
+  return {
+    config,
+    session,
+    result: toSessionResult(config, session),
+  };
+}
 
 export function createTemplateSession(formId: string) {
   const template = getAudioformTemplate(formId);
@@ -21,13 +31,7 @@ export function createTemplateSession(formId: string) {
     throw new Error(`Unknown template "${formId}"`);
   }
 
-  const session = createSession(template);
-  sessions.set(session.sessionId, session);
-  return {
-    config: template,
-    session,
-    result: toSessionResult(template, session),
-  };
+  return createConfiguredSession(template);
 }
 
 export function getTemplateOrThrow(formId: string) {
@@ -39,11 +43,11 @@ export function getTemplateOrThrow(formId: string) {
 }
 
 export function getSession(sessionId: string) {
-  return sessions.get(sessionId) ?? null;
+  return sessions.get(sessionId)?.session ?? null;
 }
 
 export function listSessions() {
-  return Array.from(sessions.values()).map((session) => ({
+  return Array.from(sessions.values()).map(({ session }) => ({
     sessionId: session.sessionId,
     formId: session.formId,
     updatedAt: session.updatedAt,
@@ -57,38 +61,37 @@ export function updateSession(sessionId: string, payload: {
   values?: AudioformFieldMap;
   status?: AudioformSession["status"];
 }) {
-  const session = sessions.get(sessionId);
-  if (!session) {
+  const snapshot = sessions.get(sessionId);
+  if (!snapshot) {
     throw new Error(`Unknown session "${sessionId}"`);
   }
 
-  const template = getTemplateOrThrow(session.formId);
-  const nextValues = payload.values ? mergeRealtimeUpdate(template, session.values, { values: payload.values, needsFollowup: [] }) : session.values;
+  const { config, session } = snapshot;
+  const nextValues = payload.values ? mergeRealtimeUpdate(config, session.values, { values: payload.values, needsFollowup: [] }) : session.values;
   const nextSession: AudioformSession = {
     ...session,
     summary: typeof payload.summary === "string" ? payload.summary : session.summary,
     transcript: payload.transcript ?? session.transcript,
     values: nextValues,
     status: payload.status ?? session.status,
-    currentPromptFieldId: toSessionResult(template, { ...session, values: nextValues }).currentPrompt?.fieldId ?? null,
+    currentPromptFieldId: toSessionResult(config, { ...session, values: nextValues }).currentPrompt?.fieldId ?? null,
     updatedAt: new Date().toISOString(),
   };
-  sessions.set(sessionId, nextSession);
+  sessions.set(sessionId, { config, session: nextSession });
 
   return {
-    config: template,
+    config,
     session: nextSession,
-    result: toSessionResult(template, nextSession),
+    result: toSessionResult(config, nextSession),
   };
 }
 
 export function getSessionResult(sessionId: string): { config: AudioformConfig; result: AudioformSessionResult } | null {
-  const session = sessions.get(sessionId);
-  if (!session) return null;
-  const config = getTemplateOrThrow(session.formId);
+  const snapshot = sessions.get(sessionId);
+  if (!snapshot) return null;
   return {
-    config,
-    result: toSessionResult(config, session),
+    config: snapshot.config,
+    result: toSessionResult(snapshot.config, snapshot.session),
   };
 }
 

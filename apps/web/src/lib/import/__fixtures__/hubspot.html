@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>HubSpot Form - Contact Sales</title>
+  </head>
+  <body>
+    <div id="hubspot-form"></div>
+    <script>
+      hbspt = {
+        forms: {
+          create: function () {}
+        }
+      };
+      window.__hsFormConfig = {
+        portalId: "12345",
+        formId: "demo-form",
+        title: "Contact sales"
+      };
+    </script>
+    <form data-hs-form="demo-form">
+      <label for="firstname">First name</label>
+      <input id="firstname" name="firstname" type="text" required />
+      <label for="lastname">Last name</label>
+      <input id="lastname" name="lastname" type="text" required />
+      <label for="company">Company</label>
+      <input id="company" name="company" type="text" />
+    </form>
+  </body>
+</html>

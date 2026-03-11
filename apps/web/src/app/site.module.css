@@ -150,6 +150,13 @@
   margin-top: 1rem;
 }
 
+.sectionHeaderRow {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  align-items: end;
+}
+
 .sectionTitle {
   margin: 0;
   font-size: clamp(2rem, 3.8vw, 3.4rem);
@@ -166,8 +173,67 @@
 .stepCard,
 .integrationCard,
 .docCard,
-.outputCard {
+.outputCard,
+.compareCard {
   padding: 1.2rem;
+}
+
+.comparisonGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.compareCard {
+  border: 1px solid var(--line);
+  border-radius: 2rem;
+  box-shadow: var(--shadow);
+}
+
+.compareOld {
+  background:
+    linear-gradient(180deg, rgba(255, 244, 235, 0.96), rgba(255, 255, 255, 0.92));
+}
+
+.compareNew {
+  background:
+    radial-gradient(circle at top right, rgba(15, 142, 121, 0.16), transparent 18rem),
+    linear-gradient(180deg, rgba(239, 249, 247, 0.98), rgba(255, 255, 255, 0.92));
+}
+
+.compareCard h3 {
+  margin: 0.75rem 0 0;
+  font-size: 1.7rem;
+  font-family: var(--font-display), sans-serif;
+  letter-spacing: -0.04em;
+}
+
+.metricList {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+.metricRow {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.9rem 1rem;
+  border-radius: 1.2rem;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(18, 36, 32, 0.08);
+}
+
+.metricRow span {
+  color: var(--muted);
+  font-size: 0.92rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.metricRow strong {
+  font-size: 1.05rem;
+  line-height: 1.5;
 }
 
 .stepNumber {
@@ -368,8 +434,14 @@
   .threeUp,
   .fourUp,
   .docGrid,
-  .previewStage {
+  .previewStage,
+  .comparisonGrid {
     grid-template-columns: 1fr;
+  }
+
+  .sectionHeaderRow {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .docRow {

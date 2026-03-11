@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { createRealtimeBootstrap, getTemplateOrThrow } from "@talkform/http";
+import { createRealtimeBootstrap } from "@talkform/http";
+import { resolveRequestedAudioformConfig } from "@/lib/server/resolve-audioform-config";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,9 +18,8 @@ export async function POST(request: Request) {
   }
 
   try {
-    const body = (await request.json().catch(() => ({}))) as { formId?: string };
-    const formId = body.formId?.trim() || "ai-skill-tutor";
-    const config = getTemplateOrThrow(formId);
+    const body = (await request.json().catch(() => ({}))) as { formId?: unknown; config?: unknown };
+    const config = resolveRequestedAudioformConfig(body, "ai-skill-tutor");
     const bootstrap = await createRealtimeBootstrap(config, apiKey);
     return NextResponse.json(bootstrap);
   } catch (error) {
@@ -32,4 +32,3 @@ export async function POST(request: Request) {
     );
   }
 }
-

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Jotform - Demo Intake</title>
+  </head>
+  <body>
+    <form class="jotform-form" action="https://submit.jotform.com/submit/1234567890">
+      <div class="form-line">
+        <label class="form-label-top" for="input_1">Company name</label>
+        <input id="input_1" name="q1_companyName" type="text" required />
+      </div>
+      <div class="form-line">
+        <label class="form-label-top" for="input_2">What are you evaluating?</label>
+        <textarea id="input_2" name="q2_useCase"></textarea>
+      </div>
+    </form>
+    <script>
+      window.JotForm = {
+        init: function () {}
+      };
+    </script>
+  </body>
+</html>

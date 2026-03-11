@@ -47,7 +47,7 @@ type RealtimeBootstrapResponse = {
 
 type SessionResponse = {
   ok: boolean;
-  session?: { sessionId: string; formId: string; values: AudioformFieldMap; summary: string };
+  session?: AudioformSession;
   result?: ReturnType<typeof toSessionResult>;
   error?: string;
 };
@@ -138,6 +138,10 @@ async function postJson<T>(url: string, body: Record<string, unknown>, method = 
   }
 
   return payload;
+}
+
+function buildBootstrapRequest(config: AudioformConfig) {
+  return { config };
 }
 
 export function AudioformWidget({
@@ -452,18 +456,18 @@ export function AudioformWidget({
     setConnectionState("connecting");
 
     try {
-      const created = await postJson<SessionResponse>(`${apiBasePath}/forms/${config.id}/sessions`, {
-        formId: config.id,
-      });
+      const bootstrapRequest = buildBootstrapRequest(config);
+      const created = await postJson<SessionResponse>(`${apiBasePath}/forms/sessions`, bootstrapRequest);
       const nextSessionId = created.session?.sessionId;
       if (!nextSessionId) {
         throw new Error("Session bootstrap failed.");
       }
       setSessionId(nextSessionId);
+      if (created.session?.createdAt) {
+        setCreatedAt(created.session.createdAt);
+      }
 
-      const bootstrap = await postJson<RealtimeBootstrapResponse>(`${apiBasePath}/realtime`, {
-        formId: config.id,
-      });
+      const bootstrap = await postJson<RealtimeBootstrapResponse>(`${apiBasePath}/realtime`, bootstrapRequest);
       if (!bootstrap.clientSecret || !bootstrap.model) {
         throw new Error("Realtime session did not return a client secret.");
       }

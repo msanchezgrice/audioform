@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Product Recommendation Quiz Template</title>
+  </head>
+  <body>
+    <script>
+      window.rendererData = {
+        form: {
+          id: "TW2sMwVX",
+          type: "classification",
+          title: "Product Recommendation Quiz Template",
+          settings: {
+            language: "en",
+            is_public: true
+          },
+          welcome_screens: [
+            {
+              id: "welcome-screen",
+              ref: "welcome-screen",
+              title: "Ready to find your perfect bike?",
+              properties: {
+                show_button: true,
+                button_text: "Take quiz",
+                description: "Take this quick quiz to find your next ride."
+              }
+            }
+          ],
+          thankyou_screens: [
+            {
+              id: "roadster-screen",
+              ref: "roadster-screen",
+              title: "The Roadster is the bike for you!",
+              type: "thankyou_screen",
+              properties: {
+                description: "Made for speed, this smooth racer is your perfect match."
+              }
+            },
+            {
+              id: "turbo-screen",
+              ref: "turbo-screen",
+              title: "The Turbo is the bike for you!",
+              type: "thankyou_screen",
+              properties: {
+                description: "Built to handle whatever you throw at it, this e-bike is perfect for your next adventure."
+              }
+            }
+          ],
+          fields: [
+            {
+              id: "name-field",
+              ref: "name-field",
+              type: "contact_info",
+              title: "First up, what's your name?",
+              properties: {
+                fields: [
+                  {
+                    id: "first-name-subfield",
+                    ref: "first-name-subfield",
+                    subfield_key: "first_name",
+                    title: "First name",
+                    type: "short_text",
+                    properties: {},
+                    validations: {
+                      required: true
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              id: "email-field",
+              ref: "email-field",
+              type: "email",
+              title: "And your email?",
+              properties: {},
+              validations: {
+                required: true
+              }
+            },
+            {
+              id: "terrain-field",
+              ref: "terrain-field",
+              type: "multiple_choice",
+              title: "Ok, {{field:first-name-subfield}}. Where do you like to bike?",
+              properties: {
+                allow_multiple_selection: false,
+                choices: [
+                  {
+                    id: "choice-neighborhood",
+                    ref: "choice-neighborhood",
+                    label: "Around the neighbourhood"
+                  },
+                  {
+                    id: "choice-roads",
+                    ref: "choice-roads",
+                    label: "Long and winding roads"
+                  },
+                  {
+                    id: "choice-trails",
+                    ref: "choice-trails",
+                    label: "Rugged terrain"
+                  }
+                ]
+              },
+              validations: {
+                required: true
+              }
+            },
+            {
+              id: "style-field",
+              ref: "style-field",
+              type: "picture_choice",
+              title: "And your ideal weekend activity?",
+              properties: {
+                allow_multiple_selection: false,
+                show_labels: true,
+                choices: [
+                  {
+                    id: "choice-park",
+                    ref: "choice-park",
+                    label: "Hanging at the park",
+                    attachment: {
+                      type: "image",
+                      href: "https://images.typeform.com/images/park"
+                    }
+                  },
+                  {
+                    id: "choice-gym",
+                    ref: "choice-gym",
+                    label: "Hitting the gym",
+                    attachment: {
+                      type: "image",
+                      href: "https://images.typeform.com/images/gym"
+                    }
+                  }
+                ]
+              },
+              validations: {
+                required: false
+              }
+            }
+          ],
+          variables: {
+            score_roadster: 0,
+            score_turbo: 0,
+            winning_outcome_id: "outcome-roadster"
+          },
+          logic: [
+            {
+              type: "field",
+              ref: "terrain-field",
+              actions: [
+                {
+                  action: "add",
+                  details: {
+                    target: {
+                      type: "variable",
+                      value: "score_roadster"
+                    },
+                    value: {
+                      type: "constant",
+                      value: 1
+                    }
+                  },
+                  condition: {
+                    op: "is",
+                    vars: [
+                      {
+                        type: "field",
+                        value: "terrain-field"
+                      },
+                      {
+                        type: "choice",
+                        value: "choice-roads"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              type: "field",
+              ref: "style-field",
+              actions: [
+                {
+                  action: "set",
+                  details: {
+                    target: {
+                      type: "variable",
+                      value: "winning_outcome_id"
+                    },
+                    value: {
+                      type: "evaluation",
+                      evaluation: {
+                        op: "max_outcome",
+                        vars: [
+                          {
+                            type: "outcome",
+                            value: "outcome-roadster"
+                          },
+                          {
+                            type: "outcome",
+                            value: "outcome-turbo"
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  condition: {
+                    op: "always",
+                    vars: []
+                  }
+                },
+                {
+                  action: "jump",
+                  details: {
+                    to: {
+                      type: "outcome",
+                      value: "winning_outcome_id"
+                    }
+                  },
+                  condition: {
+                    op: "always",
+                    vars: []
+                  }
+                }
+              ]
+            }
+          ],
+          outcome: {
+            variable: "winning_outcome_id",
+            choices: [
+              {
+                id: "outcome-roadster",
+                ref: "outcome-roadster",
+                title: "The Roadster is the bike for you!",
+                counter_variable: "score_roadster",
+                thankyou_screen_ref: "roadster-screen"
+              },
+              {
+                id: "outcome-turbo",
+                ref: "outcome-turbo",
+                title: "The Turbo is the bike for you!",
+                counter_variable: "score_turbo",
+                thankyou_screen_ref: "turbo-screen"
+              }
+            ]
+          }
+        }
+      };
+    </script>
+  </body>
+</html>

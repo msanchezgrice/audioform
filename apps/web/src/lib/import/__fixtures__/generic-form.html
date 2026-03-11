@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Customer Intake</title>
+    <meta name="description" content="Tell us what you need and we will follow up." />
+  </head>
+  <body>
+    <form action="/submit">
+      <label for="full-name">Full name</label>
+      <input id="full-name" name="fullName" type="text" required />
+
+      <label for="email-address">Email address</label>
+      <input id="email-address" name="email" type="email" required />
+
+      <fieldset>
+        <legend>Team size</legend>
+        <label><input type="radio" name="teamSize" value="1-10" required />1-10</label>
+        <label><input type="radio" name="teamSize" value="11-50" />11-50</label>
+      </fieldset>
+
+      <button type="submit">Submit</button>
+    </form>
+  </body>
+</html>
