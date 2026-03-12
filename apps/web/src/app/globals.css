@@ -75,18 +75,10 @@ a {
   letter-spacing: -0.02em;
 }
 
-.brandDot {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+.brandIcon {
   width: 28px;
   height: 28px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: #fff;
-  font-size: 0.75rem;
-  font-family: var(--font-body), system-ui, sans-serif;
-  font-weight: 600;
+  flex-shrink: 0;
 }
 
 .siteNav,

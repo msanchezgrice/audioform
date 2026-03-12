@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300;1,9..40,400&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 4C17.088 4 5 14.745 5 28c0 7.41 3.73 14.08 9.62 18.68L11 56l10.92-5.46C24.34 51.5 28.08 52 32 52c14.912 0 27-10.745 27-24S46.912 4 32 4z' fill='%23d05a36'/%3E%3Crect x='22' y='20' width='3' height='16' rx='1.5' fill='%23fff'/%3E%3Crect x='28' y='15' width='3' height='26' rx='1.5' fill='%23fff'/%3E%3Crect x='34' y='18' width='3' height='20' rx='1.5' fill='%23fff'/%3E%3Crect x='40' y='22' width='3' height='12' rx='1.5' fill='%23fff'/%3E%3C/svg%3E">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0}
 
@@ -61,6 +62,13 @@ body{
 }
 .embed-tab:hover{border-color:var(--line-strong);color:var(--ink)}
 .embed-tab.active{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+
+.brand-logo{
+  display:inline-flex;align-items:center;gap:0.5rem;
+  font-family:var(--font-display);font-size:1.125rem;
+  color:var(--ink);text-decoration:none;margin-bottom:1.25rem;
+}
+.brand-logo svg{width:24px;height:24px;flex-shrink:0}
 
 /* ═════════════════════════════════════════════
    THE CONSUMER WIDGET
@@ -294,6 +302,55 @@ body{
 .tf-btn-done.ghost:hover{border-color:var(--line-strong);color:var(--ink)}
 
 /* ═════════════════════════════════════════════
+   MINIMALIST MODE
+   Strips the widget to bare essentials:
+   waveform + question only, no chrome.
+   ═════════════════════════════════════════════ */
+.tf-widget.minimalist{
+  border:none;
+  box-shadow:none;
+  background:transparent;
+  min-height:auto;
+  border-radius:0;
+  max-width:480px;
+}
+.tf-widget.minimalist .tf-bar{display:none}
+.tf-widget.minimalist .tf-input-bar{display:none}
+.tf-widget.minimalist .tf-chat-toggle{display:none}
+.tf-widget.minimalist .tf-chat{display:none}
+.tf-widget.minimalist .tf-prompt{
+  padding:2rem 1rem 1.5rem;
+}
+.tf-widget.minimalist .tf-prompt::before{
+  width:240px;height:240px;opacity:0.3;
+}
+.tf-widget.minimalist .tf-step{
+  font-size:0.625rem;padding:0.25rem 0.625rem;margin-bottom:1rem;
+}
+.tf-widget.minimalist .tf-question{
+  font-size:1.625rem;max-width:340px;
+}
+.tf-widget.minimalist .tf-hint{
+  font-size:0.875rem;max-width:300px;margin-top:0.5rem;
+}
+.tf-widget.minimalist .tf-wave{
+  height:32px;margin-top:1rem;gap:2px;
+}
+.tf-widget.minimalist .tf-bar-wave{width:2px}
+.tf-widget.minimalist .tf-vars{
+  margin-top:1rem;gap:0.25rem;
+}
+.tf-widget.minimalist .tf-var{
+  font-size:0.6875rem;padding:0.25rem 0.625rem;
+}
+.tf-widget.minimalist .tf-complete-actions{
+  margin-top:1rem;
+}
+.tf-widget.minimalist .tf-btn-done{
+  padding:0.625rem 1.25rem;font-size:0.8125rem;
+}
+
+/* ═════════════════════════════════════════════
    DEMO CHROME (outside widget)
    ═════════════════════════════════════════════ */
 .demo-controls{
@@ -311,6 +368,37 @@ body{
 }
 .demo-btn:hover{border-color:var(--line-strong);color:var(--ink)}
 .demo-btn.active{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+
+/* ─── Mode toggle ─── */
+.mode-toggle{
+  display:flex;align-items:center;gap:0.75rem;
+  margin-bottom:1rem;padding-bottom:1rem;
+  border-bottom:1px solid var(--line);
+}
+.mode-toggle-label{
+  font-size:0.75rem;font-weight:500;color:var(--ink-secondary);
+}
+.toggle-track{
+  position:relative;width:44px;height:24px;
+  border-radius:12px;background:var(--line-strong);
+  cursor:pointer;transition:background var(--transition);
+  border:none;padding:0;flex-shrink:0;
+}
+.toggle-track.active{background:var(--accent)}
+.toggle-thumb{
+  position:absolute;top:2px;left:2px;
+  width:20px;height:20px;border-radius:50%;
+  background:var(--surface);
+  box-shadow:0 1px 3px rgba(0,0,0,0.15);
+  transition:transform var(--transition);
+}
+.toggle-track.active .toggle-thumb{transform:translateX(20px)}
+.mode-labels{display:flex;gap:0.25rem}
+.mode-label{
+  font-size:0.6875rem;font-weight:500;
+  color:var(--ink-tertiary);transition:color var(--transition);
+}
+.mode-label.active{color:var(--ink)}
 
 /* ─── Embed method panels ─── */
 .embed-panel{display:none;width:100%;max-width:520px;margin-top:1.5rem}
@@ -340,6 +428,16 @@ body{
 <body>
 
 <div class="embed-context">
+  <a class="brand-logo" href="index.html">
+    <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
+      <path d="M32 4C17.088 4 5 14.745 5 28c0 7.41 3.73 14.08 9.62 18.68L11 56l10.92-5.46C24.34 51.5 28.08 52 32 52c14.912 0 27-10.745 27-24S46.912 4 32 4z" fill="#d05a36"/>
+      <rect x="22" y="20" width="3" height="16" rx="1.5" fill="#fff"/>
+      <rect x="28" y="15" width="3" height="26" rx="1.5" fill="#fff"/>
+      <rect x="34" y="18" width="3" height="20" rx="1.5" fill="#fff"/>
+      <rect x="40" y="22" width="3" height="12" rx="1.5" fill="#fff"/>
+    </svg>
+    Talkform
+  </a>
   <h1>Consumer <em>widget</em></h1>
   <p>What your users see — no export buttons, no developer chrome.</p>
   <div class="embed-tabs">
@@ -405,6 +503,18 @@ body{
 
 <!-- Demo controls -->
 <div class="demo-controls" id="demoControls">
+  <div class="mode-toggle">
+    <div class="mode-labels">
+      <span class="mode-label active" id="labelFull">Full</span>
+    </div>
+    <button class="toggle-track" id="modeToggle" onclick="toggleMode()" aria-label="Toggle minimalist mode">
+      <span class="toggle-thumb"></span>
+    </button>
+    <div class="mode-labels">
+      <span class="mode-label" id="labelMin">Minimalist</span>
+    </div>
+    <span class="mode-toggle-label">Strip to bare essentials</span>
+  </div>
   <h3>Preview <em>states</em></h3>
   <div class="demo-states">
     <button class="demo-btn" onclick="go('idle')">Idle</button>
@@ -582,6 +692,20 @@ function toggleChat(){
   const toggle=document.getElementById('chatToggle');
   const open=chat.classList.toggle('open');
   toggle.classList.toggle('open',open);
+}
+
+let isMinimalist=false;
+
+function toggleMode(){
+  isMinimalist=!isMinimalist;
+  const widget=document.getElementById('widget');
+  const toggle=document.getElementById('modeToggle');
+  const labelFull=document.getElementById('labelFull');
+  const labelMin=document.getElementById('labelMin');
+  widget.classList.toggle('minimalist',isMinimalist);
+  toggle.classList.toggle('active',isMinimalist);
+  labelFull.classList.toggle('active',!isMinimalist);
+  labelMin.classList.toggle('active',isMinimalist);
 }
 
 function showEmbed(id){
