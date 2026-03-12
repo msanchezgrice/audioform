@@ -9,9 +9,10 @@ type AudioformClientProps = {
   heading: string;
   subheading: string;
   vendorUrl?: string;
+  consumerMode?: boolean;
 };
 
-export function AudioformClient({ config, heading, subheading, vendorUrl }: AudioformClientProps) {
+export function AudioformClient({ config, heading, subheading, vendorUrl, consumerMode }: AudioformClientProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -28,6 +29,7 @@ export function AudioformClient({ config, heading, subheading, vendorUrl }: Audi
       heading={heading}
       subheading={subheading}
       vendorUrl={vendorUrl}
+      consumerMode={consumerMode}
     />
   );
 }

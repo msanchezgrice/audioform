@@ -447,6 +447,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  max-height: 420px;
 }
 
 .varCard {
@@ -657,6 +658,132 @@
   background: rgba(208, 90, 54, 0.04);
   color: #a23419;
   font-weight: 600;
+}
+
+/* ═══ Consumer mode: single-column, inline green answer pills ═══ */
+.consumer .widget {
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr auto;
+  max-width: 560px;
+  min-height: 520px;
+  margin: 0 auto;
+}
+
+.consumer .promptArea {
+  border-right: none;
+}
+
+.consumer .sidebarHeader,
+.consumer .sidebarFooter {
+  display: none;
+}
+
+.consumer .variables {
+  grid-column: 1;
+  grid-row: unset;
+  max-height: none;
+  overflow: visible;
+  padding: 0;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  justify-content: center;
+  margin: 0;
+}
+
+.consumer .promptBody {
+  padding-bottom: 1rem;
+}
+
+.consumer .varCard {
+  border-radius: 999px;
+  padding: 0.375rem 0.75rem;
+  border: 1px solid rgba(44, 40, 37, 0.09);
+  background: #fff;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  overflow: hidden;
+}
+
+.consumer .varCard::after {
+  display: none;
+}
+
+.consumer .varCard_active {
+  border-color: rgba(208, 90, 54, 0.25);
+  background: rgba(208, 90, 54, 0.06);
+  box-shadow: 0 0 0 2px rgba(208, 90, 54, 0.05);
+}
+
+.consumer .varCard_captured {
+  border-color: rgba(61, 140, 92, 0.2);
+  background: rgba(61, 140, 92, 0.07);
+}
+
+.consumer .varTop {
+  gap: 0.25rem;
+}
+
+.consumer .varLabel {
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+}
+
+.consumer .varBadge {
+  display: none;
+}
+
+.consumer .varValue {
+  margin-top: 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.consumer .varValueEmpty {
+  display: none;
+}
+
+.consumer .varCard_waiting .varTop {
+  margin: 0;
+}
+
+.consumer .varCard_waiting .varLabel {
+  color: #a69e94;
+}
+
+.consumer .varCard_active .varLabel {
+  color: #d05a36;
+}
+
+.consumer .varCard_captured .varLabel {
+  color: #3d8c5c;
+}
+
+.consumer .varCard_captured .varValue {
+  color: #3d8c5c;
+}
+
+.consumer .varOptions,
+.consumer .varRating {
+  display: none;
+}
+
+.consumer .exportRow {
+  display: none;
+}
+
+/* Inline the variable pills into the prompt body */
+.consumerVarSection {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  justify-content: center;
+  margin-top: 1.25rem;
+  max-width: 440px;
 }
 
 /* ─── Responsive ─── */

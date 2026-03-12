@@ -12,6 +12,7 @@ type DemoTemplateGalleryProps = {
 
 export function DemoTemplateGallery({ templates, vendorUrl }: DemoTemplateGalleryProps) {
   const [selectedTemplateId, setSelectedTemplateId] = useState(templates[0]?.id ?? "");
+  const [consumerMode, setConsumerMode] = useState(false);
   const selectedTemplate =
     templates.find((template) => template.id === selectedTemplateId) ?? templates[0];
 
@@ -48,12 +49,29 @@ export function DemoTemplateGallery({ templates, vendorUrl }: DemoTemplateGaller
         </div>
       </section>
 
+      <div className={styles.modeRow}>
+        <span className={`${styles.modeLabel} ${!consumerMode ? styles.modeLabelActive : ""}`}>Developer</span>
+        <button
+          type="button"
+          className={`${styles.modeToggle} ${consumerMode ? styles.modeToggleActive : ""}`}
+          onClick={() => setConsumerMode(!consumerMode)}
+          aria-label="Toggle consumer view"
+        >
+          <span className={styles.modeThumb} />
+        </button>
+        <span className={`${styles.modeLabel} ${consumerMode ? styles.modeLabelActive : ""}`}>Consumer</span>
+        <span className={styles.modeHint}>
+          {consumerMode ? "Minimal view your end-users see" : "Full view with sidebar and exports"}
+        </span>
+      </div>
+
       <AudioformClient
-        key={selectedTemplate.id}
+        key={`${selectedTemplate.id}-${consumerMode}`}
         config={selectedTemplate}
         heading={`${selectedTemplate.title} demo`}
         subheading={selectedTemplate.description ?? "Run the live Talkform demo against this example form type."}
         vendorUrl={vendorUrl}
+        consumerMode={consumerMode}
       />
     </div>
   );

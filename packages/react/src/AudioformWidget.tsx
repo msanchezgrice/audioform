@@ -69,6 +69,7 @@ type AudioformWidgetProps = {
   heading?: string;
   subheading?: string;
   vendorUrl?: string;
+  consumerMode?: boolean;
 };
 
 type SessionPatchResponse = {
@@ -150,6 +151,7 @@ export function AudioformWidget({
   heading,
   subheading,
   vendorUrl = "",
+  consumerMode = false,
 }: AudioformWidgetProps) {
   const [connectionState, setConnectionState] = useState<ConnectionState>("idle");
   const [statusMessage, setStatusMessage] = useState("Ready to start a live Talkform session.");
@@ -700,7 +702,7 @@ export function AudioformWidget({
   }
 
   return (
-    <div className={styles.shell}>
+    <div className={`${styles.shell}${consumerMode ? ` ${styles.consumer}` : ""}`}>
       <audio ref={audioRef} autoPlay playsInline hidden />
 
       <div className={styles.widget}>
@@ -748,6 +750,28 @@ export function AudioformWidget({
                     {String.fromCharCode(10003)} {config.fields.find((f) => f.id === prompt.fieldId)?.label ?? prompt.fieldId}
                   </span>
                 ))}
+              </div>
+            )}
+
+            {consumerMode && (
+              <div className={styles.consumerVarSection}>
+                {config.fields.map((field) => {
+                  const value = values[field.id];
+                  const status = fieldStatus(field.id);
+                  return (
+                    <span key={field.id} className={`${styles.varCard} ${styles[`varCard_${status}`]}`}>
+                      <span className={styles.varTop}>
+                        <span className={styles.varLabel}>
+                          {status === "captured" && <span className={styles.check}>{String.fromCharCode(10003)}</span>}
+                          {field.label}
+                        </span>
+                      </span>
+                      {status === "captured" && (
+                        <span className={styles.varValue}>{labelForValue(field, value)}</span>
+                      )}
+                    </span>
+                  );
+                })}
               </div>
             )}
 
