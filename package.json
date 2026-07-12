@@ -7,12 +7,26 @@
     "dev": "pnpm --filter @talkform/web dev",
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm exec tsx --test apps/web/next.config.test.ts apps/web/src/app/api/release-docs.contract.test.ts apps/web/src/app/api/security.integration.test.ts apps/web/src/components/onboarding.contract.test.ts apps/web/src/lib/content.contract.test.ts apps/web/src/lib/import/index.test.ts packages/cli/src/api-client.test.ts packages/core/src/model-defaults.test.ts packages/core/src/session-validity.test.ts packages/core/src/templates/index.test.ts packages/http/src/index.test.ts packages/mcp/src/resources.test.ts packages/react/src/AudioformWidget.analytics.test.ts packages/react/src/AudioformWidget.helpers.test.ts packages/react/src/AudioformWidget.runtime.test.ts",
+    "test:e2e": "pnpm build && node --test apps/web/src/components/onboarding.browser.test.mjs"
   },
   "devDependencies": {
     "@types/node": "^20.19.37",
-    "tsx": "^4.20.6",
+    "tsx": "^4.23.0",
     "typescript": "^5.9.3"
+  },
+  "pnpm": {
+    "overrides": {
+      "cheerio>undici": "7.28.0",
+      "hono": "4.12.25",
+      "@hono/node-server": "1.19.13",
+      "path-to-regexp": "8.4.0",
+      "fast-uri": "3.1.2",
+      "ip-address": "10.1.1",
+      "qs": "6.15.2",
+      "postcss": "8.5.10",
+      "@babel/core": "7.29.6"
+    }
   }
 }
-

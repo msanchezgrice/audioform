@@ -43,6 +43,31 @@ a {
   text-decoration: none;
 }
 
+.skipLink {
+  position: fixed;
+  z-index: 1000;
+  left: 1rem;
+  top: 0.5rem;
+  transform: translateY(-160%);
+  border-radius: 0.5rem;
+  background: var(--ink);
+  color: #fff;
+  padding: 0.65rem 1rem;
+}
+
+.skipLink:focus {
+  transform: translateY(0);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
 .siteShell {
   min-height: 100vh;
   padding: 0 2rem 2rem;
@@ -124,9 +149,44 @@ a {
   padding: 2rem 0 0;
   border-top: 1px solid var(--line);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
+}
+
+.footerBrand {
+  max-width: 280px;
+}
+
+.footerBrand > a {
+  display: inline-block;
+  margin-top: 0.75rem;
+  color: var(--accent-dark);
+  font-size: 0.875rem;
+}
+
+.footerGroups {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(100px, 1fr));
+  gap: 1.5rem;
+}
+
+.footerGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.footerGroup strong {
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.footerGroup a {
+  color: var(--muted);
+  font-size: 0.85rem;
 }
 
 .siteFooter strong {
@@ -150,9 +210,66 @@ a {
 }
 
 @media (max-width: 880px) {
-  .siteHeader,
+  .siteHeader {
+    height: auto;
+    min-height: 72px;
+    flex-direction: column;
+    align-items: flex-start;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .siteNav {
+    width: 100%;
+    max-width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: thin;
+  }
+
+  .siteNav a {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    min-height: 44px;
+  }
+
   .siteFooter {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .footerGroups {
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .siteShell {
+    padding-right: 1rem;
+    padding-left: 1rem;
+  }
+
+  .siteHeader {
+    margin-right: -1rem;
+    margin-left: -1rem;
+    padding-right: 1rem;
+    padding-left: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

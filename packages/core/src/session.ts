@@ -79,12 +79,73 @@ export function normalizeFieldValue(field: AudioformField, raw: unknown): Audiof
   return undefined;
 }
 
-export function isFieldFilled(field: AudioformField, value: AudioformFieldValue) {
-  if (!field.required) return true;
+function hasFieldValue(value: AudioformFieldValue | undefined) {
   if (typeof value === "undefined" || value === null) return false;
   if (Array.isArray(value)) return value.length > 0;
-  if (typeof value === "number") return !Number.isNaN(value);
-  return Boolean(String(value ?? "").trim());
+  if (typeof value === "string") return Boolean(value.trim());
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+function isEmailField(field: AudioformField) {
+  return /email/i.test(`${field.id} ${field.label}`);
+}
+
+export function isFieldValueValid(field: AudioformField, value: AudioformFieldValue | undefined) {
+  if (!hasFieldValue(value)) return !field.required;
+
+  if (field.type === "text" || field.type === "long_text" || field.type === "file_ref") {
+    if (typeof value !== "string") return false;
+    if (isEmailField(field) && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) return false;
+    if (field.validation?.pattern) {
+      try {
+        if (!new RegExp(field.validation.pattern).test(value)) return false;
+      } catch {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  if (field.type === "url") {
+    if (typeof value !== "string") return false;
+    try {
+      const url = new URL(value.trim());
+      return url.protocol === "http:" || url.protocol === "https:";
+    } catch {
+      return false;
+    }
+  }
+
+  if (field.type === "single_select") {
+    return typeof value === "string" && Boolean(field.options?.some((option) => option.value === value));
+  }
+
+  if (field.type === "multi_select") {
+    return Array.isArray(value) && value.length > 0 && value.every(
+      (entry) => typeof entry === "string" && Boolean(field.options?.some((option) => option.value === entry)),
+    );
+  }
+
+  if (field.type === "number" || field.type === "rating") {
+    if (typeof value !== "number" || !Number.isFinite(value)) return false;
+    if (field.type === "rating" && !Number.isInteger(value)) return false;
+    if (typeof field.validation?.min === "number" && value < field.validation.min) return false;
+    if (typeof field.validation?.max === "number" && value > field.validation.max) return false;
+    return true;
+  }
+
+  return false;
+}
+
+export function getInvalidFieldIds(config: AudioformConfig, values: AudioformFieldMap) {
+  return config.fields
+    .filter((field) => hasFieldValue(values[field.id]) && !isFieldValueValid(field, values[field.id]))
+    .map((field) => field.id);
+}
+
+export function isFieldFilled(field: AudioformField, value: AudioformFieldValue) {
+  if (!field.required) return true;
+  return isFieldValueValid(field, value);
 }
 
 export function getMissingFieldIds(config: AudioformConfig, values: AudioformFieldMap) {
@@ -142,7 +203,7 @@ export function createSession(config: AudioformConfig): AudioformSession {
     currentPromptFieldId: getCurrentPrompt(config, createEmptyValues(config))?.fieldId ?? null,
     createdAt,
     updatedAt: createdAt,
-    model: config.realtime?.model ?? "gpt-realtime",
+    model: config.realtime?.model ?? "gpt-realtime-2.1",
     voice: config.realtime?.voice ?? "marin",
   };
 }
@@ -150,11 +211,14 @@ export function createSession(config: AudioformConfig): AudioformSession {
 export function toSessionResult(config: AudioformConfig, session: AudioformSession): AudioformSessionResult {
   const completion = getCompletion(config, session.values);
   const currentPrompt = getCurrentPrompt(config, session.values);
+  const status: AudioformSession["status"] = completion.missingFieldIds.length
+    ? session.status === "abandoned" ? "abandoned" : "in_progress"
+    : session.status === "abandoned" ? "abandoned" : "completed";
   return {
     schemaVersion: "1.0",
     formId: session.formId,
     sessionId: session.sessionId,
-    status: completion.missingFieldIds.length ? session.status : "completed",
+    status,
     completion,
     currentPrompt,
     fields: session.values,

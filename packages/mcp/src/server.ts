@@ -4,27 +4,12 @@ import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mc
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import {
-  AI_SKILL_TUTOR_TEMPLATE,
   audioformConfigJsonSchema,
   audioformConfigSchema,
   audioformSessionResultJsonSchema,
   listAudioformTemplates,
 } from "@talkform/core";
-
-const baseUrl = process.env.AUDIOFORM_BASE_URL?.trim() || "http://localhost:3000";
-
-async function callJson(pathname: string, init?: RequestInit) {
-  const response = await fetch(`${baseUrl}${pathname}`, init);
-  const text = await response.text();
-  if (!response.ok) {
-    throw new Error(text);
-  }
-  try {
-    return JSON.parse(text) as Record<string, unknown>;
-  } catch {
-    return { text };
-  }
-}
+import { readTemplateResource, readTemplatesResource } from "./resources";
 
 const server = new McpServer({
   name: "talkform",
@@ -81,82 +66,6 @@ server.tool(
   },
 );
 
-server.tool(
-  "audioform.create_session",
-  {
-    formId: z.string().default("ai-skill-tutor"),
-  },
-  async ({ formId }) => {
-    const response = await callJson(`/api/forms/${formId}/sessions`, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({ formId }),
-    });
-    return {
-      content: [
-        {
-          type: "text",
-          text: JSON.stringify(
-            {
-              ...response,
-              launchUrl: `${baseUrl}/${formId === "ai-skill-tutor" ? "examples/ai-skill-tutor" : "app"}`,
-            },
-            null,
-            2,
-          ),
-        },
-      ],
-    };
-  },
-);
-
-server.tool(
-  "audioform.get_session",
-  {
-    sessionId: z.string(),
-  },
-  async ({ sessionId }) => ({
-    content: [
-      {
-        type: "text",
-        text: JSON.stringify(await callJson(`/api/sessions/${sessionId}`), null, 2),
-      },
-    ],
-  }),
-);
-
-server.tool(
-  "audioform.export_session",
-  {
-    sessionId: z.string(),
-    format: z.enum(["json", "markdown"]).default("json"),
-  },
-  async ({ sessionId, format }) => {
-    const response = await fetch(`${baseUrl}/api/sessions/${sessionId}/export?format=${format}`);
-    const text = await response.text();
-    if (!response.ok) {
-      return {
-        content: [{ type: "text", text }],
-        isError: true,
-      };
-    }
-    return {
-      content: [{ type: "text", text }],
-    };
-  },
-);
-
-server.tool("audioform.list_exports", async () => ({
-  content: [
-    {
-      type: "text",
-      text: JSON.stringify(await callJson("/api/sessions"), null, 2),
-    },
-  ],
-}));
-
 server.resource("talkform-schema-config", "talkform://schema/config", async (uri) => ({
   contents: [
     {
@@ -175,17 +84,14 @@ server.resource("talkform-schema-session-result", "talkform://schema/session-res
   ],
 }));
 
+server.resource("talkform-templates", "talkform://templates", async (uri) =>
+  readTemplatesResource(uri),
+);
+
 server.resource(
   "talkform-template",
   new ResourceTemplate("talkform://template/{id}", { list: undefined }),
-  async (uri, { id }) => ({
-    contents: [
-      {
-        uri: uri.href,
-        text: JSON.stringify(id === "ai-skill-tutor" ? AI_SKILL_TUTOR_TEMPLATE : null, null, 2),
-      },
-    ],
-  }),
+  async (uri, { id }) => readTemplateResource(uri, String(id)),
 );
 
 const transport = new StdioServerTransport();

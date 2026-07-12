@@ -4,6 +4,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import styles from "../../site.module.css";
 import { getDocContent } from "@/lib/docs";
+import { createMetadata } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
@@ -16,10 +17,11 @@ export async function generateMetadata({
     return {};
   }
 
-  return {
+  return createMetadata({
     title: doc.title,
     description: doc.description,
-  };
+    path: `/docs/${doc.slug}`,
+  });
 }
 
 export default async function DocPage({
@@ -47,4 +49,3 @@ export default async function DocPage({
     </main>
   );
 }
-

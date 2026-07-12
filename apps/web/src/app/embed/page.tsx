@@ -1,24 +1,26 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import styles from "./embed.module.css";
+import { createMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Embed",
+export const metadata: Metadata = createMetadata({
+  title: "React integration",
   description:
-    "Embed Talkform in your product with an iframe, React component, or script tag.",
-};
+    "Use Talkform's current React widget integration and follow hosted embed availability.",
+  path: "/embed",
+});
 
 export default function EmbedPage() {
   return (
     <main className={styles.page}>
       <section className={styles.hero}>
-        <div className={styles.eyebrow}>Embeddable widget</div>
+        <div className={styles.eyebrow}>Self-hosted React widget</div>
         <h1>
-          Drop Talkform into <em>any product</em>
+          Add Talkform to a <em>React product</em>
         </h1>
         <p className={styles.lede}>
-          A single iframe, React component, or script tag gives your users a
-          guided audio form — no backend changes required.
+          The current integration path is the typed React component in the Talkform
+          source repository; it is not yet a published npm package. Hosted iframe and script embeds are coming soon.
         </p>
         <div className={styles.heroActions}>
           <Link href="/app" className={styles.primaryAction}>
@@ -80,14 +82,19 @@ export default function EmbedPage() {
             </div>
 
             <div className={styles.widgetFooter}>
-              <button type="button" className={styles.micButton}>
+              <button
+                type="button"
+                className={styles.micButton}
+                aria-label="Microphone preview (not interactive)"
+                disabled
+              >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="9" y="1" width="6" height="12" rx="3" />
                   <path d="M5 10a7 7 0 0 0 14 0" />
                   <line x1="12" y1="17" x2="12" y2="21" />
                 </svg>
               </button>
-              <span className={styles.footerHint}>Tap to speak or type below</span>
+              <span className={styles.footerHint}>Preview only — try the live demo to interact</span>
             </div>
           </div>
         </div>
@@ -96,35 +103,18 @@ export default function EmbedPage() {
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
           <h2>
-            Three ways to <em>embed</em>
+            Available <em>in source</em>
           </h2>
-          <p>Choose the integration that fits your stack.</p>
+          <p>Use the workspace package with your Talkform configuration and API routes.</p>
         </div>
 
         <div className={styles.methodGrid}>
           <article className={styles.methodCard}>
-            <span className={styles.methodTag}>Easiest</span>
-            <h3>Iframe</h3>
-            <p>
-              Point an iframe at your Talkform session URL. Works everywhere —
-              Webflow, Squarespace, plain HTML.
-            </p>
-            <pre className={styles.codeBlock}>
-{`<iframe
-  src="https://talkform.ai/widget/YOUR_FORM_ID"
-  width="100%" height="640"
-  frameborder="0"
-  allow="microphone"
-></iframe>`}
-            </pre>
-          </article>
-
-          <article className={styles.methodCard}>
-            <span className={styles.methodTag}>React</span>
+            <span className={styles.methodTag}>Source repository</span>
             <h3>React component</h3>
             <p>
-              Import the widget from <code>@talkform/react</code> and pass your
-              config object. Full TypeScript support.
+              Inside the Talkform workspace, import the widget from <code>@talkform/react</code>
+              and pass your config plus the base path for your API routes.
             </p>
             <pre className={styles.codeBlock}>
 {`import { AudioformWidget }
@@ -132,46 +122,30 @@ export default function EmbedPage() {
 
 <AudioformWidget
   config={myConfig}
-  onComplete={handleResult}
+  apiBasePath="/api"
 />`}
             </pre>
           </article>
-
-          <article className={styles.methodCard}>
-            <span className={styles.methodTag}>Universal</span>
-            <h3>Script tag</h3>
-            <p>
-              A single script tag creates a global <code>Talkform</code> object.
-              Call <code>Talkform.open()</code> to launch the widget.
-            </p>
-            <pre className={styles.codeBlock}>
-{`<script src="https://cdn.talkform.ai/embed.js"
-  data-form="YOUR_FORM_ID">
-</script>
-
-<script>
-  Talkform.open();
-</script>`}
-            </pre>
-          </article>
         </div>
+        <p className={styles.availabilityNote}>
+          Hosted iframe and script embeds are coming soon. Until those endpoints ship, use the React path above or the live demo.
+        </p>
       </section>
 
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
           <h2>
-            Fully <em>yours</em>
+            What the widget <em>supports</em>
           </h2>
           <p>
-            Customize colors, copy, and behavior. The widget inherits your
-            brand.
+            Capabilities shown here are available in the current implementation.
           </p>
         </div>
 
         <div className={styles.featureGrid}>
           <div className={styles.featureCard}>
-            <strong>Custom branding</strong>
-            <p>Set accent colors, logo, and fonts to match your product.</p>
+            <strong>Voice or local typing</strong>
+            <p>Users choose microphone-based Realtime voice or a browser-local text interview.</p>
           </div>
           <div className={styles.featureCard}>
             <strong>Inline variable capture</strong>
@@ -181,17 +155,15 @@ export default function EmbedPage() {
             </p>
           </div>
           <div className={styles.featureCard}>
-            <strong>Completion callbacks</strong>
+            <strong>Review and correction</strong>
             <p>
-              Get a structured JSON result the moment the form completes — push
-              to your CRM, webhook, or agent runtime.
+              Text, email, URL, long-answer, rating, and selection fields can be corrected before export.
             </p>
           </div>
           <div className={styles.featureCard}>
-            <strong>Microphone + text fallback</strong>
+            <strong>Local exports</strong>
             <p>
-              Audio-first by default, but users can always type instead if they
-              prefer.
+              Download the current structured result as JSON or Markdown after reviewing it.
             </p>
           </div>
         </div>
@@ -199,7 +171,7 @@ export default function EmbedPage() {
 
       <section className={styles.ctaBand}>
         <h2>
-          Ready to add Talkform to <em>your product</em>?
+          Ready to evaluate Talkform in <em>your product</em>?
         </h2>
         <div className={styles.heroActions}>
           <Link href="/docs" className={styles.primaryAction}>

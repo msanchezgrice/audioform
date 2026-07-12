@@ -1,0 +1,38 @@
+[
+  {
+    "slug": "typeform",
+    "name": "Typeform",
+    "description": "Convert a public Typeform into an editable Talkform draft, then review every field before launching a browser interview.",
+    "maps": ["Short and long text", "Single and multiple choice", "Ratings", "Required-field intent", "Visible question labels"],
+    "steps": ["Open the public responder URL", "Paste it into Talkform Import", "Review extracted labels, options, and required flags", "Test the conversation and export"],
+    "limitations": ["Complex logic jumps may not reproduce exactly", "Payments, file uploads, hidden fields, and account-only forms require a manual workflow", "The importer does not modify the source Typeform"],
+    "reference": "https://www.typeform.com/developers/create/reference/retrieve-form/"
+  },
+  {
+    "slug": "google-forms",
+    "name": "Google Forms",
+    "description": "Translate a public Google Form into a voice-ready draft while preserving a reviewable field list and explicit limitations.",
+    "maps": ["Question titles", "Paragraph and short answers", "Choice options", "Linear scales", "Required-field intent"],
+    "steps": ["Use a public responder URL", "Run the Talkform importer", "Review sections and grid questions carefully", "Test voice and typed paths before sharing"],
+    "limitations": ["Grid questions, quizzes, images, and section routing may need redesign", "Restricted Workspace forms cannot be imported anonymously", "Responses remain separate from Google Forms unless you build an approved integration"],
+    "reference": "https://developers.google.com/workspace/forms/api/guides"
+  },
+  {
+    "slug": "jotform",
+    "name": "Jotform",
+    "description": "Create an editable conversational draft from a public Jotform and verify field semantics before collecting answers.",
+    "maps": ["Text questions", "Choice options", "Ratings", "Basic contact fields", "Required-field intent"],
+    "steps": ["Copy the public form URL", "Import the URL", "Check compound fields and validation", "Run a complete test interview"],
+    "limitations": ["Widgets, calculations, payments, signatures, and uploads do not map automatically", "Conditional visibility needs manual verification", "Talkform does not write results back to Jotform by default"],
+    "reference": "https://api.jotform.com/docs/"
+  },
+  {
+    "slug": "hubspot",
+    "name": "HubSpot forms",
+    "description": "Turn a public HubSpot form into a conversational intake draft, then map exports into your approved CRM workflow.",
+    "maps": ["Text properties", "Select options", "Contact context", "Required-field intent", "Visible labels"],
+    "steps": ["Copy the public form or landing-page URL", "Import and review the extracted draft", "Remove unnecessary personal data", "Test export and approved CRM handling"],
+    "limitations": ["Progressive profiling, enrichment, consent widgets, and automation do not carry over automatically", "Talkform does not claim a native HubSpot write-back", "CRM deduplication and lawful-basis rules remain your responsibility"],
+    "reference": "https://developers.hubspot.com/docs/api-reference/marketing-forms-v3/guide"
+  }
+]

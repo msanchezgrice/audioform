@@ -1,6 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import styles from "../site.module.css";
 import { docsIndex } from "@/lib/docs";
+import { createMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = createMetadata({
+  title: "Documentation",
+  description: "Talkform configuration, React, HTTP, CLI, MCP, and agent workflow documentation, with current implementation boundaries.",
+  path: "/docs",
+});
 
 export default function DocsPage() {
   return (

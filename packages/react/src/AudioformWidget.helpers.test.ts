@@ -165,3 +165,74 @@ test("buildLocalExport returns local json and markdown documents", () => {
   assert.match(markdownExport.content, /# Support intake/);
   assert.match(markdownExport.content, /Session: session_local123/);
 });
+
+test("coerceTypedAnswer supports a local text-only interview without Realtime", async () => {
+  const helpers = await import("./AudioformWidget.helpers");
+  const coerceTypedAnswer = (
+    helpers as unknown as {
+      coerceTypedAnswer?: (
+        field: AudioformConfig["fields"][number],
+        answer: string,
+      ) => { ok: boolean; value?: string | number | string[] | null; error?: string };
+    }
+  ).coerceTypedAnswer;
+
+  assert.equal(typeof coerceTypedAnswer, "function", "expected a local typed-answer coercion helper");
+  if (!coerceTypedAnswer) return;
+
+  assert.deepEqual(coerceTypedAnswer(TEST_CONFIG.fields[0], "  Miguel  "), {
+    ok: true,
+    value: "Miguel",
+  });
+  assert.deepEqual(coerceTypedAnswer(TEST_CONFIG.fields[1], "Technical"), {
+    ok: true,
+    value: "technical",
+  });
+  assert.match(coerceTypedAnswer(TEST_CONFIG.fields[1], "something else").error ?? "", /Billing.*Technical/i);
+});
+
+test("coerceTypedAnswer validates email-like, URL, numeric, and multi-select fields", async () => {
+  const helpers = await import("./AudioformWidget.helpers");
+  const coerceTypedAnswer = (
+    helpers as unknown as {
+      coerceTypedAnswer?: (
+        field: AudioformConfig["fields"][number],
+        answer: string,
+      ) => { ok: boolean; value?: string | number | string[] | null; error?: string };
+    }
+  ).coerceTypedAnswer;
+
+  assert.equal(typeof coerceTypedAnswer, "function", "expected typed-answer validation");
+  if (!coerceTypedAnswer) return;
+
+  assert.equal(
+    coerceTypedAnswer({ id: "email", label: "Work email", type: "text", required: true, promptTitle: "Email", promptDetail: "Ask for email" }, "not-an-email").ok,
+    false,
+  );
+  assert.deepEqual(
+    coerceTypedAnswer({ id: "site", label: "Website", type: "url", required: true, promptTitle: "Website", promptDetail: "Ask for website" }, "https://talkform.ai"),
+    { ok: true, value: "https://talkform.ai" },
+  );
+  assert.deepEqual(
+    coerceTypedAnswer({ id: "team", label: "Team size", type: "number", required: true, promptTitle: "Team", promptDetail: "Ask for team size" }, "12"),
+    { ok: true, value: 12 },
+  );
+  assert.deepEqual(
+    coerceTypedAnswer(
+      {
+        id: "channels",
+        label: "Channels",
+        type: "multi_select",
+        required: true,
+        promptTitle: "Channels",
+        promptDetail: "Ask for channels",
+        options: [
+          { value: "email", label: "Email" },
+          { value: "chat", label: "Live chat" },
+        ],
+      },
+      "Email, live chat",
+    ),
+    { ok: true, value: ["email", "chat"] },
+  );
+});

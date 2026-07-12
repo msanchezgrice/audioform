@@ -8,7 +8,7 @@ export const CUSTOMER_FEEDBACK_TEMPLATE: AudioformConfig = {
   instructions:
     "Keep the tone warm and concise. Ask one question at a time, confirm what changed for the customer, and capture concrete wording when they describe pain points.",
   realtime: {
-    model: "gpt-realtime",
+    model: "gpt-realtime-2.1",
     voice: "marin",
   },
   output: {

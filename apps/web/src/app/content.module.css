@@ -1,0 +1,217 @@
+.page {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 4.5rem 0 2rem;
+}
+
+.hero {
+  max-width: 760px;
+  margin: 0 auto 3rem;
+  text-align: center;
+}
+
+.hero h1 {
+  margin: 0.75rem 0 1rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+}
+
+.hero p {
+  color: var(--muted);
+  font-size: 1.08rem;
+  line-height: 1.75;
+}
+
+.eyebrow {
+  display: inline-flex;
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  padding: 1.75rem;
+}
+
+.card h2 {
+  margin: 0.75rem 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.65rem;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.card h2 a:hover,
+.textLink:hover {
+  color: var(--accent);
+}
+
+.card p,
+.card small {
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.card small {
+  display: block;
+  margin: 1rem 0;
+}
+
+.textLink {
+  display: inline-flex;
+  gap: 0.35rem;
+  font-weight: 600;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 1.5rem 0;
+}
+
+.tags a {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.4rem 0.75rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.prose {
+  max-width: 760px;
+  margin: 0 auto;
+  color: var(--ink);
+  line-height: 1.85;
+  font-size: 1.02rem;
+}
+
+.prose h1 {
+  display: none;
+}
+
+.prose h2 {
+  margin: 2.75rem 0 0.8rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 2rem;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.prose h3 {
+  margin-top: 2rem;
+}
+
+.prose a {
+  color: var(--accent-dark);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.prose li + li {
+  margin-top: 0.55rem;
+}
+
+.section {
+  margin-top: 4rem;
+}
+
+.section > h2 {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 2.25rem;
+  font-weight: 400;
+  text-align: center;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.fact {
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  background: var(--bg-warm);
+}
+
+.fact h2,
+.fact h3 {
+  margin-top: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 400;
+}
+
+.fact li,
+.fact p {
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.ctaBand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-top: 4rem;
+  padding: 2rem;
+  border-radius: var(--radius-xl);
+  background: var(--bg-warm);
+}
+
+.ctaBand h2,
+.ctaBand p {
+  margin: 0;
+}
+
+.ctaBand p {
+  color: var(--muted);
+  margin-top: 0.4rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.primaryButton,
+.secondaryButton {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.7rem 1.1rem;
+  font-weight: 600;
+}
+
+.primaryButton {
+  background: var(--ink);
+  color: white;
+}
+
+.secondaryButton {
+  border: 1px solid var(--line-strong);
+}
+
+@media (max-width: 720px) {
+  .page { padding-top: 3rem; }
+  .cardGrid, .facts { grid-template-columns: 1fr; }
+  .ctaBand { align-items: flex-start; flex-direction: column; }
+}

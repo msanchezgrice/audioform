@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Outfit, Fraunces } from "next/font/google";
+import { createMetadata, organizationJsonLd, websiteJsonLd } from "@/lib/seo";
 import "./globals.css";
 
 const bodyFont = Outfit({
@@ -14,58 +15,43 @@ const displayFont = Fraunces({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://talkform.ai"),
+  ...createMetadata({
+    title: "Talkform | Turn a form into a guided voice interview",
+    description: "Import a public form, run a guided browser voice or text interview, review structured answers, and export clean JSON.",
+    path: "/",
+  }),
+  metadataBase: new URL("https://www.talkform.ai"),
   title: {
-    default: "Talkform | Turn Any Form Into a Live Audio Interview",
+    default: "Talkform | Turn a form into a guided voice interview",
     template: "%s | Talkform",
   },
-  description:
-    "Turn any form into a live audio interview. Ask out loud, fill structured fields, and export clean JSON for your apps, workflows, and agents.",
   icons: {
     icon: "/icon.svg",
     apple: "/apple-icon.png",
   },
-  openGraph: {
-    title: "Talkform — Audio-first forms",
-    description:
-      "Turn any form into a live audio interview. Talkform asks questions out loud, fills structured fields from the conversation, and exports clean JSON.",
-    siteName: "Talkform",
-    type: "website",
-    url: "https://talkform.ai",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "Talkform — Turn any form into a live audio interview",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Talkform — Audio-first forms",
-    description:
-      "Turn any form into a live audio interview. Ask out loud, fill structured fields, export clean JSON.",
-    images: ["/og-image.png"],
-  },
-  other: {
-    "og:locale": "en_US",
-    "og:image:type": "image/png",
-  },
 };
 
 const navItems = [
-  { href: "/", label: "Home" },
+  { href: "/use-cases", label: "Use Cases" },
   { href: "/import", label: "Import" },
-  { href: "/embed", label: "Embed" },
+  { href: "/blog", label: "Blog" },
   { href: "/docs", label: "Docs" },
-  { href: "/docs/agents", label: "Agents" },
+  { href: "/pricing", label: "Pricing" },
+];
+
+const footerGroups = [
+  { title: "Product", links: [{ href: "/app", label: "Demo" }, { href: "/import", label: "Import" }, { href: "/use-cases", label: "Use cases" }, { href: "/pricing", label: "Pricing" }] },
+  { title: "Resources", links: [{ href: "/blog", label: "Blog" }, { href: "/docs", label: "Docs" }, { href: "/faq", label: "FAQ" }, { href: "/changelog", label: "Changelog" }, { href: "/feed.xml", label: "RSS" }] },
+  { title: "Company", links: [{ href: "/about", label: "About" }, { href: "/contact", label: "Contact" }, { href: "/status", label: "Status" }, { href: "/security", label: "Security" }, { href: "/accessibility", label: "Accessibility" }] },
+  { title: "Legal", links: [{ href: "/privacy", label: "Privacy" }, { href: "/terms", label: "Terms" }, { href: "/cookies", label: "Cookies" }, { href: "/subprocessors", label: "Subprocessors" }] },
 ];
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body className={`${bodyFont.variable} ${displayFont.variable}`}>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([organizationJsonLd, websiteJsonLd]).replace(/</g, "\\u003c") }} />
+        <a className="skipLink" href="#main-content">Skip to main content</a>
         <div className="siteShell">
           <header className="siteHeader">
             <Link href="/" className="brandMark">
@@ -87,20 +73,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/app" className="ctaNav">Try demo</Link>
             </nav>
           </header>
-          {children}
+          <div id="main-content">{children}</div>
           <footer className="siteFooter">
-            <div>
+            <div className="footerBrand">
               <strong>Talkform</strong>
-              <p>Audio-first forms for products and agents.</p>
+              <p>Guided browser voice interviews with reviewable structured answers.</p>
+              <a href="mailto:support@talkform.ai">support@talkform.ai</a>
             </div>
-            <div className="footerLinks">
-              <Link href="/docs">Docs</Link>
-              <Link href="/docs/mcp">MCP</Link>
-              <Link href="/docs/http-api">HTTP API</Link>
-              <Link href="/docs/agents">Agents</Link>
-              <a href="https://github.com/msanchezgrice/audioform" target="_blank" rel="noreferrer">
-                GitHub
-              </a>
+            <div className="footerGroups">
+              {footerGroups.map((group) => (
+                <nav key={group.title} className="footerGroup" aria-label={`${group.title} links`}>
+                  <strong>{group.title}</strong>
+                  {group.links.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}
+                </nav>
+              ))}
             </div>
           </footer>
         </div>

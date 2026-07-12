@@ -13,6 +13,8 @@ import {
   createEmptyValues,
   createTranscriptEntry,
   getCompletion,
+  getInvalidFieldIds,
+  isFieldValueValid,
   mergeRealtimeUpdate,
   normalizeRealtimeUpdate,
   toSessionResult,
@@ -26,14 +28,18 @@ import {
 } from "@talkform/core";
 import {
   buildLocalExport,
+  coerceTypedAnswer,
   getCompanionSummary,
   getPendingPromptQueue,
   getTranscriptResponses,
   getVisualPromptState,
+  teardownRealtimeResources,
 } from "./AudioformWidget.helpers";
+import { emitTalkformEvent } from "./AudioformWidget.analytics";
 import styles from "./AudioformWidget.module.css";
 
 type ConnectionState = "idle" | "connecting" | "live" | "ended" | "error";
+type InterviewMode = "unselected" | "voice" | "text";
 type SyncSource = "voice" | "typed" | "manual";
 
 type RealtimeBootstrapResponse = {
@@ -42,13 +48,6 @@ type RealtimeBootstrapResponse = {
   model?: string;
   voice?: string;
   expiresAt?: string | null;
-  error?: string;
-};
-
-type SessionResponse = {
-  ok: boolean;
-  session?: AudioformSession;
-  result?: ReturnType<typeof toSessionResult>;
   error?: string;
 };
 
@@ -70,12 +69,7 @@ type AudioformWidgetProps = {
   subheading?: string;
   vendorUrl?: string;
   consumerMode?: boolean;
-};
-
-type SessionPatchResponse = {
-  ok: boolean;
-  result?: ReturnType<typeof toSessionResult>;
-  error?: string;
+  voiceEnabled?: boolean;
 };
 
 const MAX_TRANSCRIPT_TURNS = 40;
@@ -152,8 +146,10 @@ export function AudioformWidget({
   subheading,
   vendorUrl = "",
   consumerMode = false,
+  voiceEnabled = true,
 }: AudioformWidgetProps) {
   const [connectionState, setConnectionState] = useState<ConnectionState>("idle");
+  const [interviewMode, setInterviewMode] = useState<InterviewMode>("unselected");
   const [statusMessage, setStatusMessage] = useState("Ready to start a live Talkform session.");
   const [error, setError] = useState<string | null>(null);
   const [values, setValues] = useState<AudioformFieldMap>(() => createEmptyValues(config));
@@ -165,7 +161,7 @@ export function AudioformWidget({
   const [lastStructuredUpdate, setLastStructuredUpdate] = useState<StructuredUpdate | null>(null);
   const [currentHostQuestion, setCurrentHostQuestion] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [model, setModel] = useState(config.realtime?.model ?? "gpt-realtime");
+  const [model, setModel] = useState(config.realtime?.model ?? "gpt-realtime-2.1");
   const [voice, setVoice] = useState(config.realtime?.voice ?? "marin");
   const [createdAt, setCreatedAt] = useState(() => new Date().toISOString());
 
@@ -176,11 +172,12 @@ export function AudioformWidget({
   const connectionTokenRef = useRef(0);
   const valuesRef = useRef(values);
   const summaryRef = useRef(summary);
-  const transcriptRef = useRef(transcript);
   const completedPromptTimeoutsRef = useRef<number[]>([]);
   const previousMissingFieldsRef = useRef<string[]>([]);
   const pendingInputSourceRef = useRef<SyncSource | null>(null);
-  const syncTimeoutRef = useRef<number | null>(null);
+  const interviewModeRef = useRef<InterviewMode>(interviewMode);
+  const firstAnswerTrackedRef = useRef(false);
+  const completionTrackedRef = useRef(false);
 
   const completion = useMemo(() => getCompletion(config, values), [config, values]);
   const missingFieldIds = completion.missingFieldIds;
@@ -192,6 +189,7 @@ export function AudioformWidget({
     [config, currentHostQuestion, values],
   );
   const companionSummary = useMemo(() => getCompanionSummary(summary), [summary]);
+  const invalidFieldIds = useMemo(() => getInvalidFieldIds(config, values), [config, values]);
   const latestRequiredFields = useMemo(
     () =>
       (lastStructuredUpdate?.fields ?? []).filter((fieldId) =>
@@ -229,8 +227,8 @@ export function AudioformWidget({
   }, [summary]);
 
   useEffect(() => {
-    transcriptRef.current = transcript;
-  }, [transcript]);
+    interviewModeRef.current = interviewMode;
+  }, [interviewMode]);
 
   useEffect(() => {
     const previousMissing = previousMissingFieldsRef.current;
@@ -259,9 +257,6 @@ export function AudioformWidget({
   useEffect(() => {
     return () => {
       completedPromptTimeoutsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
-      if (syncTimeoutRef.current) {
-        window.clearTimeout(syncTimeoutRef.current);
-      }
     };
   }, []);
 
@@ -275,16 +270,15 @@ export function AudioformWidget({
 
   const teardownConnection = useCallback(() => {
     connectionTokenRef.current += 1;
-    dataChannelRef.current?.close();
+    teardownRealtimeResources({
+      dataChannel: dataChannelRef.current,
+      peerConnection: peerConnectionRef.current,
+      localStream: localStreamRef.current,
+      audio: audioRef.current,
+    });
     dataChannelRef.current = null;
-    peerConnectionRef.current?.close();
     peerConnectionRef.current = null;
-    localStreamRef.current?.getTracks().forEach((track) => track.stop());
     localStreamRef.current = null;
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.srcObject = null;
-    }
     setWaitingForAssistant(false);
   }, []);
 
@@ -298,39 +292,6 @@ export function AudioformWidget({
     if (!channel || channel.readyState !== "open") return;
     channel.send(JSON.stringify(payload));
   }, []);
-
-  const syncSession = useCallback(
-    async (nextValues: AudioformFieldMap, nextSummary: string, nextTranscript: TranscriptEntry[]) => {
-      if (!sessionId) return;
-      try {
-        await postJson<SessionPatchResponse>(
-          `${apiBasePath}/sessions/${sessionId}`,
-          {
-            values: nextValues,
-            summary: nextSummary,
-            transcript: nextTranscript,
-            status: completion.missingFieldIds.length ? "in_progress" : "completed",
-          },
-          "PUT",
-        );
-      } catch {
-        // Keep local UX running even if sync fails.
-      }
-    },
-    [apiBasePath, completion.missingFieldIds.length, sessionId],
-  );
-
-  const scheduleSessionSync = useCallback(
-    (nextValues: AudioformFieldMap, nextSummary: string, nextTranscript: TranscriptEntry[]) => {
-      if (syncTimeoutRef.current) {
-        window.clearTimeout(syncTimeoutRef.current);
-      }
-      syncTimeoutRef.current = window.setTimeout(() => {
-        void syncSession(nextValues, nextSummary, nextTranscript);
-      }, 200);
-    },
-    [syncSession],
-  );
 
   const applyStructuredUpdate = useCallback(
     (nextValues: AudioformFieldMap, nextSummary: string, source: SyncSource) => {
@@ -349,8 +310,37 @@ export function AudioformWidget({
           timestamp: Date.now(),
         });
       }
+
+      if (changedFields.length) {
+        const nextCompletion = getCompletion(config, nextValues);
+        const sourceMode = interviewModeRef.current === "text" ? "text" : "voice";
+        if (!firstAnswerTrackedRef.current && nextCompletion.captured > 0) {
+          firstAnswerTrackedRef.current = true;
+          emitTalkformEvent("first_answer_captured", {
+            mode: sourceMode,
+            source,
+            formId: config.id,
+          });
+        }
+        emitTalkformEvent("interview_progressed", {
+          mode: sourceMode,
+          source,
+          formId: config.id,
+          captured: nextCompletion.captured,
+          required: nextCompletion.required,
+          percent: nextCompletion.percent,
+        });
+        if (nextCompletion.percent === 100 && !completionTrackedRef.current) {
+          completionTrackedRef.current = true;
+          emitTalkformEvent("interview_completed", {
+            mode: sourceMode,
+            formId: config.id,
+            required: nextCompletion.required,
+          });
+        }
+      }
     },
-    [],
+    [config],
   );
 
   const handleRealtimeEvent = useCallback(
@@ -413,7 +403,8 @@ export function AudioformWidget({
             : "Realtime session failed.";
         setError(message);
         setStatusMessage(message);
-        setConnectionState("error");
+        closeConnection("error");
+        emitTalkformEvent("session_failed", { mode: "voice", stage: "realtime", formId: config.id });
         return;
       }
 
@@ -421,7 +412,7 @@ export function AudioformWidget({
         setWaitingForAssistant(false);
       }
     },
-    [appendTranscript, applyStructuredUpdate, config, sendRealtimeEvent],
+    [appendTranscript, applyStructuredUpdate, closeConnection, config, sendRealtimeEvent],
   );
 
   useEffect(() => {
@@ -430,20 +421,15 @@ export function AudioformWidget({
     };
   }, [teardownConnection]);
 
-  useEffect(() => {
-    if (!sessionId) return;
-    scheduleSessionSync(values, summary, transcript);
-  }, [scheduleSessionSync, sessionId, summary, transcript, values]);
-
-  async function startOnboardingCall() {
-    closeConnection("idle");
-    const connectionToken = connectionTokenRef.current;
+  function resetInterviewData() {
     setError(null);
     setLastStructuredUpdate(null);
     completedPromptTimeoutsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
     completedPromptTimeoutsRef.current = [];
     previousMissingFieldsRef.current = [];
     pendingInputSourceRef.current = null;
+    firstAnswerTrackedRef.current = false;
+    completionTrackedRef.current = false;
     setCompletedPrompts([]);
     setCurrentHostQuestion(null);
     const emptyValues = createEmptyValues(config);
@@ -452,23 +438,75 @@ export function AudioformWidget({
     setSummary("");
     summaryRef.current = "";
     setTranscript([]);
-    transcriptRef.current = [];
+    setDraftReply("");
     setCreatedAt(new Date().toISOString());
+  }
+
+  function startTextInterview() {
+    closeConnection("idle");
+    resetInterviewData();
+    setInterviewMode("text");
+    interviewModeRef.current = "text";
+    setSessionId(`local_${crypto.randomUUID()}`);
+    setModel("local-text");
+    setVoice("none");
+    setConnectionState("live");
+    setStatusMessage("Text-only interview started. Your answers stay in this browser until you export them.");
+    emitTalkformEvent("interview_mode_selected", { mode: "text", formId: config.id });
+    emitTalkformEvent("interview_started", { mode: "text", formId: config.id });
+    emitTalkformEvent("session_connected", { mode: "text", formId: config.id });
+  }
+
+  async function startOnboardingCall() {
+    closeConnection("idle");
+    const connectionToken = connectionTokenRef.current;
+    resetInterviewData();
+
+    if (!voiceEnabled) {
+      setInterviewMode("unselected");
+      interviewModeRef.current = "unselected";
+      setError("Voice is unavailable on this deployment. Continue with typing; no microphone permission was requested.");
+      setStatusMessage("Voice is unavailable. Continue with typing.");
+      return;
+    }
+
+    setInterviewMode("voice");
+    interviewModeRef.current = "voice";
+    setSessionId(`local_${crypto.randomUUID()}`);
     setStatusMessage("Connecting microphone, realtime voice, and structured field capture.");
     setConnectionState("connecting");
+    emitTalkformEvent("interview_mode_selected", { mode: "voice", formId: config.id });
+    emitTalkformEvent("interview_started", { mode: "voice", formId: config.id });
 
     try {
-      const bootstrapRequest = buildBootstrapRequest(config);
-      const created = await postJson<SessionResponse>(`${apiBasePath}/forms/sessions`, bootstrapRequest);
-      const nextSessionId = created.session?.sessionId;
-      if (!nextSessionId) {
-        throw new Error("Session bootstrap failed.");
-      }
-      setSessionId(nextSessionId);
-      if (created.session?.createdAt) {
-        setCreatedAt(created.session.createdAt);
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error("This browser does not support microphone access. Continue with typing instead.");
       }
 
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+          },
+        });
+        emitTalkformEvent("microphone_permission", { mode: "voice", outcome: "granted", formId: config.id });
+      } catch (permissionError) {
+        emitTalkformEvent("microphone_permission", { mode: "voice", outcome: "denied", formId: config.id });
+        if (permissionError instanceof DOMException && permissionError.name === "NotAllowedError") {
+          throw new Error("Microphone access was denied. Allow it in your browser and try again, or switch to typing.");
+        }
+        throw permissionError;
+      }
+
+      if (connectionToken !== connectionTokenRef.current) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
+      localStreamRef.current = stream;
+
+      const bootstrapRequest = buildBootstrapRequest(config);
       const bootstrap = await postJson<RealtimeBootstrapResponse>(`${apiBasePath}/realtime`, bootstrapRequest);
       if (!bootstrap.clientSecret || !bootstrap.model) {
         throw new Error("Realtime session did not return a client secret.");
@@ -477,20 +515,7 @@ export function AudioformWidget({
       setModel(bootstrap.model);
       setVoice(bootstrap.voice ?? voice);
 
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-        },
-      });
-
-      if (connectionToken !== connectionTokenRef.current) {
-        stream.getTracks().forEach((track) => track.stop());
-        return;
-      }
-
       const peerConnection = new RTCPeerConnection();
-      localStreamRef.current = stream;
       peerConnectionRef.current = peerConnection;
 
       for (const track of stream.getTracks()) {
@@ -509,10 +534,15 @@ export function AudioformWidget({
         if (peerConnection.connectionState === "connected") {
           setConnectionState("live");
           setStatusMessage("Live. Talkform is listening and syncing structured fields.");
+          emitTalkformEvent("session_connected", { mode: "voice", formId: config.id });
         }
         if (peerConnection.connectionState === "failed") {
-          setConnectionState("error");
+          closeConnection("error");
           setError("The live audio session dropped. Restart the form interview.");
+          emitTalkformEvent("session_failed", { mode: "voice", stage: "connection", formId: config.id });
+        }
+        if (peerConnection.connectionState === "closed") {
+          closeConnection("ended");
         }
       };
 
@@ -540,7 +570,7 @@ export function AudioformWidget({
 
       dataChannel.addEventListener("close", () => {
         if (connectionToken !== connectionTokenRef.current) return;
-        setConnectionState("ended");
+        closeConnection("ended");
         setStatusMessage("Call ended. The captured fields remain on screen and available for export.");
       });
 
@@ -591,6 +621,7 @@ export function AudioformWidget({
       const message = startError instanceof Error ? startError.message : "Unable to start the Talkform call.";
       setError(message);
       setStatusMessage(message);
+      emitTalkformEvent("session_failed", { mode: "voice", stage: "start", formId: config.id });
     }
   }
 
@@ -602,20 +633,10 @@ export function AudioformWidget({
 
   function resetSession() {
     closeConnection("idle");
-    setError(null);
-    setLastStructuredUpdate(null);
-    setCompletedPrompts([]);
-    setCurrentHostQuestion(null);
+    resetInterviewData();
+    setInterviewMode("unselected");
+    interviewModeRef.current = "unselected";
     setSessionId(null);
-    const emptyValues = createEmptyValues(config);
-    setValues(emptyValues);
-    valuesRef.current = emptyValues;
-    setSummary("");
-    summaryRef.current = "";
-    setTranscript([]);
-    transcriptRef.current = [];
-    setCreatedAt(new Date().toISOString());
-    setDraftReply("");
     setStatusMessage("Ready to start a new Talkform session.");
   }
 
@@ -625,6 +646,7 @@ export function AudioformWidget({
       [field.id]: nextValue,
     };
     applyStructuredUpdate(nextValues, summaryRef.current, "manual");
+    setError(null);
   }
 
   function toggleMultiSelect(field: AudioformField, optionValue: string) {
@@ -639,8 +661,38 @@ export function AudioformWidget({
   function sendTypedReply() {
     const message = draftReply.trim();
     if (!message) return;
+
+    if (interviewMode === "text") {
+      const field = config.fields.find((entry) => entry.id === activeMissingFieldId);
+      if (!field) {
+        setStatusMessage("All required answers are captured. Review or export them below.");
+        return;
+      }
+      const parsed = coerceTypedAnswer(field, message);
+      if (!parsed.ok) {
+        setError(parsed.error);
+        setStatusMessage(parsed.error);
+        return;
+      }
+
+      const nextValues = { ...valuesRef.current, [field.id]: parsed.value };
+      const nextCompletion = getCompletion(config, nextValues);
+      const nextSummary = `${nextCompletion.captured} of ${nextCompletion.required} required answers captured in text mode.`;
+      setDraftReply("");
+      setError(null);
+      appendTranscript("user", message);
+      applyStructuredUpdate(nextValues, nextSummary, "typed");
+      if (nextCompletion.percent === 100) {
+        setConnectionState("ended");
+        setStatusMessage("Your answers are ready to review and export.");
+      } else {
+        setStatusMessage(`${field.label} captured. Continue with the next question.`);
+      }
+      return;
+    }
+
     if (!dataChannelRef.current || dataChannelRef.current.readyState !== "open") {
-      setError("Start the live Talkform call before sending typed replies.");
+      setError("The voice session is not ready. Try voice again or switch to typing.");
       return;
     }
 
@@ -674,6 +726,15 @@ export function AudioformWidget({
       return;
     }
 
+    if (invalidFieldIds.length) {
+      const invalidLabels = invalidFieldIds
+        .map((fieldId) => config.fields.find((field) => field.id === fieldId)?.label ?? fieldId);
+      const message = `Correct invalid answers before exporting: ${invalidLabels.join(", ")}.`;
+      setError(message);
+      setStatusMessage(message);
+      return;
+    }
+
     const file = buildLocalExport(config, sessionResult, format);
     const blob = new Blob([file.content], { type: file.mimeType });
     const url = URL.createObjectURL(blob);
@@ -686,16 +747,25 @@ export function AudioformWidget({
     window.setTimeout(() => URL.revokeObjectURL(url), 0);
     setError(null);
     setStatusMessage(`${format === "json" ? "JSON" : "Markdown"} export downloaded.`);
+    emitTalkformEvent("result_exported", {
+      mode: interviewMode === "text" ? "text" : "voice",
+      formId: config.id,
+      format,
+    });
   }
 
   const [transcriptOpen, setTranscriptOpen] = useState(false);
 
-  const isLive = connectionState === "live";
+  const isLive = connectionState === "live" && interviewMode === "voice";
+  const isTextActive = connectionState === "live" && interviewMode === "text";
   const isConnecting = connectionState === "connecting";
 
-  function fieldStatus(fieldId: string): "captured" | "active" | "waiting" {
+  function fieldStatus(fieldId: string): "captured" | "active" | "invalid" | "waiting" {
+    const field = config.fields.find((entry) => entry.id === fieldId);
     const value = values[fieldId];
-    const isCaptured = value !== null && value !== undefined && value !== "" && !(Array.isArray(value) && value.length === 0);
+    const hasValue = value !== null && value !== undefined && value !== "" && !(Array.isArray(value) && value.length === 0);
+    if (field && hasValue && !isFieldValueValid(field, value)) return "invalid";
+    const isCaptured = Boolean(field && hasValue && isFieldValueValid(field, value));
     if (isCaptured) return "captured";
     if (activeMissingFieldId === fieldId) return "active";
     return "waiting";
@@ -709,126 +779,228 @@ export function AudioformWidget({
         {/* ─── LEFT: Prompt area ─── */}
         <div className={styles.promptArea}>
           <div className={styles.promptBar}>
-            <div className={styles.promptStatus}>
+            <div className={styles.promptStatus} role="status" aria-live="polite" aria-atomic="true">
               <span
                 className={styles.statusDot}
-                data-state={waitingForAssistant ? "responding" : isLive ? "live" : completion.percent === 100 ? "complete" : "idle"}
+                aria-hidden="true"
+                data-state={waitingForAssistant ? "responding" : isLive || isTextActive ? "live" : completion.percent === 100 ? "complete" : "idle"}
               />
-              <span className={styles.statusText} data-state={waitingForAssistant ? "responding" : isLive ? "live" : completion.percent === 100 ? "complete" : "idle"}>
-                {waitingForAssistant ? "Processing..." : isLive ? "Listening" : completion.percent === 100 ? "Complete" : "Ready"}
+              <span className={styles.statusText} data-state={waitingForAssistant ? "responding" : isLive || isTextActive ? "live" : completion.percent === 100 ? "complete" : "idle"}>
+                {waitingForAssistant ? "Processing..." : isLive ? "Listening" : isTextActive ? "Typing" : completion.percent === 100 ? "Complete" : "Ready"}
               </span>
+              <span className={styles.visuallyHidden}>{statusMessage}</span>
             </div>
             <div className={styles.promptProgress}>
               <span className={styles.progressText}>{completion.captured} of {completion.required}</span>
-              <div className={styles.progressTrack}>
+              <div
+                className={styles.progressTrack}
+                role="progressbar"
+                aria-label="Required answers captured"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={completion.percent}
+              >
                 <div className={styles.progressFill} style={{ width: `${completion.percent}%` }} />
               </div>
             </div>
           </div>
 
           <div className={styles.promptBody}>
-            {pendingPromptQueue.length > 0 && (
-              <div className={styles.stepLabel}>
-                Question {completion.captured + 1} of {completion.required}
-              </div>
-            )}
-            <h2 className={styles.promptQuestion}>{visualPromptState.title}</h2>
-            <p className={styles.promptHint}>{visualPromptState.detail}</p>
-
-            {(isLive || isConnecting) && (
-              <div className={styles.waveform}>
-                {Array.from({ length: 12 }).map((_, i) => (
-                  <div key={i} className={styles.waveformBar} style={{ animationDelay: `${i * 0.08}s` }} />
-                ))}
-              </div>
-            )}
-
-            {completedPrompts.length > 0 && (
-              <div className={styles.completionRail}>
-                {completedPrompts.map((prompt) => (
-                  <span key={prompt.id} className={styles.completedChip}>
-                    {String.fromCharCode(10003)} {config.fields.find((f) => f.id === prompt.fieldId)?.label ?? prompt.fieldId}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {consumerMode && (
-              <div className={styles.consumerVarSection}>
-                {config.fields.map((field) => {
-                  const value = values[field.id];
-                  const status = fieldStatus(field.id);
-                  return (
-                    <span key={field.id} className={`${styles.varCard} ${styles[`varCard_${status}`]}`}>
-                      <span className={styles.varTop}>
-                        <span className={styles.varLabel}>
-                          {status === "captured" && <span className={styles.check}>{String.fromCharCode(10003)}</span>}
-                          {field.label}
-                        </span>
-                      </span>
-                      {status === "captured" && (
-                        <span className={styles.varValue}>{labelForValue(field, value)}</span>
-                      )}
-                    </span>
-                  );
-                })}
-              </div>
-            )}
-
-            <button
-              type="button"
-              className={`${styles.transcriptToggle} ${transcriptOpen ? styles.transcriptToggleOpen : ""}`}
-              onClick={() => setTranscriptOpen(!transcriptOpen)}
-            >
-              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
-                <path d="M4 6l4 4 4-4" />
-              </svg>
-              {transcriptOpen ? "Hide transcript" : "Show transcript"}
-            </button>
-            <div className={`${styles.transcriptDrawer} ${transcriptOpen ? styles.transcriptDrawerOpen : ""}`}>
-              <div className={styles.transcriptList}>
-                {transcript.length > 0 ? transcript.map((entry) => (
-                  <div key={entry.id} className={`${styles.transcriptEntry} ${entry.speaker === "user" ? styles.transcriptUser : styles.transcriptAssistant}`}>
-                    <span className={styles.transcriptSpeaker}>{entry.speaker === "user" ? "You" : "Host"}</span>
-                    <span className={styles.transcriptText}>{entry.text}</span>
-                  </div>
-                )) : (
-                  <div className={styles.transcriptEmpty}>Transcript will appear once the session starts.</div>
+            {interviewMode === "unselected" ? (
+              <section className={styles.preflight} aria-labelledby="talkform-preflight-title">
+                <div className={styles.stepLabel}>Private by choice</div>
+                <h2 id="talkform-preflight-title" className={styles.promptQuestion}>Before you begin</h2>
+                <p className={styles.promptHint}>
+                  About a few minutes for {config.fields.length} questions. Choose how you would like to answer.
+                </p>
+                <p className={styles.dataNotice}>
+                  <strong>Voice</strong> asks Talkform for a short-lived realtime token, then streams audio browser-to-OpenAI. Transcript, summary, and structured answers stay in your browser until export. <strong>Typing</strong> is browser-local too.
+                </p>
+                <p className={styles.consentLinks}>
+                  By continuing, you acknowledge our <a href="/privacy">Privacy Policy</a> and <a href="/terms">Terms</a>.
+                </p>
+                <div className={styles.preflightChoices}>
+                  {voiceEnabled && (
+                    <button type="button" className={styles.primaryButton} onClick={startOnboardingCall}>
+                      Start with voice
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className={voiceEnabled ? styles.ghostButton : styles.primaryButton}
+                    onClick={startTextInterview}
+                    aria-describedby={!voiceEnabled ? "talkform-voice-unavailable" : undefined}
+                  >
+                    Continue with typing
+                  </button>
+                </div>
+                {!voiceEnabled && (
+                  <p id="talkform-voice-unavailable" className={styles.dataNotice} role="status">
+                    This deployment is text-only. Continuing with typing never requests microphone access.
+                  </p>
                 )}
-              </div>
-            </div>
+                <details className={styles.preflightDetails}>
+                  <summary>How your data is handled</summary>
+                  <ul className={styles.preflightList}>
+                    <li>When enabled, voice asks for microphone permission only after you choose it.</li>
+                    <li>Talkform issues the short-lived token; the live audio connection is browser-to-OpenAI.</li>
+                    <li>Transcript, summary, and structured answers stay browser-local until you export.</li>
+                    <li>You can switch to typing if permission or the live connection fails.</li>
+                    <li>You can review and correct every answer before exporting.</li>
+                  </ul>
+                </details>
+              </section>
+            ) : (
+              <>
+                {completion.percent === 100 ? (
+                  <section className={styles.completionPanel} aria-labelledby="talkform-completion-title">
+                    <div className={styles.stepLabel}>Complete</div>
+                    <h2 id="talkform-completion-title" className={styles.promptQuestion}>Your answers are ready</h2>
+                    <p className={styles.promptHint}>Review and correct the captured answers, then export them or turn your own form into a Talkform.</p>
+                    <div className={styles.completionActions}>
+                      <a
+                        href="/import"
+                        className={styles.primaryLink}
+                        onClick={() => emitTalkformEvent("conversion_clicked", { destination: "import", formId: config.id })}
+                      >
+                        Import your form
+                      </a>
+                      <a
+                        href="/docs"
+                        className={styles.secondaryLink}
+                        onClick={() => emitTalkformEvent("conversion_clicked", { destination: "docs", formId: config.id })}
+                      >
+                        Build with Talkform
+                      </a>
+                    </div>
+                  </section>
+                ) : (
+                  <>
+                    {pendingPromptQueue.length > 0 && (
+                      <div className={styles.stepLabel}>
+                        Question {completion.captured + 1} of {completion.required}
+                      </div>
+                    )}
+                    <h2 className={styles.promptQuestion}>{visualPromptState.title}</h2>
+                    <p className={styles.promptHint}>
+                      {interviewMode === "text" ? "Type your answer below. You can correct it at any time." : visualPromptState.detail}
+                    </p>
+                  </>
+                )}
+
+                {interviewMode === "voice" && (isLive || isConnecting) && (
+                  <div className={styles.waveform} aria-hidden="true">
+                    {Array.from({ length: 12 }).map((_, i) => (
+                      <div key={i} className={styles.waveformBar} style={{ animationDelay: `${i * 0.08}s` }} />
+                    ))}
+                  </div>
+                )}
+
+                {completedPrompts.length > 0 && (
+                  <div className={styles.completionRail} aria-live="polite">
+                    {completedPrompts.map((prompt) => (
+                      <span key={prompt.id} className={styles.completedChip}>
+                        {String.fromCharCode(10003)} {config.fields.find((f) => f.id === prompt.fieldId)?.label ?? prompt.fieldId}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {consumerMode && (
+                  <div className={styles.consumerVarSection}>
+                    {config.fields.map((field) => {
+                      const value = values[field.id];
+                      const status = fieldStatus(field.id);
+                      return (
+                        <span key={field.id} className={`${styles.varCard} ${styles[`varCard_${status}`]}`}>
+                          <span className={styles.varTop}>
+                            <span className={styles.varLabel}>
+                              {status === "captured" && <span className={styles.check}>{String.fromCharCode(10003)}</span>}
+                              {field.label}
+                            </span>
+                          </span>
+                          {(status === "captured" || status === "invalid") && <span className={styles.varValue}>{labelForValue(field, value)}</span>}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  className={`${styles.transcriptToggle} ${transcriptOpen ? styles.transcriptToggleOpen : ""}`}
+                  onClick={() => setTranscriptOpen(!transcriptOpen)}
+                  aria-expanded={transcriptOpen}
+                  aria-controls="talkform-transcript"
+                >
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14" aria-hidden="true">
+                    <path d="M4 6l4 4 4-4" />
+                  </svg>
+                  {transcriptOpen ? "Hide transcript" : "Show transcript"}
+                </button>
+                <div
+                  id="talkform-transcript"
+                  className={`${styles.transcriptDrawer} ${transcriptOpen ? styles.transcriptDrawerOpen : ""}`}
+                  hidden={!transcriptOpen}
+                >
+                  <div className={styles.transcriptList}>
+                    {transcript.length > 0 ? transcript.map((entry) => (
+                      <div key={entry.id} className={`${styles.transcriptEntry} ${entry.speaker === "user" ? styles.transcriptUser : styles.transcriptAssistant}`}>
+                        <span className={styles.transcriptSpeaker}>{entry.speaker === "user" ? "You" : "Host"}</span>
+                        <span className={styles.transcriptText}>{entry.text}</span>
+                      </div>
+                    )) : <div className={styles.transcriptEmpty}>Transcript will appear once the session starts.</div>}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
-          <div className={styles.promptInputArea}>
-            {connectionState === "idle" || connectionState === "ended" || connectionState === "error" ? (
+          {interviewMode !== "unselected" && <div className={styles.promptInputArea}>
+            {connectionState === "error" ? (
               <div className={styles.startRow}>
-                <button type="button" className={styles.primaryButton} onClick={startOnboardingCall} disabled={isConnecting}>
-                  {isConnecting ? "Connecting..." : connectionState === "ended" ? "Restart" : "Start interview"}
+                <button type="button" className={styles.primaryButton} onClick={startOnboardingCall}>Try voice again</button>
+                <button type="button" className={styles.ghostButton} onClick={startTextInterview}>Switch to typing</button>
+              </div>
+            ) : connectionState === "ended" ? (
+              <div className={styles.startRow}>
+                <button
+                  type="button"
+                  className={styles.primaryButton}
+                  onClick={interviewMode === "text" ? startTextInterview : startOnboardingCall}
+                >
+                  Start another
                 </button>
-                {connectionState === "ended" && (
-                  <button type="button" className={styles.ghostButton} onClick={resetSession}>Reset</button>
-                )}
+                <button type="button" className={styles.ghostButton} onClick={resetSession}>Choose another mode</button>
               </div>
             ) : (
               <form
                 className={styles.replyComposer}
                 onSubmit={(event) => { event.preventDefault(); sendTypedReply(); }}
               >
+                <label htmlFor="talkform-typed-answer" className={styles.visuallyHidden}>
+                  Type your answer
+                </label>
                 <input
+                  id="talkform-typed-answer"
                   className={styles.promptInput}
                   value={draftReply}
                   onChange={(event) => setDraftReply(event.target.value)}
-                  placeholder="Type if you'd rather not speak..."
+                  placeholder={interviewMode === "text" ? "Type your answer..." : "Type instead of speaking..."}
+                  disabled={isConnecting}
                 />
-                <button type="submit" className={styles.sendButton} aria-label="Send">
+                <button type="submit" className={styles.sendButton} aria-label="Send answer" disabled={isConnecting}>
                   <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" width="16" height="16">
                     <path d="M2 8h12M10 4l4 4-4 4" />
                   </svg>
                 </button>
                 <button type="button" className={styles.endButton} onClick={endOnboardingCall}>End</button>
+                {interviewMode === "voice" && isConnecting && (
+                  <button type="button" className={styles.ghostButton} onClick={startTextInterview}>Switch to typing</button>
+                )}
               </form>
             )}
-          </div>
+          </div>}
         </div>
 
         {/* ─── RIGHT: Variable sidebar ─── */}
@@ -847,7 +1019,7 @@ export function AudioformWidget({
                 <div className={styles.varTop}>
                   <span className={styles.varLabel}>{field.label}</span>
                   <span className={`${styles.varBadge} ${styles[`varBadge_${status}`]}`}>
-                    {status === "captured" ? "Captured" : status === "active" ? "Now" : "Waiting"}
+                    {status === "captured" ? "Captured" : status === "active" ? "Now" : status === "invalid" ? "Invalid" : "Waiting"}
                   </span>
                 </div>
 
@@ -862,6 +1034,9 @@ export function AudioformWidget({
                           type="button"
                           className={`${styles.star} ${filled ? styles.starFilled : ""}`}
                           onClick={() => updateField(field, n)}
+                          aria-label={`Set ${field.label} to ${n}`}
+                          aria-pressed={value === n}
+                          disabled={interviewMode === "unselected"}
                         >
                           {n}
                         </button>
@@ -876,6 +1051,8 @@ export function AudioformWidget({
                         type="button"
                         className={`${styles.varOption} ${value === option.value ? styles.varOptionSelected : ""}`}
                         onClick={() => updateField(field, option.value)}
+                        aria-pressed={value === option.value}
+                        disabled={interviewMode === "unselected"}
                       >
                         {option.label}
                       </button>
@@ -891,6 +1068,8 @@ export function AudioformWidget({
                           type="button"
                           className={`${styles.varOption} ${selected ? styles.varOptionSelected : ""}`}
                           onClick={() => toggleMultiSelect(field, option.value)}
+                          aria-pressed={selected}
+                          disabled={interviewMode === "unselected"}
                         >
                           {option.label}
                         </button>
@@ -898,10 +1077,43 @@ export function AudioformWidget({
                     })}
                   </div>
                 ) : (
-                  <div className={`${styles.varValue} ${status !== "captured" ? styles.varValueEmpty : ""}`}>
-                    {status === "captured"
-                      ? <><span className={styles.check}>{String.fromCharCode(10003)}</span> {labelForValue(field, value)}</>
-                      : status === "active" ? "Listening..." : "Waiting"}
+                  <div className={styles.fieldEditor}>
+                    <label htmlFor={`talkform-field-${field.id}`} className={styles.visuallyHidden}>
+                      {`Edit ${field.label}`}
+                    </label>
+                    {field.type === "long_text" ? (
+                      <textarea
+                        id={`talkform-field-${field.id}`}
+                        className={styles.fieldTextarea}
+                        value={typeof value === "string" ? value : ""}
+                        placeholder={status === "active" ? "Answer this question" : "Optional"}
+                        onChange={(event) => updateField(field, event.target.value)}
+                        disabled={interviewMode === "unselected"}
+                      />
+                    ) : (
+                      <input
+                        id={`talkform-field-${field.id}`}
+                        className={styles.fieldInput}
+                        type={field.type === "number" ? "number" : field.type === "url" ? "url" : /email/i.test(`${field.id} ${field.label}`) ? "email" : "text"}
+                        min={field.validation?.min}
+                        max={field.validation?.max}
+                        value={typeof value === "string" || typeof value === "number" ? value : ""}
+                        aria-invalid={status === "invalid"}
+                        placeholder={status === "active" ? "Answer this question" : "Optional"}
+                        onChange={(event) => updateField(
+                          field,
+                          field.type === "number"
+                            ? event.target.value === "" ? null : Number(event.target.value)
+                            : event.target.value,
+                        )}
+                        disabled={interviewMode === "unselected"}
+                      />
+                    )}
+                    {status === "invalid" && (
+                      <span className={styles.fieldError} role="alert">
+                        Enter a valid {field.type === "url" ? "http(s) URL" : /email/i.test(`${field.id} ${field.label}`) ? "email address" : "value within the allowed range"}.
+                      </span>
+                    )}
                   </div>
                 )}
               </div>
@@ -915,17 +1127,17 @@ export function AudioformWidget({
             <span>{summary || "Answers will be summarized here as they come in."}</span>
           </div>
           <div className={styles.exportRow}>
-            <button type="button" className={`${styles.btnExport} ${styles.btnExportPrimary}`} onClick={() => downloadExport("json")}>
+            <button type="button" className={`${styles.btnExport} ${styles.btnExportPrimary}`} onClick={() => downloadExport("json")} disabled={invalidFieldIds.length > 0}>
               Export JSON
             </button>
-            <button type="button" className={styles.btnExport} onClick={() => downloadExport("markdown")}>
+            <button type="button" className={styles.btnExport} onClick={() => downloadExport("markdown")} disabled={invalidFieldIds.length > 0}>
               Export MD
             </button>
           </div>
         </div>
       </div>
 
-      {error && <div className={styles.errorBanner}>{error}</div>}
+      {error && <div className={styles.errorBanner} role="alert">{error}</div>}
     </div>
   );
 }

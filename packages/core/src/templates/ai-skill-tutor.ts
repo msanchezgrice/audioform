@@ -8,7 +8,7 @@ export const AI_SKILL_TUTOR_TEMPLATE: AudioformConfig = {
   instructions:
     "Keep the tone practical. Tie each question back to what kind of learning plan or project direction the product can generate from the answer.",
   realtime: {
-    model: "gpt-realtime",
+    model: "gpt-realtime-2.1",
     voice: "marin",
   },
   output: {
@@ -159,4 +159,3 @@ export const AI_SKILL_TUTOR_TEMPLATE: AudioformConfig = {
     },
   ],
 };
-

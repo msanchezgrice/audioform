@@ -8,7 +8,7 @@ export const JOB_APPLICATION_TEMPLATE: AudioformConfig = {
   instructions:
     "Sound clear and professional. Keep questions focused on role fit, experience, and logistics. Do not over-explain the process.",
   realtime: {
-    model: "gpt-realtime",
+    model: "gpt-realtime-2.1",
     voice: "marin",
   },
   output: {
