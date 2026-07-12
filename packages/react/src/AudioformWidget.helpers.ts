@@ -1,4 +1,5 @@
 import {
+  getCompletion,
   getCurrentPrompt,
   getInvalidFieldIds,
   getMissingFieldIds,
@@ -37,6 +38,22 @@ export type TypedAnswerResult =
   | { ok: false; error: string };
 
 const DEFAULT_COMPANION_SUMMARY = "Your answers will build a quick recap here as you go.";
+
+export function getLocalTextProgress(config: AudioformConfig, values: AudioformFieldMap) {
+  const completion = getCompletion(config, values);
+  return {
+    completion,
+    summary: `${completion.captured} of ${completion.required} required answers captured in text mode.`,
+  };
+}
+
+export function shouldClearLocalDraft(
+  updatedFieldId: string,
+  activeFieldId: string | null,
+  nextActiveFieldId: string | null,
+) {
+  return updatedFieldId === activeFieldId || nextActiveFieldId !== activeFieldId;
+}
 
 type RealtimeCleanupResources = {
   dataChannel: { close: () => void } | null;

@@ -30,9 +30,11 @@ import {
   buildLocalExport,
   coerceTypedAnswer,
   getCompanionSummary,
+  getLocalTextProgress,
   getPendingPromptQueue,
   getTranscriptResponses,
   getVisualPromptState,
+  shouldClearLocalDraft,
   teardownRealtimeResources,
 } from "./AudioformWidget.helpers";
 import { emitTalkformEvent } from "./AudioformWidget.analytics";
@@ -645,8 +647,25 @@ export function AudioformWidget({
       ...valuesRef.current,
       [field.id]: nextValue,
     };
-    applyStructuredUpdate(nextValues, summaryRef.current, "manual");
+    const localProgress = interviewModeRef.current === "text"
+      ? getLocalTextProgress(config, nextValues)
+      : null;
+    const nextActiveFieldId = localProgress?.completion.missingFieldIds[0] ?? null;
+    const isAnsweringActiveField = localProgress
+      ? shouldClearLocalDraft(field.id, activeMissingFieldId, nextActiveFieldId)
+      : false;
+    applyStructuredUpdate(nextValues, localProgress?.summary ?? summaryRef.current, "manual");
     setError(null);
+    if (localProgress) {
+      if (isAnsweringActiveField) setDraftReply("");
+      if (localProgress.completion.percent === 100) {
+        setConnectionState("ended");
+        setStatusMessage("Your answers are ready to review and export.");
+      } else {
+        if (connectionState === "ended") setConnectionState("live");
+        setStatusMessage(`${field.label} updated. Continue with the next question.`);
+      }
+    }
   }
 
   function toggleMultiSelect(field: AudioformField, optionValue: string) {
@@ -676,8 +695,7 @@ export function AudioformWidget({
       }
 
       const nextValues = { ...valuesRef.current, [field.id]: parsed.value };
-      const nextCompletion = getCompletion(config, nextValues);
-      const nextSummary = `${nextCompletion.captured} of ${nextCompletion.required} required answers captured in text mode.`;
+      const { completion: nextCompletion, summary: nextSummary } = getLocalTextProgress(config, nextValues);
       setDraftReply("");
       setError(null);
       appendTranscript("user", message);
@@ -989,7 +1007,12 @@ export function AudioformWidget({
                   placeholder={interviewMode === "text" ? "Type your answer..." : "Type instead of speaking..."}
                   disabled={isConnecting}
                 />
-                <button type="submit" className={styles.sendButton} aria-label="Send answer" disabled={isConnecting}>
+                <button
+                  type="submit"
+                  className={styles.sendButton}
+                  aria-label="Send answer"
+                  disabled={isConnecting || !draftReply.trim()}
+                >
                   <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" width="16" height="16">
                     <path d="M2 8h12M10 4l4 4-4 4" />
                   </svg>

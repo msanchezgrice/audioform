@@ -1,8 +1,10 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-const repoRoot = path.resolve(process.cwd(), "../..");
-const docsRoot = path.join(repoRoot, "content", "docs");
+const docsRoots = () => [
+  path.join(/* turbopackIgnore: true */ process.cwd(), "content", "docs"),
+  path.resolve(/* turbopackIgnore: true */ process.cwd(), "../..", "content", "docs"),
+];
 
 export const docsIndex = [
   {
@@ -52,9 +54,28 @@ export const docsIndex = [
 export async function getDocContent(slug: string) {
   const entry = docsIndex.find((doc) => doc.slug === slug);
   if (!entry) return null;
-  const content = await fs.readFile(path.join(docsRoot, entry.file), "utf8");
+
+  let content: string | null = null;
+  for (const docsRoot of docsRoots()) {
+    try {
+      content = await fs.readFile(path.join(/* turbopackIgnore: true */ docsRoot, entry.file), "utf8");
+      break;
+    } catch (error) {
+      if (
+        !error ||
+        typeof error !== "object" ||
+        !("code" in error) ||
+        error.code !== "ENOENT"
+      ) {
+        throw error;
+      }
+    }
+  }
+
+  if (content === null) return null;
+
   return {
     ...entry,
-    content,
+    content: content.replace(/^#\s+[^\r\n]+\r?\n+/, ""),
   };
 }
