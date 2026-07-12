@@ -1013,8 +1013,24 @@
   }
 
   .promptBody {
-    padding: 1.5rem 1rem;
+    padding: 1.25rem 1rem;
     min-height: 0;
+  }
+
+  .preflight .stepLabel {
+    margin-bottom: 0.75rem;
+  }
+
+  .preflight .promptHint,
+  .preflight .consentLinks,
+  .preflightChoices,
+  .preflightDetails {
+    margin-top: 0.75rem;
+  }
+
+  .preflight .dataNotice {
+    margin-top: 0.5rem;
+    line-height: 1.4;
   }
 
   .progressTrack {
