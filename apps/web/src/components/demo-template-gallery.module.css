@@ -31,7 +31,7 @@
   background: var(--accent);
 }
 
-.header h2 {
+.header h1 {
   margin: 0;
   font-family: var(--font-display), Georgia, serif;
   letter-spacing: -0.025em;
@@ -65,6 +65,12 @@
     background 200ms ease,
     box-shadow 200ms ease,
     border-color 200ms ease;
+}
+
+.templateCard:focus-visible,
+.modeToggle:focus-visible {
+  outline: 3px solid rgba(208, 90, 54, 0.32);
+  outline-offset: 3px;
 }
 
 .templateCard:hover {
@@ -139,6 +145,8 @@
   border: none;
   padding: 0;
   flex-shrink: 0;
+  min-width: 44px;
+  min-height: 44px;
 }
 
 .modeToggleActive {
@@ -147,7 +155,7 @@
 
 .modeThumb {
   position: absolute;
-  top: 2px;
+  top: 12px;
   left: 2px;
   width: 20px;
   height: 20px;
@@ -188,7 +196,7 @@
     margin-top: 0.25rem;
   }
 
-  .header h2 {
+  .header h1 {
     font-size: 1.5rem;
   }
 
@@ -212,13 +220,13 @@
   }
 
   .templateCard {
-    padding: 0.75rem;
+    padding: 0.55rem;
     border-radius: var(--radius);
   }
 
   .templateCard strong {
-    font-size: 0.8125rem;
-    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    margin-top: 0;
     line-height: 1.3;
   }
 
@@ -227,15 +235,14 @@
   }
 
   .templateMeta {
-    font-size: 0.5625rem;
-    padding: 0.2rem 0.5rem;
+    display: none;
   }
 
   .header {
     gap: 0.5rem;
   }
 
-  .header h2 {
+  .header h1 {
     font-size: 1.25rem;
   }
 
@@ -244,7 +251,14 @@
   }
 
   .eyebrow {
-    font-size: 0.6875rem;
-    padding: 0.35rem 0.75rem;
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .templateCard,
+  .modeToggle,
+  .modeThumb {
+    transition: none !important;
   }
 }

@@ -27,7 +27,7 @@ const sampleResult = {
   ],
   summary: "Avery leads product at a SaaS startup and wants to ship AI projects for the current role.",
   metadata: {
-    model: "gpt-realtime",
+    model: "gpt-realtime-2.1",
     voice: "marin",
     startedAt: "2026-03-10T12:00:00.000Z",
   },
@@ -60,7 +60,7 @@ export default function HomePage() {
         <div className={styles.heroAside}>
           <div className={styles.ctaCard}>
             <strong>Import existing forms</strong>
-            <p>Paste a public URL from Typeform, Google Forms, Jotform, or HubSpot and launch the audio version without rebuilding.</p>
+            <p>Paste a public URL from Typeform, Google Forms, Jotform, or HubSpot, then review an editable draft before testing the interview.</p>
           </div>
           <div className={styles.surface}>
             <strong>Developer-first integrations</strong>
@@ -74,7 +74,7 @@ export default function HomePage() {
           <div>
             <h2 className={styles.sectionTitle}>Old way vs. <em>new way</em></h2>
             <p className={styles.sectionIntro}>
-              Import your existing form and give people a conversational path that&apos;s easier to finish.
+              Import your existing form and compare a guided conversational path with the current experience.
             </p>
           </div>
         </div>
@@ -90,11 +90,11 @@ export default function HomePage() {
               </div>
               <div className={styles.metricRow}>
                 <span>Duration</span>
-                <strong>Longer — easier to abandon</strong>
+                <strong>Respondent reads and types each answer</strong>
               </div>
               <div className={styles.metricRow}>
                 <span>Completion</span>
-                <strong>Lower when the form feels like work</strong>
+                <strong>Use as the measured baseline</strong>
               </div>
             </div>
           </article>
@@ -109,11 +109,11 @@ export default function HomePage() {
               </div>
               <div className={styles.metricRow}>
                 <span>Duration</span>
-                <strong>Shorter — the host keeps momentum</strong>
+                <strong>Evaluate in a controlled pilot</strong>
               </div>
               <div className={styles.metricRow}>
                 <span>Completion</span>
-                <strong>Higher when the flow feels guided</strong>
+                <strong>Compare in an A/B test</strong>
               </div>
             </div>
           </article>
@@ -143,7 +143,7 @@ export default function HomePage() {
           <article className={styles.stepCard}>
             <span className={styles.stepNumber}>3</span>
             <h3>Export the result</h3>
-            <p>Download JSON, pull through the HTTP API, CLI, or MCP server.</p>
+            <p>Download JSON locally, or use a configured HTTP API and CLI deployment.</p>
           </article>
         </div>
       </section>
@@ -218,9 +218,17 @@ export default function HomePage() {
           <article className={styles.integrationCard}>
             <div className={styles.eyebrow}>MCP</div>
             <h3>MCP</h3>
-            <p>Expose to coding agents.</p>
+            <p>Expose schemas and templates to coding agents.</p>
           </article>
         </div>
+        <article className={styles.outputCard}>
+          <h3>Hosted API boundary</h3>
+          <p>
+            Transient session APIs and public Realtime issuance are disabled in hosted production by default.
+            Enable them only after adding a durable session store, a distributed rate limiter, and server authentication;
+            the checked-in process-local implementations are for development and controlled evaluation.
+          </p>
+        </article>
       </section>
 
       <section className={styles.section}>
@@ -234,7 +242,7 @@ export default function HomePage() {
         </div>
         <article className={styles.outputCard}>
           <h3>AudioformSessionResult</h3>
-          <p>Same shape across UI, HTTP API, CLI, and MCP.</p>
+          <p>One schema across the UI, HTTP API, CLI, and MCP resources.</p>
           <pre className={styles.jsonBlock}>{JSON.stringify(sampleResult, null, 2)}</pre>
         </article>
         <article className={styles.outputCard}>

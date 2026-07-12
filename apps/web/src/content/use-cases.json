@@ -1,0 +1,102 @@
+[
+  {
+    "slug": "customer-feedback",
+    "title": "Customer feedback interviews",
+    "description": "Collect a score, the reason behind it, and a concrete follow-up while the customer still has the experience in mind.",
+    "audience": "Product, success, and research teams",
+    "fields": ["Overall rating", "Reason for the score", "Most important friction", "Permission to follow up", "Contact preference"],
+    "workflow": ["Explain the purpose and expected length", "Ask for a score, then invite context", "Confirm the captured summary", "Export the structured result for review"],
+    "limitations": ["A voice interview does not make a sample representative", "Do not record or infer sensitive traits without a documented need and consent"],
+    "relatedPosts": ["customer-interview-workflow", "improve-form-completion"]
+  },
+  {
+    "slug": "user-research",
+    "title": "User research interviews",
+    "description": "Run a consistent interview guide while preserving room for participants to explain their goals, workarounds, and mental models.",
+    "audience": "Researchers, designers, and product managers",
+    "fields": ["Participant context", "Current workflow", "Recent example", "Pain points", "Follow-up consent"],
+    "workflow": ["Capture informed consent", "Start with behavior, not opinions", "Ask neutral follow-ups", "Review themes outside the interview"],
+    "limitations": ["Automated summaries require researcher review", "Do not treat a guided interview as a substitute for moderated research in high-risk studies"],
+    "relatedPosts": ["customer-interview-workflow", "voice-forms-accessibility"]
+  },
+  {
+    "slug": "lead-qualification",
+    "title": "Conversational lead qualification",
+    "description": "Gather need, context, timing, and fit in a guided conversation that produces a consistent record for human sales review.",
+    "audience": "Sales and revenue teams",
+    "fields": ["Company and role", "Current process", "Desired outcome", "Urgency", "Next-step consent"],
+    "workflow": ["State why the information is needed", "Ask one qualification dimension at a time", "Confirm names and numbers", "Route the export for human review"],
+    "limitations": ["Talkform should not make autonomous eligibility decisions", "Avoid collecting unnecessary financial or sensitive personal data"],
+    "relatedPosts": ["conversational-lead-qualification", "audio-form-privacy-security"]
+  },
+  {
+    "slug": "sales-discovery",
+    "title": "Sales discovery intake",
+    "description": "Prepare a discovery call with a structured account brief while letting prospects describe their situation in their own words.",
+    "audience": "Account executives and sales engineers",
+    "fields": ["Business objective", "Existing stack", "Decision process", "Constraints", "Success criteria"],
+    "workflow": ["Set expectations", "Collect baseline context", "Probe for a recent example", "Confirm the summary before export"],
+    "limitations": ["A pre-call interview cannot replace relationship-building", "Integration and security claims still need human validation"],
+    "relatedPosts": ["conversational-lead-qualification", "customer-interview-workflow"]
+  },
+  {
+    "slug": "customer-onboarding",
+    "title": "Customer onboarding intake",
+    "description": "Capture goals, stakeholders, constraints, and implementation context before a kickoff so the team can spend the meeting on decisions.",
+    "audience": "Implementation and customer success teams",
+    "fields": ["Primary objective", "Stakeholders", "Timeline", "Technical context", "Known risks"],
+    "workflow": ["Describe how answers will be used", "Collect account context", "Verify dates and names", "Share the reviewed brief with the delivery team"],
+    "limitations": ["Do not request credentials or secrets", "Customers need a way to correct imported or transcribed details"],
+    "relatedPosts": ["customer-interview-workflow", "audio-form-privacy-security"]
+  },
+  {
+    "slug": "job-applications",
+    "title": "Job application intake",
+    "description": "Offer candidates a conversational path for role history and motivation while preserving an equivalent text option and human review.",
+    "audience": "Recruiting teams",
+    "fields": ["Contact details", "Relevant experience", "Work authorization question", "Role motivation", "Accommodation request channel"],
+    "workflow": ["Offer voice and text equally", "Ask job-related questions only", "Let candidates review every field", "Send results to trained human reviewers"],
+    "limitations": ["Do not infer protected characteristics from voice", "Employment decisions require legal review and meaningful human oversight"],
+    "relatedPosts": ["voice-forms-accessibility", "audio-form-privacy-security"]
+  },
+  {
+    "slug": "project-kickoff",
+    "title": "Project kickoff intake",
+    "description": "Turn scattered pre-kickoff context into a structured brief covering outcomes, owners, dependencies, deadlines, and open questions.",
+    "audience": "Agencies, consultants, and delivery teams",
+    "fields": ["Project outcome", "Decision makers", "Dependencies", "Target dates", "Definition of done"],
+    "workflow": ["Collect a concise project narrative", "Clarify names and dates", "Surface contradictions for review", "Export a kickoff-ready brief"],
+    "limitations": ["The generated brief is a draft", "Scope and contractual commitments require explicit human agreement"],
+    "relatedPosts": ["customer-interview-workflow", "openai-realtime-structured-extraction"]
+  },
+  {
+    "slug": "support-triage",
+    "title": "Support triage intake",
+    "description": "Guide customers through symptoms, impact, environment, and attempted fixes before a support specialist reviews the case.",
+    "audience": "Support and operations teams",
+    "fields": ["Issue summary", "Business impact", "Environment", "Steps to reproduce", "Safe contact details"],
+    "workflow": ["Warn users not to share passwords", "Capture observable facts", "Confirm the reproduction summary", "Route by impact for human response"],
+    "limitations": ["Do not claim automated resolution", "Urgent safety or account-compromise reports need a separate escalation path"],
+    "relatedPosts": ["openai-realtime-structured-extraction", "audio-form-privacy-security"]
+  },
+  {
+    "slug": "education-intake",
+    "title": "Education and learning intake",
+    "description": "Collect learning goals, prior knowledge, constraints, and preferred support without treating a conversation as a formal assessment.",
+    "audience": "Educators, coaches, and learning teams",
+    "fields": ["Learning goal", "Prior experience", "Available time", "Preferred examples", "Accessibility needs"],
+    "workflow": ["Explain how answers affect the learning plan", "Invite a self-assessment", "Confirm preferences", "Let an educator review the result"],
+    "limitations": ["Not a diagnostic or credentialing assessment", "Minors and student records can trigger additional consent and privacy duties"],
+    "relatedPosts": ["voice-forms-accessibility", "customer-interview-workflow"]
+  },
+  {
+    "slug": "agency-briefs",
+    "title": "Agency and creative briefs",
+    "description": "Capture audience, problem, deliverables, constraints, references, and approval process in a client-friendly conversation.",
+    "audience": "Creative, marketing, and product agencies",
+    "fields": ["Audience", "Problem to solve", "Deliverables", "Brand constraints", "Approval owner"],
+    "workflow": ["Frame the brief as a draft", "Collect examples and exclusions", "Confirm the hierarchy of goals", "Review the export together"],
+    "limitations": ["Referenced assets still need rights review", "A generated brief is not a signed statement of work"],
+    "relatedPosts": ["customer-interview-workflow", "improve-form-completion"]
+  }
+]

@@ -8,6 +8,7 @@ import {
   audioformConfigSchema,
   listAudioformTemplates,
 } from "@talkform/core";
+import { apiRequestHeaders } from "./api-client";
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -59,7 +60,9 @@ async function exportSession() {
     throw new Error("Usage: audioform export --session <id> --format json|markdown");
   }
 
-  const response = await fetch(`${baseUrl}/api/sessions/${sessionId}/export?format=${format}`);
+  const response = await fetch(`${baseUrl}/api/sessions/${sessionId}/export?format=${format}`, {
+    headers: apiRequestHeaders(),
+  });
   const text = await response.text();
   if (!response.ok) {
     throw new Error(text);

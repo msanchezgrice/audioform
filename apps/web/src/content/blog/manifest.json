@@ -1,0 +1,138 @@
+[
+  {
+    "slug": "typeform-to-voice-form",
+    "title": "How to Turn a Typeform Into a Voice Interview Without Losing Its Structure",
+    "description": "A practical migration guide for translating Typeform questions, choices, required fields, and branching into a reviewable browser voice interview.",
+    "publishedAt": "2026-07-12",
+    "updatedAt": "2026-07-12",
+    "tags": ["form migration", "Typeform", "voice UX"],
+    "related": ["google-forms-to-voice-form", "voice-forms-accessibility", "improve-form-completion"],
+    "references": [
+      { "title": "Retrieve a form", "publisher": "Typeform Developer Platform", "url": "https://www.typeform.com/developers/create/reference/retrieve-form/" },
+      { "title": "Retrieve responses", "publisher": "Typeform Developer Platform", "url": "https://www.typeform.com/developers/responses/reference/retrieve-responses/" },
+      { "title": "Webhooks overview", "publisher": "Typeform Developer Platform", "url": "https://www.typeform.com/developers/webhooks/" },
+      { "title": "Build conditions or skip logic", "publisher": "Typeform Help Center", "url": "https://help.typeform.com/hc/en-us/articles/360038717972-Can-I-build-conditions-or-skip-logic-into-typeforms" },
+      { "title": "Forms tutorial", "publisher": "W3C Web Accessibility Initiative", "url": "https://www.w3.org/WAI/tutorials/forms/" },
+      { "title": "MediaDevices getUserMedia", "publisher": "MDN Web Docs", "url": "https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia" }
+    ]
+  },
+  {
+    "slug": "google-forms-to-voice-form",
+    "title": "Google Forms to Voice Form: A Field-by-Field Migration Playbook",
+    "description": "Learn which Google Forms concepts translate cleanly to a voice interview, what needs human review, and how to preserve a dependable structured result.",
+    "publishedAt": "2026-07-12",
+    "updatedAt": "2026-07-12",
+    "tags": ["form migration", "Google Forms", "implementation"],
+    "related": ["typeform-to-voice-form", "openai-realtime-structured-extraction", "audio-form-privacy-security"],
+    "references": [
+      { "title": "Google Forms API overview", "publisher": "Google for Developers", "url": "https://developers.google.com/workspace/forms/api/guides" },
+      { "title": "Google Forms REST API reference", "publisher": "Google for Developers", "url": "https://developers.google.com/workspace/forms/api/reference/rest" },
+      { "title": "Form resource", "publisher": "Google for Developers", "url": "https://developers.google.com/workspace/forms/api/reference/rest/v1/forms" },
+      { "title": "FormResponse resource", "publisher": "Google for Developers", "url": "https://developers.google.com/workspace/forms/api/reference/rest/v1/forms.responses" },
+      { "title": "Google Workspace authentication and authorization", "publisher": "Google for Developers", "url": "https://developers.google.com/workspace/guides/auth-overview" },
+      { "title": "Forms tutorial", "publisher": "W3C Web Accessibility Initiative", "url": "https://www.w3.org/WAI/tutorials/forms/" }
+    ]
+  },
+  {
+    "slug": "voice-forms-accessibility",
+    "title": "Voice Forms and Accessibility: Why Audio Must Remain an Option, Not a Gate",
+    "description": "A WCAG-informed guide to consent, keyboard support, text alternatives, focus, error recovery, and inclusive microphone experiences in conversational forms.",
+    "publishedAt": "2026-07-12",
+    "updatedAt": "2026-07-12",
+    "tags": ["accessibility", "voice UX", "WCAG"],
+    "related": ["audio-form-privacy-security", "improve-form-completion", "customer-interview-workflow"],
+    "references": [
+      { "title": "Web Content Accessibility Guidelines 2.2", "publisher": "W3C", "url": "https://www.w3.org/TR/WCAG22/" },
+      { "title": "Forms tutorial", "publisher": "W3C Web Accessibility Initiative", "url": "https://www.w3.org/WAI/tutorials/forms/" },
+      { "title": "Accessibility principles", "publisher": "W3C Web Accessibility Initiative", "url": "https://www.w3.org/WAI/fundamentals/accessibility-principles/" },
+      { "title": "ARIA live regions", "publisher": "MDN Web Docs", "url": "https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Guides/Live_regions" },
+      { "title": "MediaDevices getUserMedia", "publisher": "MDN Web Docs", "url": "https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia" },
+      { "title": "Understanding keyboard accessibility", "publisher": "W3C Web Accessibility Initiative", "url": "https://www.w3.org/WAI/WCAG21/Understanding/keyboard-accessible.html" }
+    ]
+  },
+  {
+    "slug": "conversational-lead-qualification",
+    "title": "Designing a Conversational Lead Qualification Form That Sales Can Trust",
+    "description": "A field-tested framework for gathering fit, need, urgency, and context conversationally while preserving consent and a CRM-ready structured record.",
+    "publishedAt": "2026-07-12",
+    "updatedAt": "2026-07-12",
+    "tags": ["lead qualification", "sales", "conversation design"],
+    "related": ["customer-interview-workflow", "improve-form-completion", "audio-form-privacy-security"],
+    "references": [
+      { "title": "Leads and Opportunities for Lightning Experience", "publisher": "Salesforce Trailhead", "url": "https://trailhead.salesforce.com/content/learn/modules/leads_opportunities_lightning_experience" },
+      { "title": "Lead qualification guide", "publisher": "HubSpot", "url": "https://blog.hubspot.com/sales/ultimate-guide-to-sales-qualification" },
+      { "title": "Data minimisation", "publisher": "UK Information Commissioner's Office", "url": "https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/data-protection-principles/a-guide-to-the-data-protection-principles/data-minimisation/" },
+      { "title": "Forms tutorial", "publisher": "W3C Web Accessibility Initiative", "url": "https://www.w3.org/WAI/tutorials/forms/" },
+      { "title": "Realtime prompting guide", "publisher": "OpenAI", "url": "https://developers.openai.com/api/docs/guides/realtime-models-prompting" },
+      { "title": "Business guidance concerning privacy", "publisher": "Federal Trade Commission", "url": "https://www.ftc.gov/business-guidance/privacy-security" }
+    ]
+  },
+  {
+    "slug": "customer-interview-workflow",
+    "title": "A Repeatable Customer Interview Workflow From Research Question to Structured Evidence",
+    "description": "Plan, conduct, review, and synthesize customer interviews without turning an exploratory conversation into a rigid survey or an untraceable transcript.",
+    "publishedAt": "2026-07-12",
+    "updatedAt": "2026-07-12",
+    "tags": ["user research", "customer interviews", "workflow"],
+    "related": ["conversational-lead-qualification", "voice-forms-accessibility", "openai-realtime-structured-extraction"],
+    "references": [
+      { "title": "Plan a round of user research", "publisher": "GOV.UK Service Manual", "url": "https://www.gov.uk/service-manual/user-research/plan-round-of-user-research" },
+      { "title": "Plan user research for your service", "publisher": "GOV.UK Service Manual", "url": "https://www.gov.uk/service-manual/user-research/plan-user-research-for-your-service" },
+      { "title": "Getting informed consent for user research", "publisher": "GOV.UK Service Manual", "url": "https://www.gov.uk/service-manual/user-research/getting-users-consent-for-research" },
+      { "title": "User interviews", "publisher": "Nielsen Norman Group", "url": "https://www.nngroup.com/articles/user-interviews/" },
+      { "title": "Cookies and privacy notices in detail", "publisher": "UK Information Commissioner's Office", "url": "https://ico.org.uk/for-organisations/advice-for-small-organisations/privacy-notices-and-cookies/cookies-and-privacy-notices-in-detail/" },
+      { "title": "Plain language", "publisher": "U.S. General Services Administration", "url": "https://www.plainlanguage.gov/guidelines/" }
+    ]
+  },
+  {
+    "slug": "improve-form-completion",
+    "title": "How to Improve Form Completion Without Dark Patterns or Unsupported Claims",
+    "description": "A practical measurement and design guide for reducing form friction through scope, sequencing, feedback, performance, and honest experimentation.",
+    "publishedAt": "2026-07-12",
+    "updatedAt": "2026-07-12",
+    "tags": ["form design", "conversion", "experimentation"],
+    "related": ["voice-forms-accessibility", "conversational-lead-qualification", "typeform-to-voice-form"],
+    "references": [
+      { "title": "Forms tutorial", "publisher": "W3C Web Accessibility Initiative", "url": "https://www.w3.org/WAI/tutorials/forms/" },
+      { "title": "Question pages", "publisher": "GOV.UK Design System", "url": "https://design-system.service.gov.uk/patterns/question-pages/" },
+      { "title": "Error message component", "publisher": "GOV.UK Design System", "url": "https://design-system.service.gov.uk/components/error-message/" },
+      { "title": "Core Web Vitals", "publisher": "web.dev", "url": "https://web.dev/articles/vitals" },
+      { "title": "Form design quick fixes", "publisher": "Nielsen Norman Group", "url": "https://www.nngroup.com/articles/web-form-design/" },
+      { "title": "A/B testing statistics", "publisher": "Optimizely", "url": "https://www.optimizely.com/optimization-glossary/statistical-significance/" }
+    ]
+  },
+  {
+    "slug": "openai-realtime-structured-extraction",
+    "title": "OpenAI Realtime Structured Extraction: A Reliable Architecture for Voice Forms",
+    "description": "A technical guide to realtime session design, tool calls, validation, correction, observability, and model upgrades for structured voice interviews.",
+    "publishedAt": "2026-07-12",
+    "updatedAt": "2026-07-12",
+    "tags": ["OpenAI Realtime", "structured data", "engineering"],
+    "related": ["audio-form-privacy-security", "google-forms-to-voice-form", "customer-interview-workflow"],
+    "references": [
+      { "title": "Realtime API guide", "publisher": "OpenAI", "url": "https://developers.openai.com/api/docs/guides/realtime" },
+      { "title": "GPT Realtime 2.1 model", "publisher": "OpenAI", "url": "https://developers.openai.com/api/docs/models/gpt-realtime-2.1" },
+      { "title": "Realtime prompting guide", "publisher": "OpenAI", "url": "https://developers.openai.com/api/docs/guides/realtime-models-prompting" },
+      { "title": "Realtime sessions reference", "publisher": "OpenAI", "url": "https://developers.openai.com/api/docs/api-reference/realtime-sessions" },
+      { "title": "Function calling", "publisher": "OpenAI", "url": "https://developers.openai.com/api/docs/guides/function-calling" },
+      { "title": "Your data", "publisher": "OpenAI API Platform", "url": "https://developers.openai.com/api/docs/guides/your-data" }
+    ]
+  },
+  {
+    "slug": "audio-form-privacy-security",
+    "title": "Audio Form Privacy and Security: A Practical Launch Checklist",
+    "description": "A product and engineering checklist for consent, microphone permissions, data minimization, retention, access control, vendors, and incident readiness.",
+    "publishedAt": "2026-07-12",
+    "updatedAt": "2026-07-12",
+    "tags": ["privacy", "security", "voice UX"],
+    "related": ["voice-forms-accessibility", "openai-realtime-structured-extraction", "customer-interview-workflow"],
+    "references": [
+      { "title": "Data minimisation", "publisher": "UK Information Commissioner's Office", "url": "https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/data-protection-principles/a-guide-to-the-data-protection-principles/data-minimisation/" },
+      { "title": "Security guidance", "publisher": "Federal Trade Commission", "url": "https://www.ftc.gov/business-guidance/privacy-security" },
+      { "title": "California Consumer Privacy Act", "publisher": "California Department of Justice", "url": "https://oag.ca.gov/privacy/ccpa" },
+      { "title": "MediaDevices getUserMedia", "publisher": "MDN Web Docs", "url": "https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia" },
+      { "title": "OWASP Application Security Verification Standard", "publisher": "OWASP Foundation", "url": "https://owasp.org/www-project-application-security-verification-standard/" },
+      { "title": "Your data", "publisher": "OpenAI API Platform", "url": "https://developers.openai.com/api/docs/guides/your-data" }
+    ]
+  }
+]

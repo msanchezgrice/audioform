@@ -8,7 +8,7 @@ export const LEAD_GENERATION_TEMPLATE: AudioformConfig = {
   instructions:
     "Keep the pace direct and commercial. Confirm company context, desired outcome, and urgency without sounding robotic.",
   realtime: {
-    model: "gpt-realtime",
+    model: "gpt-realtime-2.1",
     voice: "marin",
   },
   output: {

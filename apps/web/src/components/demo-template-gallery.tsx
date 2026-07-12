@@ -2,15 +2,17 @@
 
 import { useState } from "react";
 import type { AudioformConfig } from "@talkform/core";
+import { emitTalkformEvent } from "@talkform/react";
 import { AudioformClient } from "@/components/audioform-client";
 import styles from "./demo-template-gallery.module.css";
 
 type DemoTemplateGalleryProps = {
   templates: AudioformConfig[];
   vendorUrl?: string;
+  voiceEnabled?: boolean;
 };
 
-export function DemoTemplateGallery({ templates, vendorUrl }: DemoTemplateGalleryProps) {
+export function DemoTemplateGallery({ templates, vendorUrl, voiceEnabled = false }: DemoTemplateGalleryProps) {
   const [selectedTemplateId, setSelectedTemplateId] = useState(templates[0]?.id ?? "");
   const [consumerMode, setConsumerMode] = useState(false);
   const selectedTemplate =
@@ -24,7 +26,7 @@ export function DemoTemplateGallery({ templates, vendorUrl }: DemoTemplateGaller
     <div className={styles.shell}>
       <section className={styles.header}>
         <div className={styles.eyebrow}>Template examples</div>
-        <h2>Switch the live demo between real form types</h2>
+        <h1>Try a Talkform interview</h1>
         <p>
           These examples are modeled after common Typeform-style starting points so the product feels closer to an
           actual form builder instead of a single canned onboarding flow.
@@ -38,7 +40,11 @@ export function DemoTemplateGallery({ templates, vendorUrl }: DemoTemplateGaller
                 key={template.id}
                 type="button"
                 className={`${styles.templateCard}${isActive ? ` ${styles.templateCardActive}` : ""}`}
-                onClick={() => setSelectedTemplateId(template.id)}
+                onClick={() => {
+                  setSelectedTemplateId(template.id);
+                  emitTalkformEvent("template_selected", { templateId: template.id });
+                }}
+                aria-pressed={isActive}
               >
                 <span className={styles.templateMeta}>{isActive ? "Selected" : "Example"}</span>
                 <strong>{template.title}</strong>
@@ -54,8 +60,14 @@ export function DemoTemplateGallery({ templates, vendorUrl }: DemoTemplateGaller
         <button
           type="button"
           className={`${styles.modeToggle} ${consumerMode ? styles.modeToggleActive : ""}`}
-          onClick={() => setConsumerMode(!consumerMode)}
+          onClick={() => {
+            const nextMode = !consumerMode;
+            setConsumerMode(nextMode);
+            emitTalkformEvent("view_mode_selected", { view: nextMode ? "consumer" : "developer" });
+          }}
           aria-label="Toggle consumer view"
+          role="switch"
+          aria-checked={consumerMode}
         >
           <span className={styles.modeThumb} />
         </button>
@@ -72,6 +84,7 @@ export function DemoTemplateGallery({ templates, vendorUrl }: DemoTemplateGaller
         subheading={selectedTemplate.description ?? "Run the live Talkform demo against this example form type."}
         vendorUrl={vendorUrl}
         consumerMode={consumerMode}
+        voiceEnabled={voiceEnabled}
       />
     </div>
   );

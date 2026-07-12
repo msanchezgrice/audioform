@@ -4,7 +4,7 @@
   "description": "Conversational intake for role, experience, goals, and AI comfort so a product can map the user into a learning plan.",
   "instructions": "Keep the tone practical. Tie each question back to what kind of learning plan or project direction the product can generate from the answer.",
   "realtime": {
-    "model": "gpt-realtime",
+    "model": "gpt-realtime-2.1",
     "voice": "marin"
   },
   "output": {

@@ -1,7 +1,9 @@
-import vm from "node:vm";
-import { existsSync } from "node:fs";
+import { lookup as dnsLookup } from "node:dns/promises";
 import { audioformConfigSchema, type AudioformConfig, type AudioformFieldType } from "@talkform/core";
 import { load, type Cheerio, type CheerioAPI } from "cheerio";
+import ipaddr from "ipaddr.js";
+import JSON5 from "json5";
+import { Agent, fetch as undiciFetch } from "undici";
 
 export type ImportProvider =
   | "typeform"
@@ -14,8 +16,7 @@ export type ImportStrategy =
   | "provider-config"
   | "static-html"
   | "embedded-script"
-  | "rendered-dom"
-  | `playwright:${string}`;
+  | "rendered-dom";
 
 export type ImportedOption = {
   label: string;
@@ -94,12 +95,21 @@ type HtmlExtractionInput = {
   html: string;
 };
 
-type ImportUrlOptions = {
+type DnsAddress = { address: string; family: number };
+type PublicDnsResolver = (
+  hostname: string,
+  options: { all: true; verbatim: true },
+) => Promise<DnsAddress[]>;
+
+export type ImportUrlOptions = {
   depth?: number;
   fetcher?: typeof fetch;
+  dnsResolver?: PublicDnsResolver;
+  maxBytes?: number;
+  timeoutMs?: number;
 };
 
-type DomElement = any;
+type DomElement = ReturnType<CheerioAPI>[number] & { tagName: string };
 
 const DEFAULT_THEME = {
   accent: "#0f8e79",
@@ -107,12 +117,9 @@ const DEFAULT_THEME = {
   panel: "#ffffff",
 } as const;
 
-const TYPEFORM_LOCAL_HOSTS = [
-  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-  "/usr/bin/google-chrome",
-  "/usr/bin/chromium-browser",
-  "/usr/bin/chromium",
-];
+const DEFAULT_IMPORT_MAX_BYTES = 2_000_000;
+const DEFAULT_IMPORT_TIMEOUT_MS = 10_000;
+const MAX_IMPORT_REDIRECTS = 4;
 
 export function detectImportProvider(input: { url: string; html?: string }): ImportProvider {
   const html = input.html?.toLowerCase() ?? "";
@@ -184,7 +191,6 @@ export function extractImportedSourceFormFromHtml(input: HtmlExtractionInput): I
 }
 
 export async function importFormFromUrl(url: string, options: ImportUrlOptions = {}): Promise<ImportedSourceForm> {
-  const fetcher = options.fetcher ?? fetch;
   const depth = options.depth ?? 0;
   const normalizedUrl = normalizeImportUrl(url);
 
@@ -192,21 +198,7 @@ export async function importFormFromUrl(url: string, options: ImportUrlOptions =
     throw new Error("Import recursion limit reached.");
   }
 
-  const response = await fetcher(normalizedUrl, {
-    headers: {
-      "user-agent": "Talkform Importer/1.0",
-    },
-    redirect: "follow",
-    cache: "no-store",
-    signal: AbortSignal.timeout(20_000),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Unable to fetch the form URL (${response.status}).`);
-  }
-
-  const html = await response.text();
-  const finalUrl = response.url || normalizedUrl;
+  const { html, finalUrl } = await fetchPublicHtml(normalizedUrl, options);
   const direct = extractImportedSourceFormFromHtml({ url: finalUrl, html });
   if (direct) {
     return direct;
@@ -217,7 +209,6 @@ export async function importFormFromUrl(url: string, options: ImportUrlOptions =
       const nested = await importFormFromUrl(embeddedUrl, {
         ...options,
         depth: depth + 1,
-        fetcher,
       });
       return {
         ...nested,
@@ -229,11 +220,6 @@ export async function importFormFromUrl(url: string, options: ImportUrlOptions =
     } catch {
       // Try the next embed candidate.
     }
-  }
-
-  const playwrightResult = await extractWithPlaywright(finalUrl);
-  if (playwrightResult) {
-    return playwrightResult;
   }
 
   throw new Error("Unable to extract a public form from the provided URL.");
@@ -283,7 +269,7 @@ export function sourceToAudioformConfig(source: ImportedSourceForm): AudioformCo
         : "Keep the tone practical. Ask one question at a time and preserve the structure of the imported form.",
     theme: { ...DEFAULT_THEME },
     realtime: {
-      model: "gpt-realtime",
+      model: "gpt-realtime-2.1",
       voice: "marin",
     },
     output: {
@@ -308,6 +294,44 @@ export async function buildImportSuggestion(url: string): Promise<ImportSuggesti
     sourceLogic: source.sourceLogic,
     completeness: source.completeness,
   };
+}
+
+function boundedRequiredCopy(value: string | undefined, fallback: string, maxLength: number) {
+  const normalized = value?.trim();
+  return normalized ? normalized.slice(0, maxLength) : fallback;
+}
+
+function boundedOptionalCopy(value: string | undefined, fallback: string | undefined, maxLength: number) {
+  const normalized = value?.trim();
+  return normalized ? normalized.slice(0, maxLength) : fallback;
+}
+
+export function mergeRefinedCopy(draft: AudioformConfig, candidate: AudioformConfig): AudioformConfig {
+  return {
+    ...draft,
+    title: boundedRequiredCopy(candidate.title, draft.title, 160),
+    description: boundedOptionalCopy(candidate.description, draft.description, 1_000),
+    instructions: boundedOptionalCopy(candidate.instructions, draft.instructions, 2_000),
+    fields: draft.fields.map((field, index) => {
+      const candidateField = candidate.fields[index];
+      const copy = candidateField?.id === field.id ? candidateField : undefined;
+
+      return {
+        ...field,
+        label: boundedRequiredCopy(copy?.label, field.label, 120),
+        promptTitle: boundedRequiredCopy(copy?.promptTitle, field.promptTitle, 160),
+        promptDetail: boundedRequiredCopy(copy?.promptDetail, field.promptDetail, 1_000),
+        visualTitle: boundedOptionalCopy(copy?.visualTitle, field.visualTitle, 160),
+        visualDetail: boundedOptionalCopy(copy?.visualDetail, field.visualDetail, 1_000),
+        agentHint: boundedOptionalCopy(copy?.agentHint, field.agentHint, 1_000),
+        placeholder: boundedOptionalCopy(copy?.placeholder, field.placeholder, 240),
+      };
+    }),
+  };
+}
+
+export function isImportAiRefinementEnabled(value?: string) {
+  return value?.trim().toLowerCase() === "true";
 }
 
 function extractTypeformFromHtml(input: HtmlExtractionInput): ImportedSourceForm | null {
@@ -726,7 +750,7 @@ function resolveTypeformTemplateText(value: string, replacements: Map<string, st
   return value.replace(/\{\{field:([^}]+)\}\}/g, (_match, ref) => replacements.get(String(ref)) || "previous answer");
 }
 
-function selectPrimaryFormRoot($: CheerioAPI): Cheerio<any> | null {
+function selectPrimaryFormRoot($: CheerioAPI): Cheerio<DomElement> | null {
   const forms = $("form").toArray().filter(isElementNode);
   if (forms.length === 0) {
     return null;
@@ -742,7 +766,7 @@ function selectPrimaryFormRoot($: CheerioAPI): Cheerio<any> | null {
   return primary?.count ? $(primary.element) : null;
 }
 
-function selectRenderedFormContainer($: CheerioAPI): Cheerio<any> | null {
+function selectRenderedFormContainer($: CheerioAPI): Cheerio<DomElement> | null {
   const candidates = $("body *")
     .toArray()
     .filter(isElementNode)
@@ -756,7 +780,7 @@ function selectRenderedFormContainer($: CheerioAPI): Cheerio<any> | null {
   return candidates[0] ? $(candidates[0].element) : null;
 }
 
-function extractQuestionsFromDom($: CheerioAPI, root: Cheerio<any>): ImportedQuestion[] {
+function extractQuestionsFromDom($: CheerioAPI, root: Cheerio<DomElement>): ImportedQuestion[] {
   const questions: ImportedQuestion[] = [];
   const processedNames = new Set<string>();
   const processedElements = new Set<string>();
@@ -917,7 +941,7 @@ function extractQuestionsFromDom($: CheerioAPI, root: Cheerio<any>): ImportedQue
 
 function buildChoiceQuestionFromGroup(
   $: CheerioAPI,
-  root: Cheerio<any>,
+  root: Cheerio<DomElement>,
   members: DomElement[],
   preferredPrompt?: string,
 ): ImportedQuestion | null {
@@ -990,7 +1014,7 @@ function deriveOptionLabel($: CheerioAPI, input: DomElement) {
   return cleanText($(input).attr("aria-label") || $(input).attr("value") || "");
 }
 
-function deriveInputPrompt($: CheerioAPI, root: Cheerio<any>, element: DomElement) {
+function deriveInputPrompt($: CheerioAPI, root: Cheerio<DomElement>, element: DomElement) {
   const $element = $(element);
   const ariaLabel = cleanText($element.attr("aria-label") || "");
   if (ariaLabel) {
@@ -1106,20 +1130,14 @@ function parseAssignmentValue<T>(html: string, assignment: string): T | null {
     return null;
   }
 
-  const context: Record<string, unknown> = {
-    window: {},
-    globalThis: {},
-  };
-
   try {
-    vm.runInNewContext(`${assignment} = ${literal}`, context, {
-      timeout: 2_000,
-    });
+    // JSON5 accepts provider object literals (unquoted keys, trailing commas)
+    // but treats functions and expressions as invalid data instead of running
+    // code from an untrusted page.
+    return JSON5.parse(literal) as T;
   } catch {
     return null;
   }
-
-  return resolveAssignmentValue<T>(context, assignment);
 }
 
 function extractAssignmentLiteral(html: string, assignment: string) {
@@ -1192,26 +1210,170 @@ function extractAssignmentLiteral(html: string, assignment: string) {
   return null;
 }
 
-function resolveAssignmentValue<T>(context: Record<string, unknown>, assignment: string): T | null {
-  const segments = assignment.split(".");
-  let current: unknown = context;
-
-  for (const segment of segments) {
-    if (!isRecord(current) || !(segment in current)) {
-      return null;
-    }
-    current = current[segment];
-  }
-
-  return (current as T) ?? null;
-}
-
 function normalizeImportUrl(url: string) {
   const parsed = safeParseUrl(url);
   if (!parsed || !["http:", "https:"].includes(parsed.protocol)) {
     throw new Error("Enter a valid public http or https URL.");
   }
+  if (parsed.username || parsed.password) {
+    throw new Error("Import URLs cannot contain credentials.");
+  }
+  const allowedPort = parsed.protocol === "https:" ? "443" : "80";
+  if (parsed.port && parsed.port !== allowedPort) {
+    throw new Error("Import URLs must use the standard public web port.");
+  }
   return parsed.toString();
+}
+
+function normalizedHostname(url: URL) {
+  return url.hostname.replace(/^\[|\]$/g, "").toLowerCase();
+}
+
+function isPublicAddress(address: string) {
+  try {
+    const parsed = ipaddr.parse(address);
+    if (parsed.kind() === "ipv6" && (parsed as ipaddr.IPv6).isIPv4MappedAddress()) {
+      return (parsed as ipaddr.IPv6).toIPv4Address().range() === "unicast";
+    }
+    return parsed.range() === "unicast";
+  } catch {
+    return false;
+  }
+}
+
+async function resolvePublicAddresses(url: URL, resolver: PublicDnsResolver): Promise<DnsAddress[]> {
+  const hostname = normalizedHostname(url);
+  if (
+    hostname === "localhost" ||
+    hostname.endsWith(".localhost") ||
+    hostname.endsWith(".local") ||
+    hostname.endsWith(".internal") ||
+    hostname.endsWith(".lan")
+  ) {
+    throw new Error("Import URLs must resolve on the public internet.");
+  }
+
+  if (ipaddr.isValid(hostname)) {
+    if (!isPublicAddress(hostname)) {
+      throw new Error("Import URLs must resolve on the public internet.");
+    }
+    const parsed = ipaddr.parse(hostname);
+    return [{ address: hostname, family: parsed.kind() === "ipv6" ? 6 : 4 }];
+  }
+
+  let addresses: DnsAddress[];
+  try {
+    addresses = (await resolver(hostname, { all: true, verbatim: true })) as DnsAddress[];
+  } catch {
+    throw new Error("Unable to resolve the public form host.");
+  }
+  if (!addresses.length || addresses.some(({ address }) => !isPublicAddress(address))) {
+    throw new Error("Import URLs must resolve on the public internet.");
+  }
+  return addresses;
+}
+
+function pinnedDispatcher(addresses: DnsAddress[]) {
+  let cursor = 0;
+  return new Agent({
+    connect: {
+      lookup(_hostname, options, callback) {
+        if ((options as { all?: boolean }).all) {
+          callback(null, addresses);
+          return;
+        }
+        const selected = addresses[cursor % addresses.length]!;
+        cursor += 1;
+        callback(null, selected.address, selected.family);
+      },
+    },
+  });
+}
+
+function isRedirect(status: number) {
+  return status === 301 || status === 302 || status === 303 || status === 307 || status === 308;
+}
+
+async function readBoundedHtml(response: Response, maxBytes: number) {
+  const contentType = response.headers.get("content-type")?.toLowerCase() ?? "";
+  if (!contentType.includes("text/html") && !contentType.includes("application/xhtml+xml")) {
+    throw new Error("The import URL must return an HTML document.");
+  }
+  const declaredLength = Number(response.headers.get("content-length") ?? 0);
+  if (declaredLength > maxBytes) {
+    throw new Error("The imported form is too large.");
+  }
+  if (!response.body) return "";
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let received = 0;
+  let html = "";
+  while (true) {
+    const chunk = await reader.read();
+    if (chunk.done) break;
+    received += chunk.value.byteLength;
+    if (received > maxBytes) {
+      await reader.cancel().catch(() => undefined);
+      throw new Error("The imported form is too large.");
+    }
+    html += decoder.decode(chunk.value, { stream: true });
+  }
+  return `${html}${decoder.decode()}`;
+}
+
+async function fetchPublicHtml(initialUrl: string, options: ImportUrlOptions) {
+  const resolver: PublicDnsResolver =
+    options.dnsResolver ?? ((hostname, lookupOptions) => dnsLookup(hostname, lookupOptions));
+  const maxBytes = options.maxBytes ?? DEFAULT_IMPORT_MAX_BYTES;
+  const timeoutMs = options.timeoutMs ?? DEFAULT_IMPORT_TIMEOUT_MS;
+  let currentUrl = initialUrl;
+
+  for (let redirectCount = 0; redirectCount <= MAX_IMPORT_REDIRECTS; redirectCount += 1) {
+    const parsed = new URL(normalizeImportUrl(currentUrl));
+    const addresses = await resolvePublicAddresses(parsed, resolver);
+    const dispatcher = options.fetcher ? null : pinnedDispatcher(addresses);
+
+    try {
+      const init: RequestInit = {
+        headers: {
+          accept: "text/html,application/xhtml+xml",
+          "accept-encoding": "identity",
+          "user-agent": "Talkform Importer/1.0",
+        },
+        redirect: "manual",
+        cache: "no-store",
+        signal: AbortSignal.timeout(timeoutMs),
+      };
+      const response = options.fetcher
+        ? await options.fetcher(parsed.toString(), init)
+        : (await undiciFetch(parsed.toString(), {
+            ...init,
+            dispatcher: dispatcher!,
+          } as Parameters<typeof undiciFetch>[1])) as unknown as Response;
+
+      if (isRedirect(response.status)) {
+        const location = response.headers.get("location");
+        if (!location) {
+          throw new Error("The form URL returned an invalid redirect.");
+        }
+        currentUrl = new URL(location, parsed).toString();
+        continue;
+      }
+      if (!response.ok) {
+        throw new Error(`Unable to fetch the form URL (${response.status}).`);
+      }
+
+      return {
+        html: await readBoundedHtml(response, maxBytes),
+        finalUrl: parsed.toString(),
+      };
+    } finally {
+      await dispatcher?.close().catch(() => undefined);
+    }
+  }
+
+  throw new Error("The form URL redirected too many times.");
 }
 
 function safeParseUrl(value: string) {
@@ -1308,7 +1470,7 @@ function asString(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
 }
 
-function isRecord(value: unknown): value is Record<string, any> {
+function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
@@ -1357,271 +1519,11 @@ function discoverEmbeddedUrls(sourceUrl: string, html: string) {
   return Array.from(discovered);
 }
 
-async function extractWithPlaywright(url: string): Promise<ImportedSourceForm | null> {
-  let playwright: typeof import("playwright-core") | null = null;
-  try {
-    playwright = await import("playwright-core");
-  } catch {
-    return null;
-  }
-
-  const browserHandle = await launchPlaywrightBrowser(playwright);
-  if (!browserHandle) {
-    return null;
-  }
-
-  const { browser, context } = browserHandle;
-
-  try {
-    const page = await context.newPage();
-    await page.goto(url, {
-      waitUntil: "networkidle",
-      timeout: 20_000,
-    });
-
-    let aggregate: ImportedSourceForm | null = null;
-
-    for (let step = 0; step < 4; step += 1) {
-      const html = await page.content();
-      const extracted = extractImportedSourceFormFromHtml({
-        url: page.url(),
-        html,
-      });
-
-      if (extracted) {
-        aggregate = aggregate ? mergeImportedSourceForms(aggregate, extracted) : extracted;
-        if (aggregate.completeness >= 0.95 || aggregate.screens.outcomes.length > 0) {
-          break;
-        }
-      }
-
-      const advanced = await advancePlaywrightStep(page);
-      if (!advanced) {
-        break;
-      }
-    }
-
-    if (!aggregate) {
-      return null;
-    }
-
-    return {
-      ...aggregate,
-      strategyUsed: `playwright:${aggregate.strategyUsed}`,
-      warnings: mergeUniqueStrings(aggregate.warnings, ["Extracted with the Playwright fallback."]),
-    };
-  } catch {
-    return null;
-  } finally {
-    await browser.close().catch(() => undefined);
-  }
-}
-
-async function launchPlaywrightBrowser(playwright: typeof import("playwright-core")) {
-  if (process.env.PLAYWRIGHT_CDP_URL) {
-    try {
-      const browser = await playwright.chromium.connectOverCDP(process.env.PLAYWRIGHT_CDP_URL);
-      const [existingContext] = browser.contexts();
-      const context = existingContext ?? (await browser.newContext());
-      return { browser, context };
-    } catch {
-      return null;
-    }
-  }
-
-  const executablePath =
-    process.env.PLAYWRIGHT_EXECUTABLE_PATH ||
-    TYPEFORM_LOCAL_HOSTS.find((candidate) => existsSync(candidate));
-
-  if (!executablePath) {
-    return null;
-  }
-
-  try {
-    const browser = await playwright.chromium.launch({
-      executablePath,
-      headless: true,
-    });
-    const context = await browser.newContext();
-    return { browser, context };
-  } catch {
-    return null;
-  }
-}
-
-async function advancePlaywrightStep(page: import("playwright-core").Page) {
-  await fillVisibleInputs(page);
-
-  const candidates = page.locator("button, input[type='button'], input[type='submit'], [role='button'], a");
-  const count = await candidates.count();
-
-  for (let index = 0; index < count; index += 1) {
-    const candidate = candidates.nth(index);
-    const visible = await candidate.isVisible().catch(() => false);
-    if (!visible) {
-      continue;
-    }
-
-    const text = cleanText(
-      [
-        await candidate.textContent().catch(() => ""),
-        await candidate.getAttribute("value").catch(() => ""),
-        await candidate.getAttribute("aria-label").catch(() => ""),
-      ]
-        .filter(Boolean)
-        .join(" "),
-    ).toLowerCase();
-
-    if (!text) {
-      continue;
-    }
-    if (/(submit|finish|complete|send|apply)/i.test(text)) {
-      return false;
-    }
-    if (/(next|continue|start|begin|go|proceed)/i.test(text)) {
-      await candidate.click().catch(() => undefined);
-      await page.waitForTimeout(400);
-      return true;
-    }
-  }
-
-  return false;
-}
-
-async function fillVisibleInputs(page: import("playwright-core").Page) {
-  const textInputs = page.locator(
-    "input:not([type='hidden']):not([type='radio']):not([type='checkbox']):not([type='submit']):not([type='button']), textarea",
-  );
-  const textCount = await textInputs.count();
-  for (let index = 0; index < textCount; index += 1) {
-    const field = textInputs.nth(index);
-    const visible = await field.isVisible().catch(() => false);
-    if (!visible) {
-      continue;
-    }
-    const tag = await field.evaluate((element) => element.tagName.toLowerCase()).catch(() => "");
-    const inputType =
-      tag === "textarea"
-        ? "textarea"
-        : await field.getAttribute("type").catch(() => "text");
-    const value = sampleValueForType(inputType || "text");
-    await field.fill(value).catch(() => undefined);
-  }
-
-  const selects = page.locator("select");
-  const selectCount = await selects.count();
-  for (let index = 0; index < selectCount; index += 1) {
-    const select = selects.nth(index);
-    const visible = await select.isVisible().catch(() => false);
-    if (!visible) {
-      continue;
-    }
-    const value = await select
-      .locator("option")
-      .evaluateAll((options) => {
-        const usable = options.find((option) => option instanceof HTMLOptionElement && option.value);
-        return usable instanceof HTMLOptionElement ? usable.value : "";
-      })
-      .catch(() => "");
-    if (value) {
-      await select.selectOption(value).catch(() => undefined);
-    }
-  }
-
-  const radioGroups = page.locator("input[type='radio']");
-  const radioCount = await radioGroups.count();
-  const seenRadioNames = new Set<string>();
-  for (let index = 0; index < radioCount; index += 1) {
-    const radio = radioGroups.nth(index);
-    const visible = await radio.isVisible().catch(() => false);
-    if (!visible) {
-      continue;
-    }
-    const name = (await radio.getAttribute("name").catch(() => "")) || `radio-${index}`;
-    if (seenRadioNames.has(name)) {
-      continue;
-    }
-    seenRadioNames.add(name);
-    await radio.check().catch(() => undefined);
-  }
-
-  const checkboxes = page.locator("input[type='checkbox']");
-  const checkboxCount = await checkboxes.count();
-  const seenCheckboxNames = new Set<string>();
-  for (let index = 0; index < checkboxCount; index += 1) {
-    const checkbox = checkboxes.nth(index);
-    const visible = await checkbox.isVisible().catch(() => false);
-    if (!visible) {
-      continue;
-    }
-    const name = (await checkbox.getAttribute("name").catch(() => "")) || `checkbox-${index}`;
-    if (seenCheckboxNames.has(name)) {
-      continue;
-    }
-    seenCheckboxNames.add(name);
-    await checkbox.check().catch(() => undefined);
-  }
-}
-
-function sampleValueForType(type: string) {
-  switch (type) {
-    case "email":
-      return "sample@example.com";
-    case "url":
-      return "https://example.com";
-    case "number":
-      return "1";
-    case "tel":
-      return "5555555555";
-    case "date":
-      return "2026-03-10";
-    default:
-      return "Sample answer";
-  }
-}
-
-function mergeImportedSourceForms(left: ImportedSourceForm, right: ImportedSourceForm): ImportedSourceForm {
-  const questions = dedupeQuestions([...left.questions, ...right.questions]);
-  return {
-    ...right,
-    questions,
-    screens: {
-      welcome: dedupeScreens([...left.screens.welcome, ...right.screens.welcome]),
-      thankYou: dedupeScreens([...left.screens.thankYou, ...right.screens.thankYou]),
-      outcomes: dedupeOutcomes([...left.screens.outcomes, ...right.screens.outcomes]),
-    },
-    sourceLogic: {
-      summary: mergeUniqueStrings(left.sourceLogic.summary, right.sourceLogic.summary),
-      raw: right.sourceLogic.raw ?? left.sourceLogic.raw,
-    },
-    warnings: mergeUniqueStrings(left.warnings, right.warnings),
-    completeness: Math.max(left.completeness, right.completeness),
-  };
-}
-
-function dedupeScreens(screens: ImportedScreen[]) {
-  const seen = new Set<string>();
-  return screens.filter((screen) => {
-    if (seen.has(screen.id)) {
-      return false;
-    }
-    seen.add(screen.id);
-    return true;
-  });
-}
-
-function dedupeOutcomes(outcomes: ImportedOutcome[]) {
-  const seen = new Set<string>();
-  return outcomes.filter((outcome) => {
-    if (seen.has(outcome.id)) {
-      return false;
-    }
-    seen.add(outcome.id);
-    return true;
-  });
-}
-
 async function refineAudioformConfig(source: ImportedSourceForm, draft: AudioformConfig) {
+  if (!isImportAiRefinementEnabled(process.env.TALKFORM_ENABLE_IMPORT_AI_REFINEMENT)) {
+    return draft;
+  }
+
   const apiKey = process.env.OPENAI_API_KEY?.trim();
   if (!apiKey) {
     return draft;
@@ -1670,7 +1572,7 @@ async function refineAudioformConfig(source: ImportedSourceForm, draft: Audiofor
 
     const parsedJson = JSON.parse(content) as unknown;
     const parsed = audioformConfigSchema.safeParse(parsedJson);
-    return parsed.success ? parsed.data : draft;
+    return parsed.success ? mergeRefinedCopy(draft, parsed.data) : draft;
   } catch {
     return draft;
   }
