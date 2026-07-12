@@ -486,6 +486,13 @@
 
 .sendButton:hover { background: #d05a36; }
 
+.sendButton:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.sendButton:disabled:hover { background: #2c2825; }
+
 .endButton {
   padding: 0.625rem 1rem;
   border-radius: 999px;
