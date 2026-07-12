@@ -54,7 +54,11 @@ export async function POST(request: Request) {
       apiKey,
       safetyIdentifierForOwner(owner.id),
     );
-    return attachBrowserOwner(NextResponse.json(bootstrap), request, owner);
+    return attachBrowserOwner(
+      NextResponse.json(bootstrap, { headers: { "Cache-Control": "no-store" } }),
+      request,
+      owner,
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to create the realtime client secret.";
     const status = /Request body is too large/i.test(message)

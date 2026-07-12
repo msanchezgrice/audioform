@@ -309,6 +309,7 @@ test("an explicit production Realtime opt-in enables client-secret issuance", as
       ),
     );
     assert.equal(response.status, 200);
+    assert.equal(response.headers.get("cache-control"), "no-store");
   } finally {
     globalThis.fetch = originalFetch;
     restoreEnv("NODE_ENV", oldNodeEnv);
