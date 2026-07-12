@@ -1002,7 +1002,12 @@ export function AudioformWidget({
                   placeholder={interviewMode === "text" ? "Type your answer..." : "Type instead of speaking..."}
                   disabled={isConnecting}
                 />
-                <button type="submit" className={styles.sendButton} aria-label="Send answer" disabled={isConnecting}>
+                <button
+                  type="submit"
+                  className={styles.sendButton}
+                  aria-label="Send answer"
+                  disabled={isConnecting || !draftReply.trim()}
+                >
                   <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" width="16" height="16">
                     <path d="M2 8h12M10 4l4 4-4 4" />
                   </svg>
