@@ -18,6 +18,6 @@ test("every documentation route is statically generated with readable content", 
   for (const entry of docsIndex) {
     const doc = await getDocContent(entry.slug);
     assert.equal(doc?.slug, entry.slug);
-    assert.match(doc?.content ?? "", /^#\s+/m);
+    assert.match(doc?.content ?? "", /^##\s+/m);
   }
 });

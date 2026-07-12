@@ -76,6 +76,6 @@ export async function getDocContent(slug: string) {
 
   return {
     ...entry,
-    content,
+    content: content.replace(/^#\s+[^\r\n]+\r?\n+/, ""),
   };
 }
