@@ -30,6 +30,7 @@ import {
   buildLocalExport,
   coerceTypedAnswer,
   getCompanionSummary,
+  getLocalTextProgress,
   getPendingPromptQueue,
   getTranscriptResponses,
   getVisualPromptState,
@@ -645,8 +646,21 @@ export function AudioformWidget({
       ...valuesRef.current,
       [field.id]: nextValue,
     };
-    applyStructuredUpdate(nextValues, summaryRef.current, "manual");
+    const localProgress = interviewModeRef.current === "text"
+      ? getLocalTextProgress(config, nextValues)
+      : null;
+    applyStructuredUpdate(nextValues, localProgress?.summary ?? summaryRef.current, "manual");
     setError(null);
+    if (localProgress) {
+      setDraftReply("");
+      if (localProgress.completion.percent === 100) {
+        setConnectionState("ended");
+        setStatusMessage("Your answers are ready to review and export.");
+      } else {
+        if (connectionState === "ended") setConnectionState("live");
+        setStatusMessage(`${field.label} updated. Continue with the next question.`);
+      }
+    }
   }
 
   function toggleMultiSelect(field: AudioformField, optionValue: string) {
@@ -676,8 +690,7 @@ export function AudioformWidget({
       }
 
       const nextValues = { ...valuesRef.current, [field.id]: parsed.value };
-      const nextCompletion = getCompletion(config, nextValues);
-      const nextSummary = `${nextCompletion.captured} of ${nextCompletion.required} required answers captured in text mode.`;
+      const { completion: nextCompletion, summary: nextSummary } = getLocalTextProgress(config, nextValues);
       setDraftReply("");
       setError(null);
       appendTranscript("user", message);
