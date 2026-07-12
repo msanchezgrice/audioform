@@ -34,6 +34,7 @@ import {
   getPendingPromptQueue,
   getTranscriptResponses,
   getVisualPromptState,
+  shouldClearLocalDraft,
   teardownRealtimeResources,
 } from "./AudioformWidget.helpers";
 import { emitTalkformEvent } from "./AudioformWidget.analytics";
@@ -649,10 +650,14 @@ export function AudioformWidget({
     const localProgress = interviewModeRef.current === "text"
       ? getLocalTextProgress(config, nextValues)
       : null;
+    const nextActiveFieldId = localProgress?.completion.missingFieldIds[0] ?? null;
+    const isAnsweringActiveField = localProgress
+      ? shouldClearLocalDraft(field.id, activeMissingFieldId, nextActiveFieldId)
+      : false;
     applyStructuredUpdate(nextValues, localProgress?.summary ?? summaryRef.current, "manual");
     setError(null);
     if (localProgress) {
-      setDraftReply("");
+      if (isAnsweringActiveField) setDraftReply("");
       if (localProgress.completion.percent === 100) {
         setConnectionState("ended");
         setStatusMessage("Your answers are ready to review and export.");

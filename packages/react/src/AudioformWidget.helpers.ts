@@ -47,6 +47,14 @@ export function getLocalTextProgress(config: AudioformConfig, values: AudioformF
   };
 }
 
+export function shouldClearLocalDraft(
+  updatedFieldId: string,
+  activeFieldId: string | null,
+  nextActiveFieldId: string | null,
+) {
+  return updatedFieldId === activeFieldId || nextActiveFieldId !== activeFieldId;
+}
+
 type RealtimeCleanupResources = {
   dataChannel: { close: () => void } | null;
   peerConnection: { close: () => void } | null;
