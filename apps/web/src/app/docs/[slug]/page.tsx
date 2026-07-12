@@ -3,8 +3,14 @@ import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import styles from "../../site.module.css";
-import { getDocContent } from "@/lib/docs";
+import { docsIndex, getDocContent } from "@/lib/docs";
 import { createMetadata } from "@/lib/seo";
+
+export const dynamicParams = false;
+
+export function generateStaticParams() {
+  return docsIndex.map(({ slug }) => ({ slug }));
+}
 
 export async function generateMetadata({
   params,
