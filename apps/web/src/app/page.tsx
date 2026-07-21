@@ -1,6 +1,14 @@
 import Link from "next/link";
 import { audioformSessionResultJsonSchema } from "@talkform/core";
+import { JsonLd } from "./_components/content";
 import styles from "./site.module.css";
+
+const homeFaqs = [
+  { question: "What does Talkform do today?", answer: "Talkform can turn supported fields from a public form URL into an editable draft, run a guided browser voice or text interview, and export structured JSON." },
+  { question: "Is microphone access required?", answer: "No. Typing is available without a realtime audio connection and stays in your browser until export. A text-only deployment never requests microphone permission." },
+  { question: "Which form providers can Talkform import?", answer: "The importer recognizes common patterns from Typeform, Google Forms, Jotform, and HubSpot public forms. Complex logic, uploads, payments, widgets, restricted forms, and provider automation may require manual work." },
+  { question: "How much does Talkform cost?", answer: "Public pricing is not yet published. You can try the browser demo and public-form importer today; plan limits will be published before self-serve charging begins." },
+];
 
 const sampleResult = {
   schemaVersion: "1.0",
@@ -40,18 +48,24 @@ export default function HomePage() {
         <article className={styles.heroCard}>
           <div className={styles.eyebrow}>Audio-first forms</div>
           <h1>Turn any form into a live <em>audio interview</em></h1>
+          <p className={styles.answerBlock}>
+            Talkform converts online forms into guided voice interviews. You import a public form or define its
+            fields, Talkform asks each question aloud in the browser, writes the answers into structured fields,
+            and exports the results as clean JSON. It imports Typeform, Google Forms, Jotform, and HubSpot forms,
+            and the browser demo is free to try.
+          </p>
           <p className={styles.lede}>
             Talkform asks questions aloud, fills structured fields from the conversation,
             and exports clean JSON for your apps, workflows, and agents.
           </p>
           <div className={styles.heroActions}>
-            <Link href="/app" className={styles.primaryAction}>
+            <Link href="/app" className={styles.primaryAction} data-agent-action="try-demo" data-testid="cta-try-demo">
               Try the demo
             </Link>
-            <Link href="/import" className={styles.secondaryAction}>
+            <Link href="/import" className={styles.secondaryAction} data-agent-action="import-form" data-testid="cta-import-form">
               Import a form
             </Link>
-            <Link href="/docs" className={styles.ghostAction}>
+            <Link href="/docs" className={styles.ghostAction} data-testid="cta-read-docs">
               Read docs
             </Link>
           </div>
@@ -79,45 +93,41 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className={styles.comparisonGrid}>
-          <article className={`${styles.compareCard} ${styles.compareOld}`}>
-            <div className={styles.eyebrow}>Old way</div>
-            <h3>Static forms demand attention every screen</h3>
-            <div className={styles.metricList}>
-              <div className={styles.metricRow}>
-                <span>Steps</span>
-                <strong>Open, read, scan, type, submit</strong>
-              </div>
-              <div className={styles.metricRow}>
-                <span>Duration</span>
-                <strong>Respondent reads and types each answer</strong>
-              </div>
-              <div className={styles.metricRow}>
-                <span>Completion</span>
-                <strong>Use as the measured baseline</strong>
-              </div>
-            </div>
-          </article>
-
-          <article className={`${styles.compareCard} ${styles.compareNew}`}>
-            <div className={styles.eyebrow}>New way</div>
-            <h3>Talkform carries the interview and writes the answers</h3>
-            <div className={styles.metricList}>
-              <div className={styles.metricRow}>
-                <span>Steps</span>
-                <strong>Open, answer aloud, review draft</strong>
-              </div>
-              <div className={styles.metricRow}>
-                <span>Duration</span>
-                <strong>Evaluate in a controlled pilot</strong>
-              </div>
-              <div className={styles.metricRow}>
-                <span>Completion</span>
-                <strong>Compare in an A/B test</strong>
-              </div>
-            </div>
-          </article>
-        </div>
+        <table className={styles.compareTable}>
+          <caption className={styles.visuallyHidden}>
+            Comparison of a static form against a guided Talkform audio interview
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col"><span className={styles.visuallyHidden}>Dimension</span></th>
+              <th scope="col" className={styles.compareOldCol}>
+                <span className={styles.eyebrow}>Old way</span>
+                <span className={styles.compareHeadline}>Static forms demand attention every screen</span>
+              </th>
+              <th scope="col" className={styles.compareNewCol}>
+                <span className={styles.eyebrow}>New way</span>
+                <span className={styles.compareHeadline}>Talkform carries the interview and writes the answers</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Steps</th>
+              <td>Open, read, scan, type, submit</td>
+              <td>Open, answer aloud, review draft</td>
+            </tr>
+            <tr>
+              <th scope="row">Duration</th>
+              <td>Respondent reads and types each answer</td>
+              <td>Evaluate in a controlled pilot</td>
+            </tr>
+            <tr>
+              <th scope="row">Completion</th>
+              <td>Use as the measured baseline</td>
+              <td>Compare in an A/B test</td>
+            </tr>
+          </tbody>
+        </table>
       </section>
 
       <section className={styles.section}>
@@ -250,6 +260,26 @@ export default function HomePage() {
           <p>Published at <code>/schemas/audioform-session-result.json</code></p>
           <pre className={styles.jsonBlock}>{JSON.stringify(audioformSessionResultJsonSchema, null, 2)}</pre>
         </article>
+      </section>
+
+      <section className={styles.section} aria-labelledby="home-faq-heading">
+        <JsonLd data={{ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: homeFaqs.map((faq) => ({ "@type": "Question", name: faq.question, acceptedAnswer: { "@type": "Answer", text: faq.answer } })) }} />
+        <div className={styles.sectionHeaderRow}>
+          <div>
+            <h2 className={styles.sectionTitle} id="home-faq-heading">Quick <em>answers</em></h2>
+            <p className={styles.sectionIntro}>
+              The questions people ask first. The full list lives on the <Link href="/faq">FAQ page</Link>.
+            </p>
+          </div>
+        </div>
+        <div className={styles.faqList}>
+          {homeFaqs.map((faq) => (
+            <article key={faq.question} className={styles.faqItem}>
+              <h3>{faq.question}</h3>
+              <p>{faq.answer}</p>
+            </article>
+          ))}
+        </div>
       </section>
     </main>
   );
