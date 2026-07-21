@@ -839,7 +839,7 @@ export function AudioformWidget({
                 </p>
                 <div className={styles.preflightChoices}>
                   {voiceEnabled && (
-                    <button type="button" className={styles.primaryButton} onClick={startOnboardingCall}>
+                    <button type="button" className={styles.primaryButton} onClick={startOnboardingCall} data-agent-action="start-voice-interview" data-testid="start-voice-button">
                       Start with voice
                     </button>
                   )}
@@ -848,6 +848,8 @@ export function AudioformWidget({
                     className={voiceEnabled ? styles.ghostButton : styles.primaryButton}
                     onClick={startTextInterview}
                     aria-describedby={!voiceEnabled ? "talkform-voice-unavailable" : undefined}
+                    data-agent-action="start-text-interview"
+                    data-testid="start-text-button"
                   >
                     Continue with typing
                   </button>
@@ -989,12 +991,13 @@ export function AudioformWidget({
                 >
                   Start another
                 </button>
-                <button type="button" className={styles.ghostButton} onClick={resetSession}>Choose another mode</button>
+                <button type="button" className={styles.ghostButton} onClick={resetSession} data-agent-danger="true" data-agent-confirm="Discards the current session and captured answers. Confirm with the user before resetting." data-testid="reset-session-button">Choose another mode</button>
               </div>
             ) : (
               <form
                 className={styles.replyComposer}
                 onSubmit={(event) => { event.preventDefault(); sendTypedReply(); }}
+                data-agent-form="interview-reply"
               >
                 <label htmlFor="talkform-typed-answer" className={styles.visuallyHidden}>
                   Type your answer
@@ -1012,12 +1015,14 @@ export function AudioformWidget({
                   className={styles.sendButton}
                   aria-label="Send answer"
                   disabled={isConnecting || !draftReply.trim()}
+                  data-agent-action="send-answer"
+                  data-testid="send-answer-button"
                 >
                   <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" width="16" height="16">
                     <path d="M2 8h12M10 4l4 4-4 4" />
                   </svg>
                 </button>
-                <button type="button" className={styles.endButton} onClick={endOnboardingCall}>End</button>
+                <button type="button" className={styles.endButton} onClick={endOnboardingCall} data-agent-danger="true" data-agent-confirm="Ends the current interview session. Confirm with the user before ending." data-testid="end-interview-button">End</button>
                 {interviewMode === "voice" && isConnecting && (
                   <button type="button" className={styles.ghostButton} onClick={startTextInterview}>Switch to typing</button>
                 )}
@@ -1150,10 +1155,10 @@ export function AudioformWidget({
             <span>{summary || "Answers will be summarized here as they come in."}</span>
           </div>
           <div className={styles.exportRow}>
-            <button type="button" className={`${styles.btnExport} ${styles.btnExportPrimary}`} onClick={() => downloadExport("json")} disabled={invalidFieldIds.length > 0}>
+            <button type="button" className={`${styles.btnExport} ${styles.btnExportPrimary}`} onClick={() => downloadExport("json")} disabled={invalidFieldIds.length > 0} data-agent-action="export-result" data-testid="export-json-button">
               Export JSON
             </button>
-            <button type="button" className={styles.btnExport} onClick={() => downloadExport("markdown")} disabled={invalidFieldIds.length > 0}>
+            <button type="button" className={styles.btnExport} onClick={() => downloadExport("markdown")} disabled={invalidFieldIds.length > 0} data-agent-action="export-result" data-testid="export-markdown-button">
               Export MD
             </button>
           </div>

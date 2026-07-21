@@ -1,0 +1,44 @@
+{
+  "name": "Talkform",
+  "description": "Talkform turns any form into a live audio interview. It asks questions aloud in the browser, captures structured answers into form fields, and exports clean JSON for apps, workflows, and agents.",
+  "url": "https://talkform.ai",
+  "version": "1.0.0",
+  "provider": {
+    "organization": "Talkform",
+    "url": "https://talkform.ai"
+  },
+  "capabilities": {
+    "streaming": true,
+    "pushNotifications": false
+  },
+  "defaultInputModes": ["audio", "text"],
+  "defaultOutputModes": ["application/json", "text/markdown"],
+  "skills": [
+    {
+      "id": "run-interview",
+      "name": "Run a guided interview",
+      "description": "Ask form questions one at a time over live browser audio or text and capture structured answers.",
+      "tags": ["interview", "voice", "forms"]
+    },
+    {
+      "id": "import-form",
+      "name": "Import a public form",
+      "description": "Read a public Typeform, Google Forms, Jotform, or HubSpot form URL and produce an editable Talkform draft config.",
+      "tags": ["import", "typeform", "google-forms", "jotform", "hubspot"]
+    },
+    {
+      "id": "export-result",
+      "name": "Export structured results",
+      "description": "Export a completed interview session as JSON matching the AudioformSessionResult schema, or as Markdown.",
+      "tags": ["export", "json", "schema"]
+    }
+  ],
+  "documentationUrl": "https://talkform.ai/docs",
+  "securitySchemes": {
+    "bearer": {
+      "type": "http",
+      "scheme": "bearer",
+      "description": "Machine clients authenticate to the HTTP API with a bearer token (see /docs/http-api)."
+    }
+  }
+}

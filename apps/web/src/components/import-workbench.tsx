@@ -201,7 +201,7 @@ export function ImportWorkbench({ vendorUrl = "" }: ImportWorkbenchProps) {
           </p>
         </div>
 
-        <form className={styles.importCard} onSubmit={handleImport}>
+        <form className={styles.importCard} onSubmit={handleImport} data-agent-form="import-url" data-testid="import-form">
           <label className={styles.inputLabel} htmlFor="import-url">
             Public form URL
           </label>
@@ -214,9 +214,10 @@ export function ImportWorkbench({ vendorUrl = "" }: ImportWorkbenchProps) {
             value={url}
             onChange={(event) => setUrl(event.target.value)}
             required
+            data-testid="import-url-input"
           />
           <div className={styles.importActions}>
-            <button type="submit" className={styles.primaryAction} disabled={isSubmitting}>
+            <button type="submit" className={styles.primaryAction} disabled={isSubmitting} data-agent-action="import-form" data-testid="import-submit-button">
               {isSubmitting ? "Extracting…" : "Import form"}
             </button>
             <p className={styles.helperText}>Public forms only in v1. Final submit is never triggered against the source form.</p>
@@ -253,7 +254,7 @@ export function ImportWorkbench({ vendorUrl = "" }: ImportWorkbenchProps) {
                   <div className={styles.eyebrow}>Source form</div>
                   <h2>{imported.source.title}</h2>
                 </div>
-                <button type="button" className={styles.secondaryAction} onClick={launchPreview}>
+                <button type="button" className={styles.secondaryAction} onClick={launchPreview} data-agent-action="launch-preview" data-testid="launch-preview-source-button">
                   Launch Talkform preview
                 </button>
               </div>
@@ -314,7 +315,7 @@ export function ImportWorkbench({ vendorUrl = "" }: ImportWorkbenchProps) {
                   <div className={styles.eyebrow}>Talkform draft</div>
                   <h2>Edit before launch</h2>
                 </div>
-                <button type="button" className={styles.primaryAction} onClick={launchPreview}>
+                <button type="button" className={styles.primaryAction} onClick={launchPreview} data-agent-action="launch-preview" data-testid="launch-preview-button">
                   Launch preview
                 </button>
               </div>

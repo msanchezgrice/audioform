@@ -45,6 +45,8 @@ export function DemoTemplateGallery({ templates, vendorUrl, voiceEnabled = false
                   emitTalkformEvent("template_selected", { templateId: template.id });
                 }}
                 aria-pressed={isActive}
+                data-agent-action="select-template"
+                data-testid={`template-card-${template.id}`}
               >
                 <span className={styles.templateMeta}>{isActive ? "Selected" : "Example"}</span>
                 <strong>{template.title}</strong>
@@ -68,6 +70,7 @@ export function DemoTemplateGallery({ templates, vendorUrl, voiceEnabled = false
           aria-label="Toggle consumer view"
           role="switch"
           aria-checked={consumerMode}
+          data-testid="view-mode-toggle"
         >
           <span className={styles.modeThumb} />
         </button>

@@ -1,0 +1,40 @@
+{
+  "name": "Talkform",
+  "description": "Talkform turns any form into a live audio interview: it asks questions aloud in the browser, captures structured answers into form fields, and exports clean JSON for apps, workflows, and agents.",
+  "url": "https://talkform.ai",
+  "version": "1.0.0",
+  "agent_card": "https://talkform.ai/.well-known/agent-card.json",
+  "onboarding": "https://talkform.ai/agents.md",
+  "docs": "https://talkform.ai/docs",
+  "llms_txt": "https://talkform.ai/llms.txt",
+  "schemas": [
+    "https://talkform.ai/schemas/audioform-config.json",
+    "https://talkform.ai/schemas/audioform-session-result.json"
+  ],
+  "contact": "support@talkform.ai",
+  "guardrails": {
+    "allowed_actions": [
+      "Read public pages, docs, blog posts, JSON schemas, and protocol files (llms.txt, agents.md, agent-card.json).",
+      "Run the browser demo interview at /app using voice or text input.",
+      "Import a public form URL at /import and review the extracted editable draft.",
+      "Launch a preview of an imported draft and export reviewed session results as JSON or Markdown."
+    ],
+    "disallowed_actions": [
+      "Never submit the source form on a third-party provider; the importer reads public responder pages only.",
+      "Never infer protected traits, emotion, honesty, or suitability from a respondent's voice.",
+      "Never make unreviewed consequential decisions (hiring, eligibility, pricing, access) from interview results.",
+      "Never enter another person's personal data, credentials, payment data, or regulated data into interviews.",
+      "Never trigger actions marked data-agent-danger (ending a live session, resetting captured answers) without explicit user confirmation."
+    ],
+    "prohibited_actions": [
+      "final-submit-source-form",
+      "voice-trait-inference",
+      "unreviewed-consequential-decisions",
+      "enter-third-party-personal-data",
+      "destructive-action-without-confirmation"
+    ],
+    "rate_expectations": "Browse like a human reader: keep automated requests under roughly 1 request per second, honor robots.txt, and back off on 429/5xx responses. Import jobs crawl one public form URL per request.",
+    "confirmation_required": "Actions marked data-agent-danger require the confirmation described in their data-agent-confirm attribute before proceeding.",
+    "contact": "support@talkform.ai"
+  }
+}
