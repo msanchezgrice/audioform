@@ -49,6 +49,13 @@ const footerGroups = [
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
+      <head>
+        <script
+          src="https://analytics.ahrefs.com/analytics.js"
+          data-key="WTZ2mV2darTRiyE51Tb5hA"
+          async
+        />
+      </head>
       <body className={`${bodyFont.variable} ${displayFont.variable}`}>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([organizationJsonLd, websiteJsonLd]).replace(/</g, "\\u003c") }} />
         <a className="skipLink" href="#main-content">Skip to main content</a>

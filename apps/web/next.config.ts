@@ -15,7 +15,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: "Content-Security-Policy",
-            value: "default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://api.openai.com; media-src 'self' blob:; frame-src 'self' https://share.synthesia.io https://*.synthesia.io https://*.heygen.com; frame-ancestors 'self' https:; form-action 'self'; worker-src 'self' blob:; manifest-src 'self'",
+            value: "default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline' https://analytics.ahrefs.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://api.openai.com https://analytics.ahrefs.com; media-src 'self' blob:; frame-src 'self' https://share.synthesia.io https://*.synthesia.io https://*.heygen.com; frame-ancestors 'self' https:; form-action 'self'; worker-src 'self' blob:; manifest-src 'self'",
           },
           {
             key: "X-Content-Type-Options",
