@@ -4,9 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "pnpm --filter @talkform/core build && pnpm --filter @talkform/react build",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "pretypecheck": "pnpm --filter @talkform/core build && pnpm --filter @talkform/react build",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
