@@ -1,21 +1,37 @@
 {
   "name": "@talkform/react",
   "version": "0.1.0",
-  "private": true,
+  "description": "Embeddable React widget for guided Talkform voice and text interviews.",
   "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./styles.css": "./dist/styles.css"
+  },
+  "files": ["dist", "README.md"],
+  "license": "UNLICENSED",
+  "homepage": "https://talkform.ai/docs/react",
+  "repository": { "type": "git", "url": "https://github.com/msanchezgrice/audioform.git", "directory": "packages/react" },
+  "engines": { "node": ">=20" },
+  "publishConfig": { "access": "public" },
   "sideEffects": [
     "**/*.css"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "vite build && tsup src/index.ts --format esm --dts-only --out-dir dist --external react --external @talkform/core",
     "lint": "tsc --noEmit -p tsconfig.json",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@talkform/core": "workspace:*",
-    "react": "^19.2.3"
+    "@talkform/core": "workspace:^"
+  },
+  "peerDependencies": {
+    "react": ">=18.2.0"
   },
   "devDependencies": {
     "@types/react": "^19.2.14",

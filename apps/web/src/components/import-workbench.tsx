@@ -3,6 +3,7 @@
 import { startTransition, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { audioformConfigSchema, type AudioformConfig, type AudioformField, type AudioformFieldType } from "@talkform/core";
+import { emitTalkformEvent } from "@talkform/react";
 import { AudioformClient } from "@/components/audioform-client";
 import styles from "./import-workbench.module.css";
 
@@ -140,6 +141,7 @@ export function ImportWorkbench({ vendorUrl = "" }: ImportWorkbenchProps) {
     setIsSubmitting(true);
     setError(null);
     setPreviewVisible(false);
+    emitTalkformEvent("import_started", { source: "public_url" });
 
     try {
       const response = await fetch("/api/import/url", {
@@ -163,10 +165,12 @@ export function ImportWorkbench({ vendorUrl = "" }: ImportWorkbenchProps) {
         setImported(payload);
         setDraftConfig(payload.suggestedConfig);
       });
+      emitTalkformEvent("import_succeeded", { source: payload.provider, captured: payload.source.questions.length });
     } catch (importError) {
       setImported(null);
       setDraftConfig(null);
       setError(importError instanceof Error ? importError.message : "Unable to import that form.");
+      emitTalkformEvent("import_failed", { source: "public_url" });
     } finally {
       setIsSubmitting(false);
     }
@@ -187,6 +191,7 @@ export function ImportWorkbench({ vendorUrl = "" }: ImportWorkbenchProps) {
     setError(null);
     setPreviewRevision((current) => current + 1);
     setPreviewVisible(true);
+    emitTalkformEvent("preview_launched", { source: imported?.provider ?? "draft" });
   }
 
   return (

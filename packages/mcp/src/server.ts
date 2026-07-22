@@ -1,4 +1,4 @@
-#!/usr/bin/env -S node --import tsx
+#!/usr/bin/env node
 
 import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -16,7 +16,7 @@ const server = new McpServer({
   version: "0.1.0",
 });
 
-server.tool("audioform.list_templates", async () => ({
+server.tool("talkform.list_templates", async () => ({
   content: [
     {
       type: "text",
@@ -26,7 +26,7 @@ server.tool("audioform.list_templates", async () => ({
 }));
 
 server.tool(
-  "audioform.get_config_schema",
+  "talkform.get_config_schema",
   {
     kind: z.enum(["config", "session-result"]).default("config"),
   },
@@ -41,7 +41,7 @@ server.tool(
 );
 
 server.tool(
-  "audioform.validate_config",
+  "talkform.validate_config",
   {
     config: z.string(),
   },

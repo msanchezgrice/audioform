@@ -7,7 +7,7 @@ const homeFaqs = [
   { question: "What does Talkform do today?", answer: "Talkform can turn supported fields from a public form URL into an editable draft, run a guided browser voice or text interview, and export structured JSON." },
   { question: "Is microphone access required?", answer: "No. Typing is available without a realtime audio connection and stays in your browser until export. A text-only deployment never requests microphone permission." },
   { question: "Which form providers can Talkform import?", answer: "The importer recognizes common patterns from Typeform, Google Forms, Jotform, and HubSpot public forms. Complex logic, uploads, payments, widgets, restricted forms, and provider automation may require manual work." },
-  { question: "How much does Talkform cost?", answer: "Public pricing is not yet published. You can try the browser demo and public-form importer today; plan limits will be published before self-serve charging begins." },
+  { question: "How much does Talkform cost?", answer: "The browser demo and local developer tools are free. The Pro launch plan is $29 per month or $290 per year for 100 voice minutes and 100 hosted handoffs, with hard limits and no automatic overages." },
 ];
 
 const sampleResult = {

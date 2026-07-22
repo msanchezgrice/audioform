@@ -8,7 +8,7 @@
     "url": "https://talkform.ai"
   },
   "capabilities": {
-    "streaming": true,
+    "streaming": false,
     "pushNotifications": false
   },
   "defaultInputModes": ["audio", "text"],
@@ -34,11 +34,5 @@
     }
   ],
   "documentationUrl": "https://talkform.ai/docs",
-  "securitySchemes": {
-    "bearer": {
-      "type": "http",
-      "scheme": "bearer",
-      "description": "Machine clients authenticate to the HTTP API with a bearer token (see /docs/http-api)."
-    }
-  }
+  "note": "Informational web discovery profile only. Talkform does not currently expose an A2A JSON-RPC endpoint or hosted remote-agent session transport."
 }

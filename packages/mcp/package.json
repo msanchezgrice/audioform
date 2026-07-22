@@ -1,20 +1,27 @@
 {
   "name": "@talkform/mcp",
   "version": "0.1.0",
-  "private": true,
+  "description": "Local MCP server for Talkform schemas, templates, and config validation.",
+  "mcpName": "io.github.msanchezgrice/talkform",
   "type": "module",
   "bin": {
-    "talkform-mcp": "./src/server.ts"
+    "talkform-mcp": "./dist/server.js"
   },
+  "exports": { ".": "./dist/server.js" },
+  "files": ["dist", "server.json", "README.md"],
+  "license": "UNLICENSED",
+  "homepage": "https://talkform.ai/docs/mcp",
+  "repository": { "type": "git", "url": "https://github.com/msanchezgrice/audioform.git", "directory": "packages/mcp" },
+  "engines": { "node": ">=20" },
+  "publishConfig": { "access": "public" },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsup src/server.ts --format esm --dts --clean --sourcemap --platform node",
     "lint": "tsc --noEmit -p tsconfig.json",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
-    "@talkform/core": "workspace:*",
-    "tsx": "^4.23.0",
+    "@talkform/core": "workspace:^",
     "zod": "^3.24.4"
   }
 }
