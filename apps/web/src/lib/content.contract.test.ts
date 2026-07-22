@@ -205,8 +205,10 @@ test("legal and trust pages use honest support and policy language", () => {
   }
 
   const pricing = readFileSync(path.join(appRoot, "pricing/page.tsx"), "utf8");
-  assert.doesNotMatch(pricing, /\$\d/);
-  assert.match(pricing, /pricing.*not yet published|not yet published.*pricing/is);
+  const pricingCatalog = readFileSync(path.join(webRoot, "src/lib/pricing.ts"), "utf8");
+  assert.match(pricingCatalog, /monthlyPriceUsd:\s*29/);
+  assert.match(pricingCatalog, /includedVoiceMinutes:\s*100/);
+  assert.match(pricing, /no card is charged/i);
 
   const cookies = readFileSync(path.join(appRoot, "cookies/page.tsx"), "utf8");
   assert.match(cookies, /talkform_owner/);

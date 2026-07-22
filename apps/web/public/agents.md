@@ -10,7 +10,8 @@ Talkform turns any form into a live audio interview. It asks questions aloud in 
 - Docs: https://talkform.ai/docs (getting started, configuration, React, HTTP API, CLI, MCP)
 - FAQ: https://talkform.ai/faq
 - LLM site map: https://talkform.ai/llms.txt
-- A2A agent card: https://talkform.ai/.well-known/agent-card.json
+- Informational agent discovery profile (not an A2A endpoint): https://talkform.ai/.well-known/agent-card.json
+- Agent-readiness evidence and denominator: https://talkform.ai/evidence/agent-readiness
 - Agent manifest with guardrails: https://talkform.ai/.well-known/ai-agent.json
 
 ## What agents can safely do

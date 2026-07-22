@@ -13,11 +13,12 @@ const body = `# Talkform
 - [CLI](https://talkform.ai/docs/cli): generate configs and export results from the terminal
 - [MCP server](https://talkform.ai/docs/mcp): expose schemas and templates to coding agents
 - [Agents](https://talkform.ai/docs/agents): how AI agents should integrate with Talkform
+- [Agent-readiness evidence](https://talkform.ai/evidence/agent-readiness): dated route denominator, method, and limitations
 
 ## Agent onboarding
 
 - [agents.md](https://talkform.ai/agents.md): browser-agent onboarding, safe actions, and DOM hints
-- [Agent card (A2A)](https://talkform.ai/.well-known/agent-card.json): capabilities and skills manifest
+- [Agent discovery profile](https://talkform.ai/.well-known/agent-card.json): informational capabilities profile; no A2A endpoint is currently offered
 - [AI agent manifest](https://talkform.ai/.well-known/ai-agent.json): guardrails, allowed/disallowed actions, rate expectations
 
 ## Schemas
@@ -31,7 +32,7 @@ const body = `# Talkform
 - [Import a form](https://talkform.ai/import): turn a public Typeform, Google Forms, Jotform, or HubSpot form into an editable Talkform draft
 - [FAQ](https://talkform.ai/faq): plain answers on imports, voice and text input, data handling, and limitations
 - [Use cases](https://talkform.ai/use-cases): example deployments
-- [Pricing](https://talkform.ai/pricing): current pricing status
+- [Pricing](https://talkform.ai/pricing): Free evaluation, $29/month Pro launch plan, and scoped team pilot
 
 ## Examples
 

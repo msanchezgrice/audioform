@@ -4,12 +4,15 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "pnpm --filter @talkform/core build && pnpm --filter @talkform/react build",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "pretypecheck": "pnpm --filter @talkform/core build && pnpm --filter @talkform/react build",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "@clerk/nextjs": "^6.39.6",
     "@talkform/core": "workspace:*",
     "@talkform/http": "workspace:*",
     "@talkform/react": "workspace:*",
@@ -22,6 +25,7 @@
     "react-dom": "19.2.3",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
+    "stripe": "^19.3.0",
     "undici": "^8.7.0"
   },
   "devDependencies": {

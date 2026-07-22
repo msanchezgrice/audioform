@@ -1,18 +1,25 @@
 {
   "name": "@talkform/cli",
   "version": "0.1.0",
-  "private": true,
+  "description": "Talkform CLI and agent-skill installer.",
   "type": "module",
   "bin": {
-    "audioform": "./src/cli.ts"
+    "talkform": "./dist/cli.js",
+    "audioform": "./dist/cli.js"
   },
+  "exports": { "./install": { "types": "./dist/install.d.ts", "import": "./dist/install.js" } },
+  "files": ["dist", "skills", "README.md"],
+  "license": "UNLICENSED",
+  "homepage": "https://talkform.ai/docs/cli",
+  "repository": { "type": "git", "url": "https://github.com/msanchezgrice/audioform.git", "directory": "packages/cli" },
+  "engines": { "node": ">=20" },
+  "publishConfig": { "access": "public" },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsup src/cli.ts src/install.ts --format esm --dts --clean --sourcemap --platform node",
     "lint": "tsc --noEmit -p tsconfig.json",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@talkform/core": "workspace:*",
-    "tsx": "^4.23.0"
+    "@talkform/core": "workspace:^"
   }
 }

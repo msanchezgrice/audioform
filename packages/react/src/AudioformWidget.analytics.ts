@@ -12,6 +12,7 @@ const ALLOWED_PROPERTY_KEYS = new Set([
   "percent",
   "format",
   "destination",
+  "plan",
 ]);
 
 export type TalkformAnalyticsDetail = {

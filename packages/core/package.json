@@ -1,12 +1,27 @@
 {
   "name": "@talkform/core",
   "version": "0.1.0",
-  "private": true,
+  "description": "Schemas, templates, and session helpers for Talkform interviews.",
   "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "license": "UNLICENSED",
+  "homepage": "https://talkform.ai/docs/getting-started",
+  "repository": { "type": "git", "url": "https://github.com/msanchezgrice/audioform.git", "directory": "packages/core" },
+  "engines": { "node": ">=20" },
+  "publishConfig": { "access": "public" },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsup src/index.ts --format esm --dts --clean --sourcemap",
     "lint": "tsc --noEmit -p tsconfig.json",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
@@ -14,4 +29,3 @@
     "zod": "^3.24.4"
   }
 }
-

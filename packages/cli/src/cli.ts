@@ -1,4 +1,4 @@
-#!/usr/bin/env -S node --import tsx
+#!/usr/bin/env node
 
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -9,10 +9,12 @@ import {
   listAudioformTemplates,
 } from "@talkform/core";
 import { apiRequestHeaders } from "./api-client";
+import { installTalkform, type TalkformClient } from "./install";
 
 const args = process.argv.slice(2);
 const command = args[0];
 const baseUrl = process.env.AUDIOFORM_BASE_URL?.trim() || "http://localhost:3000";
+const packageVersion = "0.1.0";
 
 function print(value: unknown) {
   process.stdout.write(`${typeof value === "string" ? value : JSON.stringify(value, null, 2)}\n`);
@@ -82,6 +84,24 @@ function runDevServer() {
 }
 
 async function main() {
+  if (command === "install") {
+    const clientFlag = args.indexOf("--client");
+    const requested = clientFlag >= 0 ? args[clientFlag + 1] : "";
+    const supported: TalkformClient[] = ["claude", "codex", "cursor"];
+    if (!args.includes("--all") && !supported.includes(requested as TalkformClient)) {
+      throw new Error("Usage: talkform install --all | --client claude|codex|cursor [--force]");
+    }
+    const clients = args.includes("--all") ? supported : [requested as TalkformClient];
+    const result = await installTalkform({
+      home: process.env.HOME || process.cwd(),
+      clients,
+      packageVersion,
+      force: args.includes("--force"),
+    });
+    print(`Installed Talkform skill at ${result.canonical} and configured: ${result.clients.join(", ")}`);
+    return;
+  }
+
   if (command === "templates") {
     print(listAudioformTemplates());
     return;
@@ -111,11 +131,12 @@ async function main() {
     "Talkform CLI",
     "",
     "Commands:",
-    "  audioform templates",
-    "  audioform init",
-    "  audioform validate <config>",
-    "  audioform dev",
-    "  audioform export --session <id> --format json|markdown",
+    "  talkform install --all | --client claude|codex|cursor",
+    "  talkform templates",
+    "  talkform init",
+    "  talkform validate <config>",
+    "  talkform dev",
+    "  talkform export --session <id> --format json|markdown",
   ].join("\n"));
 }
 

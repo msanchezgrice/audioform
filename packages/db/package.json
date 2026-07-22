@@ -1,0 +1,6 @@
+{
+  "name": "@talkform/db",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Commercial persistence schema for Talkform accounts, billing, API keys, and handoffs."
+}

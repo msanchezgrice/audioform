@@ -4,6 +4,7 @@
   "url": "https://talkform.ai",
   "version": "1.0.0",
   "agent_card": "https://talkform.ai/.well-known/agent-card.json",
+  "agent_card_status": "Informational discovery profile only; no A2A JSON-RPC endpoint is currently offered.",
   "onboarding": "https://talkform.ai/agents.md",
   "docs": "https://talkform.ai/docs",
   "llms_txt": "https://talkform.ai/llms.txt",

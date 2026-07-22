@@ -71,9 +71,12 @@ export const organizationJsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: SITE_NAME,
+  alternateName: "Talkform.ai",
   url: SITE_URL,
   logo: absoluteUrl("/icon.svg"),
   email: "support@talkform.ai",
+  sameAs: ["https://github.com/msanchezgrice/audioform"],
+  description: "Talkform is the guided browser voice-interview product published at talkform.ai.",
 };
 
 export const websiteJsonLd = {

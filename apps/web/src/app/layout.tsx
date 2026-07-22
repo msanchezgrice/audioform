@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Outfit, Fraunces } from "next/font/google";
 import { createMetadata, organizationJsonLd, websiteJsonLd } from "@/lib/seo";
+import { AuthProvider } from "@/components/auth-provider";
 import "./globals.css";
 
 const bodyFont = Outfit({
@@ -37,6 +38,7 @@ const navItems = [
   { href: "/blog", label: "Blog" },
   { href: "/docs", label: "Docs" },
   { href: "/pricing", label: "Pricing" },
+  { href: "/sign-in", label: "Sign in" },
 ];
 
 const footerGroups = [
@@ -57,6 +59,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className={`${bodyFont.variable} ${displayFont.variable}`}>
+        <AuthProvider>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([organizationJsonLd, websiteJsonLd]).replace(/</g, "\\u003c") }} />
         <a className="skipLink" href="#main-content">Skip to main content</a>
         <div className="siteShell">
@@ -97,6 +100,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
           </footer>
         </div>
+        </AuthProvider>
       </body>
     </html>
   );
