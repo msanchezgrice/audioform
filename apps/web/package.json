@@ -20,6 +20,7 @@
     "ipaddr.js": "^2.4.0",
     "json5": "^2.2.3",
     "next": "16.2.10",
+    "postgres": "^3.4.9",
     "posthog-js": "^1.399.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",

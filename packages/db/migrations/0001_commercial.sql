@@ -36,6 +36,16 @@ create table stripe_events (
   processed_at timestamptz not null default now()
 );
 
+create table checkout_sessions (
+  account_id uuid primary key references accounts(id) on delete cascade,
+  stripe_session_id text not null unique,
+  stripe_price_id text not null,
+  checkout_url text not null,
+  status text not null check (status in ('open', 'complete', 'expired')),
+  expires_at timestamptz not null,
+  updated_at timestamptz not null default now()
+);
+
 create table usage_counters (
   account_id uuid not null references accounts(id) on delete cascade,
   metric text not null,

@@ -2,7 +2,8 @@ type BillingEnvironment = Record<string, string | undefined>;
 
 const requiredKeys = [
   "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY", "CLERK_SECRET_KEY", "STRIPE_SECRET_KEY",
-  "STRIPE_PRICE_PRO_MONTHLY", "STRIPE_PRICE_PRO_ANNUAL", "DATABASE_URL", "TALKFORM_BILLING_READY",
+  "STRIPE_WEBHOOK_SECRET", "STRIPE_PRICE_PRO_MONTHLY", "STRIPE_PRICE_PRO_ANNUAL",
+  "DATABASE_URL", "TALKFORM_BILLING_READY",
 ] as const;
 
 export function billingReadiness(env: BillingEnvironment) {
