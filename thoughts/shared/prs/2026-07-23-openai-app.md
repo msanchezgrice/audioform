@@ -36,6 +36,8 @@
 - production build: passed
 - `pnpm audit --prod`: no known vulnerabilities
 - `git diff --check`: passed
+- clean-checkout CI order: root tests build the MCP package before importing its
+  built `./http` export
 
 ## Reviewer notes
 

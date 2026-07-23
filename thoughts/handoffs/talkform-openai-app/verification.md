@@ -76,6 +76,17 @@ The final audit rerun detected newly published advisory
 and lockfile now resolve PostCSS `8.5.12`, after which `pnpm audit --prod`
 returned no known vulnerabilities.
 
+## CI clean-checkout correction
+
+PR #7's first GitHub Actions run exposed a clean-checkout-only test ordering
+gap: the root test command built `@talkform/core` but not `@talkform/mcp`, so
+the web MCP route test could not resolve `@talkform/mcp/dist/http.js`. Local
+release runs had already built that package during typecheck/build.
+
+The root test command now builds both `@talkform/core` and `@talkform/mcp`
+before starting the Node test runner. This preserves the package export boundary
+and makes the test suite independent of prior build artifacts.
+
 ## Production prerequisites
 
 - `TALKFORM_LIMITER_PEPPER`: configured as a sensitive Production-only Vercel
