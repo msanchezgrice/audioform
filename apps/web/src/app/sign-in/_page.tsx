@@ -1,6 +1,6 @@
 import { SignIn } from "@clerk/nextjs";
-import { PageHero, Prose } from "../../_components/content";
-import styles from "../../content.module.css";
+import { PageHero, Prose } from "../_components/content";
+import styles from "../content.module.css";
 
 export default function SignInPage() {
   const configured = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim());
