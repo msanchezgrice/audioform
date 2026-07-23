@@ -4,17 +4,18 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "pnpm --filter @talkform/core build && pnpm --filter @talkform/react build",
+    "prebuild": "pnpm --filter @talkform/core build && pnpm --filter @talkform/react build && pnpm --filter @talkform/mcp build",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "pretypecheck": "pnpm --filter @talkform/core build && pnpm --filter @talkform/react build",
+    "pretypecheck": "pnpm --filter @talkform/core build && pnpm --filter @talkform/react build && pnpm --filter @talkform/mcp build",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.39.6",
     "@talkform/core": "workspace:*",
     "@talkform/http": "workspace:*",
+    "@talkform/mcp": "workspace:*",
     "@talkform/react": "workspace:*",
     "cheerio": "^1.2.0",
     "ipaddr.js": "^2.4.0",

@@ -51,6 +51,7 @@ async function main() {
 
     const [result] = await sql<{
       accounts: string | null;
+      anonymous_mcp_rate_limits: string | null;
       api_keys: string | null;
       checkout_sessions: string | null;
       entitlements: string | null;
@@ -61,6 +62,7 @@ async function main() {
     }[]>`
       select
         to_regclass('public.accounts')::text as accounts,
+        to_regclass('public.anonymous_mcp_rate_limits')::text as anonymous_mcp_rate_limits,
         to_regclass('public.api_keys')::text as api_keys,
         to_regclass('public.checkout_sessions')::text as checkout_sessions,
         to_regclass('public.entitlements')::text as entitlements,
@@ -71,6 +73,7 @@ async function main() {
     `;
     if (
       result.accounts !== "accounts" ||
+      result.anonymous_mcp_rate_limits !== "anonymous_mcp_rate_limits" ||
       result.api_keys !== "api_keys" ||
       result.checkout_sessions !== "checkout_sessions" ||
       result.entitlements !== "entitlements" ||
