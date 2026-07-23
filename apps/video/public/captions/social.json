@@ -1,0 +1,37 @@
+[
+  {
+    "text": " Most forms lose nearly half their starters.",
+    "startMs": 58,
+    "endMs": 2334,
+    "timestampMs": 58,
+    "confidence": 1
+  },
+  {
+    "text": " Talkform lets people answer naturally, asks the useful follow-up,",
+    "startMs": 2601,
+    "endMs": 6327,
+    "timestampMs": 2601,
+    "confidence": 1
+  },
+  {
+    "text": " then returns structured data.",
+    "startMs": 6478,
+    "endMs": 8022,
+    "timestampMs": 6478,
+    "confidence": 1
+  },
+  {
+    "text": " Richer feedback. Smarter onboarding. Real personalization.",
+    "startMs": 8336,
+    "endMs": 12365,
+    "timestampMs": 8336,
+    "confidence": 1
+  },
+  {
+    "text": " Keep the schema. Lose the form.",
+    "startMs": 12632,
+    "endMs": 14559,
+    "timestampMs": 12632,
+    "confidence": 1
+  }
+]

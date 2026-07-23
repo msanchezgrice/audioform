@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Talkform — Brand &amp; GTM Brief</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0}
+:root{
+  --bg:#faf8f5;
+  --panel:#ffffff;
+  --ink:#1a1613;
+  --ink-2:#5f574d;
+  --ink-3:#8a8177;
+  --accent:#c45a30;
+  --accent-deep:#9c4322;
+  --wash:#f4ede6;
+  --line:rgba(26,22,19,0.12);
+  --serif:'Instrument Serif',Georgia,serif;
+  --sans:'DM Sans',system-ui,sans-serif;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--sans);color:var(--ink);background:var(--bg);
+  line-height:1.6;-webkit-font-smoothing:antialiased;
+  padding:0 1.5rem 4rem;
+}
+.sheet{max-width:880px;margin:0 auto}
+.eyebrow{
+  font-size:.6875rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:.6rem;
+}
+header{padding:3.5rem 0 2.25rem;border-bottom:1px solid var(--line)}
+header .brand{font-family:var(--serif);font-size:1.25rem;margin-bottom:2.25rem}
+header .brand b{font-weight:400}
+header .brand span{color:var(--ink-3);font-family:var(--sans);font-size:.8125rem;font-weight:400;margin-left:.75rem}
+h1{
+  font-family:var(--serif);font-weight:400;font-size:clamp(2.6rem,6vw,3.9rem);
+  letter-spacing:-.02em;line-height:1.05;
+}
+h1 em{font-style:italic;color:var(--accent)}
+.lede{font-size:1.125rem;color:var(--ink-2);font-weight:300;max-width:44rem;margin-top:1rem}
+.lede b{font-weight:600;color:var(--ink)}
+section{padding:2.5rem 0;border-bottom:1px solid var(--line)}
+h2{
+  font-family:var(--serif);font-weight:400;font-size:1.9rem;letter-spacing:-.015em;
+  margin-bottom:1.25rem;
+}
+h2 em{font-style:italic;color:var(--accent)}
+p{max-width:46rem}
+.statement{
+  background:var(--panel);border:1px solid var(--line);border-radius:18px;
+  padding:1.75rem 2rem;font-size:1.0625rem;line-height:1.7;max-width:none;
+}
+.statement em{font-family:var(--serif);font-style:italic;font-size:1.15em;color:var(--accent-deep)}
+.statrow{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:.5rem}
+.stat{
+  background:var(--panel);border:1px solid var(--line);border-radius:16px;
+  padding:1.4rem 1.5rem;
+}
+.stat .label{font-size:.8125rem;color:var(--ink-2);margin-bottom:.35rem}
+.stat .value{font-weight:600;font-size:2.6rem;line-height:1.1;letter-spacing:-.01em}
+.stat .src{font-size:.75rem;color:var(--ink-3);margin-top:.4rem}
+.statnote{font-size:.8125rem;color:var(--ink-3);margin-top:1rem;max-width:none}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.card{
+  background:var(--panel);border:1px solid var(--line);border-radius:16px;
+  padding:1.35rem 1.5rem;
+}
+.card h3{font-family:var(--serif);font-weight:400;font-size:1.25rem;margin-bottom:.5rem}
+.card p{font-size:.9rem;color:var(--ink-2)}
+.card .yes,.card .no{
+  display:block;font-size:.8125rem;border-radius:10px;padding:.55rem .75rem;margin-top:.6rem;line-height:1.5;
+}
+.card .yes{background:var(--wash);color:var(--ink)}
+.card .no{color:var(--ink-3);text-decoration:line-through;text-decoration-color:rgba(196,90,48,.55);padding-top:.2rem;padding-bottom:0}
+.tagline{
+  font-family:var(--serif);font-size:clamp(1.9rem,4.5vw,2.6rem);font-style:italic;
+  color:var(--accent);margin:.25rem 0 1rem;
+}
+.msg{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}
+.msg .card b{display:block;margin-bottom:.3rem;font-weight:600;font-size:.95rem}
+.vs .card{position:relative}
+.vs .who{font-size:.6875rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:.4rem}
+.vs .line{font-family:var(--serif);font-style:italic;font-size:1.05rem;color:var(--accent-deep);margin-top:.6rem}
+.gap{
+  margin-top:1rem;background:var(--ink);color:#f6f1ea;border-radius:16px;padding:1.35rem 1.6rem;
+  font-size:1rem;
+}
+.gap em{font-family:var(--serif);font-style:italic;color:#e8946b;font-size:1.1em}
+.phases{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;counter-reset:ph}
+.phase{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1.25rem 1.35rem}
+.phase .n{
+  font-family:var(--serif);font-style:italic;font-size:1.5rem;color:var(--accent);line-height:1;
+}
+.phase h3{font-weight:600;font-size:.95rem;margin:.5rem 0 .35rem}
+.phase .wk{font-size:.6875rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.phase p{font-size:.85rem;color:var(--ink-2);margin-top:.4rem}
+.score{margin-top:1.25rem;background:var(--wash);border-radius:16px;padding:1.25rem 1.5rem}
+.score p{font-size:.9rem;color:var(--ink-2);max-width:none}
+.score b{color:var(--ink)}
+.foot{padding-top:2rem;font-size:.78rem;color:var(--ink-3);line-height:1.7}
+.foot a{color:var(--ink-3)}
+@media(max-width:760px){
+  .statrow,.grid3,.phases,.msg,.grid2{grid-template-columns:1fr}
+}
+@media print{
+  body{padding:0}
+  section,header{page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="sheet">
+
+<header>
+  <div class="brand"><b>Talkform</b><span>Brand &amp; go-to-market brief · July 2026</span></div>
+  <div class="eyebrow">The strategy in four words</div>
+  <h1>Get your users <em>talking.</em></h1>
+  <p class="lede">Talkform turns any form into a live audio interview — it asks the right questions with the right context, fills the fields as your user talks, and returns <b>one stable JSON result</b>. Warm on the surface, precise underneath.</p>
+</header>
+
+<section>
+  <div class="eyebrow">Why now</div>
+  <h2>Forms are where products ask — and users go <em>silent</em></h2>
+  <div class="statrow">
+    <div class="stat">
+      <div class="label">Average form abandonment</div>
+      <div class="value">~67%</div>
+      <div class="src">FormStory benchmark, via Gnosari (2026)</div>
+    </div>
+    <div class="stat">
+      <div class="label">Form viewers who ever complete</div>
+      <div class="value">45%</div>
+      <div class="src">Zuko form-analytics benchmark</div>
+    </div>
+    <div class="stat">
+      <div class="label">People who've abandoned a form mid-way</div>
+      <div class="value">81%</div>
+      <div class="src">The Manifest survey, via Insiteful</div>
+    </div>
+  </div>
+  <p class="statnote">Claims policy: cite industry data (like the above), state product mechanics flatly, and frame Talkform's own lift as a testable A/B until design-partner numbers exist — then publish those. Finance, retail, and nonprofit forms benchmark at 75%+ abandonment; use "75%" only where the data says it.</p>
+</section>
+
+<section>
+  <div class="eyebrow">Positioning</div>
+  <h2>The audio-form service, built for <em>builders</em> — and their agents</h2>
+  <p class="statement">For indie developers and small teams building AI-native products, <em>Talkform</em> turns the form you already have into a guided voice interview. Users talk; Talkform asks the follow-ups a good operator would ask, fills the fields live, and returns structured JSON plus the transcript and summary a static form never captures. Unlike form builders, which still make users type — and unlike voice-agent platforms, which hand you a dial tone and leave the interviewer to you — <em>Talkform ships the interviewer,</em> and a coding agent can set it up end to end.</p>
+</section>
+
+<section>
+  <div class="eyebrow">Brand voice</div>
+  <h2>Sounds like a great <em>interviewer</em></h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>A good interviewer, not a megaphone</h3>
+      <p>Curious, direct, easy to answer. Marketing that shouts is the opposite of a product that listens.</p>
+      <span class="yes">"What would your users tell you if the form could ask a follow-up?"</span>
+      <span class="no">"Revolutionize your data collection with AI-powered voice!"</span>
+    </div>
+    <div class="card">
+      <h3>Engineer-honest</h3>
+      <p>Claims carry evidence or a plain caveat. Indie devs are claim-allergic; honesty is the conversion strategy.</p>
+      <span class="yes">"Run the A/B and see what a conversation does for your funnel."</span>
+      <span class="no">"Boost conversions 300% instantly!"</span>
+    </div>
+    <div class="card">
+      <h3>Concrete nouns, working verbs</h3>
+      <p>Reads like good API docs: form, question, interview, JSON, schema. Import, ask, fill, export, ship.</p>
+      <span class="yes">"Paste your Typeform URL. Talkform runs the interview and returns JSON."</span>
+      <span class="no">"Seamlessly leverage conversational AI to unlock insights."</span>
+    </div>
+    <div class="card">
+      <h3>Quietly confident craft</h3>
+      <p>The demo carries the excitement — a form filling itself while you talk. The prose stays calm.</p>
+      <span class="yes">"You keep the schema. Talkform owns the interview."</span>
+      <span class="no">"The world's most advanced voice form platform."</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">Messaging</div>
+  <div class="tagline">"Get your users talking."</div>
+  <div class="msg">
+    <div class="card"><b>People finish — and say more</b><p>Talking beats typing. Completed fields plus the <i>why</i> behind every answer, in the user's own words.</p></div>
+    <div class="card"><b>Your form, not a rebuild</b><p>Import a Typeform, Google Forms, Jotform, or HubSpot URL into an editable draft. The interview trains on your questions and context.</p></div>
+    <div class="card"><b>Structure you can build on</b><p>One stable schema — fields, transcript, summary, completion — across widget, API, CLI, and MCP.</p></div>
+    <div class="card"><b>Set up by you or your agent</b><p>llms.txt, JSON schemas, templates, CLI, MCP server. "Add voice onboarding to my app" is a prompt, not a project.</p></div>
+  </div>
+</section>
+
+<section class="vs">
+  <div class="eyebrow">Competitive frame</div>
+  <h2>Three neighbors, one open <em>gap</em></h2>
+  <div class="grid3">
+    <div class="card">
+      <div class="who">Form builders · Typeform, Jotform</div>
+      <p>No-code destinations for GTM teams, moving upmarket into growth suites. Conversational — but still typed.</p>
+      <div class="line">They made forms friendlier to click. We make them conversations you speak.</div>
+    </div>
+    <div class="card">
+      <div class="who">Voice infra · Vapi, Retell, raw Realtime</div>
+      <p>Great plumbing, phone-centric, and every agent starts blank. You still build the interviewer, extraction, and UI.</p>
+      <div class="line">They give you a dial tone. Talkform gives you the interviewer.</div>
+    </div>
+    <div class="card">
+      <div class="who">AI research · Listen Labs, Outset</div>
+      <p>AI-moderated <i>studies</i> for research teams at enterprise prices. A service you commission, not a surface you embed.</p>
+      <div class="line">They run studies. Talkform lives inside your product.</div>
+    </div>
+  </div>
+  <div class="gap">The ground nobody credible holds: <em>developer-first + voice-first + form-shaped.</em> Wedge use case: voice onboarding for AI-native products — where a spoken first session feels native, and the builders are the loudest distributors.</div>
+</section>
+
+<section>
+  <div class="eyebrow">Go-to-market · 90 days · solo + ≤$500/mo</div>
+  <h2>Make it true, prove it, seed the agents, launch <em>once</em> — loudly</h2>
+  <div class="phases">
+    <div class="phase">
+      <div class="n">0</div>
+      <h3>Make it true</h3>
+      <div class="wk">Weeks 1–3</div>
+      <p>Close the P0 audit gates (session auth, gated realtime secrets, safe import, truthful embed). Publish npm packages. Honest early-access pricing. Instrument the funnel.</p>
+    </div>
+    <div class="phase">
+      <div class="n">1</div>
+      <h3>Sharpen &amp; prove</h3>
+      <div class="wk">Weeks 3–6</div>
+      <p>Reposition the site on the wedge. 60–90s demo video. Zero-friction hosted demo. Recruit 5–10 design partners whose completion data becomes the published proof.</p>
+    </div>
+    <div class="phase">
+      <div class="n">2</div>
+      <h3>Seed the agents</h3>
+      <div class="wk">Weeks 6–9</div>
+      <p>MCP registries (official, Smithery, PulseMCP, mcp.so). llms-full.txt + agents.md. A /for-agents page of copy-paste prompts. ChatGPT app directory submission.</p>
+    </div>
+    <div class="phase">
+      <div class="n">3</div>
+      <h3>Launch &amp; compound</h3>
+      <div class="wk">Weeks 9–12</div>
+      <p>Show HN + Product Hunt + build-in-public thread in one 72-hour window, with pilot data. Then 2 evidence-first posts/month, starter-kit PRs, one paid newsletter test.</p>
+    </div>
+  </div>
+  <div class="score">
+    <p><b>Scorecard at day 90:</b> P0 gates closed · 5+ design partners · 1,000 completed interviews · 3 published pilot numbers · 500+ npm installs · listed in 4 agent directories + ChatGPT apps · time-to-first-interview &lt; 10 min · agent-mediated share of activations measured. <b>North star:</b> completed interviews per week.</p>
+  </div>
+</section>
+
+<div class="foot">
+  Companion docs: <b>brand-voice.md</b> (voice, vocabulary, claims policy, site copy review) · <b>positioning.md</b> (narrative, personas, objections, taglines) · <b>gtm-plan.md</b> (phases, budget, risks, sources).
+  Data: Zuko conversion benchmarks · FormStory/Gnosari abandonment collation · The Manifest via Insiteful · typeform.com · OpenAI (gpt-realtime, ChatGPT app submissions). Talkform-specific lift claims await design-partner data.
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,60 @@
+{
+  "provider": "elevenlabs",
+  "generatedAt": "2026-07-22T20:48:05.848Z",
+  "model": "eleven_multilingual_v2",
+  "outputFormat": "mp3_44100_128",
+  "voice": {
+    "id": "SAz9YHcvj6GT2YYXdXww",
+    "name": "River - Relaxed, Neutral, Informative"
+  },
+  "tracks": [
+    {
+      "id": "demo-hook",
+      "output": "audio/elevenlabs/demo-hook.mp3",
+      "durationMs": 2833,
+      "sha256": "e0e3dfd5d226f394676202980917d7973e077ce22042d883eb2c1fae460c65a9"
+    },
+    {
+      "id": "demo-friction",
+      "output": "audio/elevenlabs/demo-friction.mp3",
+      "durationMs": 4180,
+      "sha256": "2edd9d767515af8e61e1bba585d06bdc9fa05918d19d35baacf16ae24dc90bea"
+    },
+    {
+      "id": "demo-interview",
+      "output": "audio/elevenlabs/demo-interview.mp3",
+      "durationMs": 7152,
+      "sha256": "882f3a5aacb097252e99b0684c3f09f0de4f36741fa98490b8e487513208e732"
+    },
+    {
+      "id": "demo-structure",
+      "output": "audio/elevenlabs/demo-structure.mp3",
+      "durationMs": 5480,
+      "sha256": "6acb5d54cc8a33e7c87a37c8619f1a1c0dea4102b14151ff1ee533890881cb4a"
+    },
+    {
+      "id": "demo-uses",
+      "output": "audio/elevenlabs/demo-uses.mp3",
+      "durationMs": 6873,
+      "sha256": "415a0fe4173ec2598dab63017d89af8551996a05f878a0c5db27de39d66e3478"
+    },
+    {
+      "id": "demo-cta",
+      "output": "audio/elevenlabs/demo-cta.mp3",
+      "durationMs": 3669,
+      "sha256": "c6b67b2af6e33a349ed4b873412872f0727b25d8f019ad78eb5c89560e68ce66"
+    },
+    {
+      "id": "social",
+      "output": "audio/elevenlabs/social.mp3",
+      "durationMs": 14814,
+      "sha256": "7284d3bcb596abd3a1de2de5e20d2888da45335c5a3e77075b8c5f8939eca798"
+    },
+    {
+      "id": "higgsfield",
+      "output": "audio/elevenlabs/higgsfield.mp3",
+      "durationMs": 13096,
+      "sha256": "17923c19b1915c189fe8746c5488c1e78fec936888da527e0e9fdf5eebce42b4"
+    }
+  ]
+}

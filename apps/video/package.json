@@ -1,0 +1,44 @@
+{
+  "name": "@talkform/video",
+  "version": "1.0.0",
+  "description": "Talkform product demos and paid-social creative",
+  "repository": {},
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@remotion/captions": "4.0.496",
+    "@remotion/cli": "4.0.496",
+    "@remotion/google-fonts": "4.0.496",
+    "@remotion/media": "4.0.496",
+    "@remotion/transitions": "4.0.496",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "remotion": "4.0.496",
+    "zod": "4.3.6"
+  },
+  "devDependencies": {
+    "@remotion/eslint-config-flat": "4.0.496",
+    "@types/react": "19.2.7",
+    "@types/web": "0.0.166",
+    "eslint": "9.19.0",
+    "prettier": "3.8.1",
+    "typescript": "5.9.3"
+  },
+  "scripts": {
+    "dev": "remotion studio",
+    "bundle": "remotion bundle",
+    "voiceover:check": "node --env-file-if-exists=.env scripts/generate-elevenlabs-voiceover.mjs --dry-run",
+    "voiceover:generate": "node --env-file-if-exists=.env scripts/generate-elevenlabs-voiceover.mjs",
+    "render:demo": "remotion render TalkformDemo ../web/public/videos/talkform-demo.mp4 --codec h264 --crf 18 --audio-codec aac && node scripts/normalize-rendered-audio.mjs ../web/public/videos/talkform-demo.mp4",
+    "render:social": "remotion render TalkformSocial ../web/public/videos/talkform-social.mp4 --codec h264 --crf 18 --audio-codec aac && node scripts/normalize-rendered-audio.mjs ../web/public/videos/talkform-social.mp4",
+    "render:higgsfield": "remotion render TalkformHiggsfield ../web/public/videos/talkform-higgsfield.mp4 --codec h264 --crf 20 --audio-codec aac && node scripts/normalize-rendered-audio.mjs ../web/public/videos/talkform-higgsfield.mp4",
+    "audio:normalize": "node scripts/normalize-rendered-audio.mjs ../web/public/videos/talkform-demo.mp4 ../web/public/videos/talkform-social.mp4 ../web/public/videos/talkform-higgsfield.mp4",
+    "render:all": "pnpm render:demo && pnpm render:social && pnpm render:higgsfield",
+    "upgrade": "remotion upgrade",
+    "lint": "eslint src",
+    "typecheck": "tsc"
+  },
+  "sideEffects": [
+    "*.css"
+  ]
+}

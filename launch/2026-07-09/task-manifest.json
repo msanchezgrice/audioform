@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "1.0",
+  "product": "Talkform",
+  "date": "2026-07-09",
+  "mode": "audit_only",
+  "sourceBrief": {
+    "path": "/tmp/warmstart/launch-packs/talkform-2026-07-09T20-10-29-510Z/master-thread-prompt.md",
+    "state": "missing"
+  },
+  "overallStatus": "blocked",
+  "externalOperations": {
+    "authorized": false,
+    "performed": false
+  },
+  "tasks": [
+    {"id": "T01", "title": "Secure session data and persistence", "priority": "P0", "status": "blocked", "dependsOn": []},
+    {"id": "T02", "title": "Protect Realtime client-secret issuance", "priority": "P0", "status": "blocked", "dependsOn": []},
+    {"id": "T03", "title": "Harden URL importing", "priority": "P0", "status": "blocked", "dependsOn": []},
+    {"id": "T04", "title": "Align public embed contract", "priority": "P0", "status": "blocked", "dependsOn": []},
+    {"id": "T05", "title": "Remediate quality and dependency health", "priority": "P0", "status": "blocked", "dependsOn": []},
+    {"id": "T06", "title": "Correct interaction and accessibility gaps", "priority": "P1", "status": "blocked", "dependsOn": []},
+    {"id": "T07", "title": "Choose supported v1 integration contract", "priority": "P1", "status": "pending", "dependsOn": ["T04"]},
+    {"id": "T08", "title": "Publish data-handling contract", "priority": "P1", "status": "pending", "dependsOn": ["T01", "T07"]},
+    {"id": "T09", "title": "Align product documentation", "priority": "P1", "status": "pending", "dependsOn": ["T07"]},
+    {"id": "T10", "title": "Run authorized production smoke test", "priority": "P1", "status": "blocked", "dependsOn": ["T01", "T02", "T03", "T04", "T05", "T06", "T07", "T08", "T09"]},
+    {"id": "T11", "title": "Obtain approved launch brief", "priority": "P1", "status": "blocked", "dependsOn": ["T10"]}
+  ]
+}

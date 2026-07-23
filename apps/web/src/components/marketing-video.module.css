@@ -1,0 +1,65 @@
+.card {
+  display: grid;
+  gap: 1.25rem;
+  margin: 0;
+}
+
+.copy {
+  max-width: 42rem;
+}
+
+.copy > span {
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.copy h2 {
+  margin: 0.55rem 0 0.4rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(1.8rem, 3vw, 2.7rem);
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  line-height: 1.08;
+}
+
+.copy p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.frame {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  background: #1f1b19;
+  box-shadow: 0 28px 80px rgba(44, 40, 37, 0.16);
+}
+
+.frame video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #1f1b19;
+}
+
+.portrait {
+  align-content: start;
+}
+
+.portrait .frame {
+  width: min(100%, 22rem);
+}
+
+.portrait .frame video {
+  aspect-ratio: 9 / 16;
+}
+
+@media (max-width: 640px) {
+  .frame {
+    border-radius: var(--radius-lg);
+  }
+}

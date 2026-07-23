@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Talkform static assets</title>
+<style>
+@font-face{font-family:'Fraunces';src:url('node_modules/@fontsource/fraunces/files/fraunces-latin-400-normal.woff2') format('woff2');font-weight:400;font-style:normal}
+@font-face{font-family:'Fraunces';src:url('node_modules/@fontsource/fraunces/files/fraunces-latin-400-italic.woff2') format('woff2');font-weight:400;font-style:italic}
+@font-face{font-family:'Outfit';src:url('node_modules/@fontsource/outfit/files/outfit-latin-400-normal.woff2') format('woff2');font-weight:400}
+@font-face{font-family:'Outfit';src:url('node_modules/@fontsource/outfit/files/outfit-latin-500-normal.woff2') format('woff2');font-weight:500}
+@font-face{font-family:'Outfit';src:url('node_modules/@fontsource/outfit/files/outfit-latin-600-normal.woff2') format('woff2');font-weight:600}
+@font-face{font-family:'Outfit';src:url('node_modules/@fontsource/outfit/files/outfit-latin-700-normal.woff2') format('woff2');font-weight:700}
+*,*::before,*::after{box-sizing:border-box;margin:0}
+:root{
+  --bg:#fdfcfa; --warm:#f7f4ee; --cream:#f0ece3; --surface:#ffffff;
+  --ink:#2c2825; --muted:#7a7268; --quiet:#a69e94;
+  --accent:#d05a36; --accent-dark:#b84e2e; --accent-soft:#faebe5;
+  --olive:#6b7c52; --olive-soft:#eef1e9;
+  --amber:#d9a13b; --amber-soft:#f7ecd8;
+  --serif:'Fraunces',Georgia,serif; --sans:'Outfit',system-ui,sans-serif;
+}
+body{font-family:var(--sans);color:var(--ink);background:#e9e4da;padding:40px;display:grid;gap:40px}
+.board{position:relative;overflow:hidden;background:radial-gradient(circle at 8% 4%, rgba(208,90,54,0.09), transparent 30%), var(--bg)}
+.logo{display:flex;align-items:center;gap:14px}
+.logo svg{display:block}
+.logo strong{font-family:var(--serif);font-weight:400;letter-spacing:-0.03em}
+.chip{display:inline-flex;align-items:center;gap:12px;border-radius:999px;font-weight:700}
+.chip .dot{position:relative;border-radius:50%}
+.chip.listen{background:var(--olive-soft);color:var(--olive)}
+.chip.listen .halo{position:absolute;border-radius:50%;background:var(--olive);opacity:.22}
+.chip.listen .dot{background:var(--olive)}
+.chip.off{background:var(--amber-soft);color:#8a6b1f}
+.chip.off .dot{background:var(--amber)}
+.wave{display:flex;align-items:center}
+.wave span{border-radius:99px;background:var(--olive)}
+.wave.amber span{background:var(--amber);opacity:.5}
+.tag{font-family:var(--serif);font-weight:400;letter-spacing:-0.05em;line-height:.98}
+.tag em{font-style:italic;color:var(--accent)}
+.url{display:inline-flex;align-items:center;border-radius:999px;background:var(--ink);color:var(--bg);font-weight:600}
+
+/* ---- OG card 1200x630 ---- */
+#og{width:1200px;height:630px;padding:64px 72px;display:flex;flex-direction:column;justify-content:space-between}
+#og .tag{font-size:82px;max-width:760px}
+#og .sub{color:var(--muted);font-size:26px;max-width:640px;line-height:1.45}
+#og .rightcard{position:absolute;right:-48px;top:96px;width:330px;padding:30px;border-radius:28px;background:var(--surface);box-shadow:0 28px 90px rgba(44,40,37,.14)}
+
+/* ---- X header 1500x500 ---- */
+#xh{width:1500px;height:500px;padding:70px 90px;display:flex;align-items:center;justify-content:space-between}
+#xh .tag{font-size:92px}
+#xh .side{display:grid;gap:22px;justify-items:end}
+
+/* ---- Square 1080x1080 ---- */
+#sq{width:1080px;height:1080px;padding:80px;display:flex;flex-direction:column;justify-content:space-between}
+#sq .tag{font-size:120px}
+
+/* ---- PH gallery 1270x760 ---- */
+#ph{width:1270px;height:760px;padding:64px 76px}
+#ph .tag{font-size:64px;letter-spacing:-0.045em}
+.widget{display:grid;grid-template-columns:0.9fr 1.3fr 0.9fr;border:1px solid var(--cream);border-radius:30px;background:var(--surface);box-shadow:0 28px 90px rgba(44,40,37,.14);overflow:hidden}
+.widget aside{padding:26px;border-right:1px solid var(--cream);background:var(--warm)}
+.widget aside:last-child{border-right:0;border-left:1px solid var(--cream);background:var(--surface)}
+.widget .lab{color:var(--muted);font-size:13px;font-weight:700;letter-spacing:.09em;text-transform:uppercase}
+.bub{margin-top:14px;padding:13px 15px;border-radius:14px 14px 14px 4px;background:var(--surface);color:var(--muted);font-size:14.5px;line-height:1.4}
+.bub.me{border-radius:14px 14px 4px 14px;background:var(--accent-soft);color:var(--ink)}
+.fld{margin-top:16px;padding-bottom:12px;border-bottom:1px solid var(--cream)}
+.fld span{color:var(--muted);font-size:13px}
+.fld strong{display:block;margin-top:4px;font-size:15px;font-weight:600;color:var(--olive)}
+.fld.pending strong{color:var(--quiet)}
+.center{display:grid;place-items:center;text-align:center;padding:30px}
+.center h3{font-family:var(--serif);font-weight:400;font-size:30px;letter-spacing:-0.03em;line-height:1.1;max-width:300px}
+.center .q{color:var(--accent);font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+
+/* ---- Truth card 1080x1080 ---- */
+#truth{width:1080px;height:1080px;padding:90px;display:flex;flex-direction:column}
+#truth h2{font-family:var(--serif);font-weight:400;font-size:84px;letter-spacing:-0.05em;line-height:1}
+#truth .row{display:flex;align-items:center;gap:34px;padding:44px 48px;border-radius:30px;background:var(--surface);box-shadow:0 20px 60px rgba(44,40,37,.10);margin-top:36px}
+#truth .row p{color:var(--muted);font-size:26px;line-height:1.4;max-width:520px}
+#truth .row p b{color:var(--ink)}
+</style>
+</head>
+<body>
+
+<!-- OG CARD -->
+<div class="board" id="og">
+  <div class="logo">
+    <svg width="52" height="52" viewBox="0 0 64 64" fill="none"><path d="M32 4C17.088 4 5 14.745 5 28c0 7.41 3.73 14.08 9.62 18.68L11 56l10.92-5.46C24.34 51.5 28.08 52 32 52c14.912 0 27-10.745 27-24S46.912 4 32 4z" fill="#d05a36"/><rect x="22" y="20" width="3" height="16" rx="1.5" fill="#fff"/><rect x="28" y="15" width="3" height="26" rx="1.5" fill="#fff"/><rect x="34" y="18" width="3" height="20" rx="1.5" fill="#fff"/><rect x="40" y="22" width="3" height="12" rx="1.5" fill="#fff"/></svg>
+    <strong style="font-size:40px">Talkform</strong>
+  </div>
+  <div>
+    <div class="tag">Get your users <em>talking.</em></div>
+    <p class="sub" style="margin-top:22px">Turn any form into a live audio interview — structured JSON out.</p>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between">
+    <div class="chip listen" style="padding:14px 26px;font-size:22px">
+      <span class="dot" style="width:16px;height:16px"><span class="halo" style="inset:-8px"></span></span>
+      Listening
+    </div>
+    <div class="url" style="padding:16px 28px;font-size:22px">talkform.ai&nbsp; →</div>
+  </div>
+  <div class="rightcard">
+    <div class="lab" style="color:var(--muted);font-size:13px;font-weight:700;letter-spacing:.09em;text-transform:uppercase">Structured answers</div>
+    <div class="fld"><span>Primary goal</span><strong>Better release notes</strong></div>
+    <div class="fld"><span>Team size</span><strong>8 people</strong></div>
+    <div class="fld pending"><span>Release cadence</span><strong>Listening…</strong></div>
+  </div>
+</div>
+
+<!-- X HEADER -->
+<div class="board" id="xh">
+  <div>
+    <div class="logo" style="margin-bottom:34px">
+      <svg width="44" height="44" viewBox="0 0 64 64" fill="none"><path d="M32 4C17.088 4 5 14.745 5 28c0 7.41 3.73 14.08 9.62 18.68L11 56l10.92-5.46C24.34 51.5 28.08 52 32 52c14.912 0 27-10.745 27-24S46.912 4 32 4z" fill="#d05a36"/><rect x="22" y="20" width="3" height="16" rx="1.5" fill="#fff"/><rect x="28" y="15" width="3" height="26" rx="1.5" fill="#fff"/><rect x="34" y="18" width="3" height="20" rx="1.5" fill="#fff"/><rect x="40" y="22" width="3" height="12" rx="1.5" fill="#fff"/></svg>
+      <strong style="font-size:34px">Talkform</strong>
+    </div>
+    <div class="tag">Get your users <em>talking.</em></div>
+  </div>
+  <div class="side">
+    <div class="wave" style="gap:7px;height:70px">
+      <span style="width:7px;height:22px"></span><span style="width:7px;height:44px"></span><span style="width:7px;height:30px"></span><span style="width:7px;height:58px"></span><span style="width:7px;height:36px"></span><span style="width:7px;height:50px"></span><span style="width:7px;height:24px"></span><span style="width:7px;height:40px"></span><span style="width:7px;height:28px"></span><span style="width:7px;height:52px"></span><span style="width:7px;height:20px"></span><span style="width:7px;height:34px"></span>
+    </div>
+    <p style="color:var(--muted);font-size:22px">Any form → a live audio interview → clean JSON.</p>
+  </div>
+</div>
+
+<!-- SQUARE -->
+<div class="board" id="sq">
+  <div class="logo">
+    <svg width="56" height="56" viewBox="0 0 64 64" fill="none"><path d="M32 4C17.088 4 5 14.745 5 28c0 7.41 3.73 14.08 9.62 18.68L11 56l10.92-5.46C24.34 51.5 28.08 52 32 52c14.912 0 27-10.745 27-24S46.912 4 32 4z" fill="#d05a36"/><rect x="22" y="20" width="3" height="16" rx="1.5" fill="#fff"/><rect x="28" y="15" width="3" height="26" rx="1.5" fill="#fff"/><rect x="34" y="18" width="3" height="20" rx="1.5" fill="#fff"/><rect x="40" y="22" width="3" height="12" rx="1.5" fill="#fff"/></svg>
+    <strong style="font-size:44px">Talkform</strong>
+  </div>
+  <div>
+    <div class="wave" style="gap:9px;height:90px;margin-bottom:44px">
+      <span style="width:9px;height:26px"></span><span style="width:9px;height:52px"></span><span style="width:9px;height:36px"></span><span style="width:9px;height:72px"></span><span style="width:9px;height:44px"></span><span style="width:9px;height:62px"></span><span style="width:9px;height:30px"></span><span style="width:9px;height:50px"></span><span style="width:9px;height:38px"></span><span style="width:9px;height:66px"></span><span style="width:9px;height:24px"></span><span style="width:9px;height:42px"></span><span style="width:9px;height:56px"></span><span style="width:9px;height:32px"></span>
+    </div>
+    <div class="tag">Get your users <em>talking.</em></div>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between">
+    <p style="color:var(--muted);font-size:28px;max-width:560px;line-height:1.4">Your form, as a conversation.<br>Structured JSON out.</p>
+    <div class="url" style="padding:18px 30px;font-size:24px">talkform.ai&nbsp; →</div>
+  </div>
+</div>
+
+<!-- PH GALLERY -->
+<div class="board" id="ph">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:34px">
+    <div class="logo">
+      <svg width="40" height="40" viewBox="0 0 64 64" fill="none"><path d="M32 4C17.088 4 5 14.745 5 28c0 7.41 3.73 14.08 9.62 18.68L11 56l10.92-5.46C24.34 51.5 28.08 52 32 52c14.912 0 27-10.745 27-24S46.912 4 32 4z" fill="#d05a36"/><rect x="22" y="20" width="3" height="16" rx="1.5" fill="#fff"/><rect x="28" y="15" width="3" height="26" rx="1.5" fill="#fff"/><rect x="34" y="18" width="3" height="20" rx="1.5" fill="#fff"/><rect x="40" y="22" width="3" height="12" rx="1.5" fill="#fff"/></svg>
+      <strong style="font-size:30px">Talkform</strong>
+    </div>
+    <div class="tag" style="font-size:44px">Get your users <em>talking.</em></div>
+  </div>
+  <div class="tag" style="font-size:58px;margin-bottom:30px">Turn any form into a live <em>audio interview.</em></div>
+  <div class="widget" style="height:440px">
+    <aside>
+      <div class="lab">Conversation</div>
+      <div class="bub">What are you hoping this does for you?</div>
+      <div class="bub me">Honestly, I want my team writing better release notes without me nagging them.</div>
+      <div class="bub">Who's on the team — and what do they ship?</div>
+    </aside>
+    <div class="center">
+      <div>
+        <div class="q">Question 2 of 5</div>
+        <h3 style="margin:16px auto 12px">Who's on the team — and what do they ship?</h3>
+        <p style="color:var(--muted);font-size:16px">Answer naturally. Talkform captures the structure.</p>
+        <div class="wave" style="gap:5px;height:44px;justify-content:center;margin:18px 0 14px">
+          <span style="width:5px;height:14px"></span><span style="width:5px;height:30px"></span><span style="width:5px;height:20px"></span><span style="width:5px;height:38px"></span><span style="width:5px;height:24px"></span><span style="width:5px;height:34px"></span><span style="width:5px;height:16px"></span><span style="width:5px;height:28px"></span><span style="width:5px;height:22px"></span><span style="width:5px;height:36px"></span>
+        </div>
+        <div class="chip listen" style="padding:10px 18px;font-size:15px">
+          <span class="dot" style="width:11px;height:11px"><span class="halo" style="inset:-5px"></span></span>
+          Listening
+        </div>
+      </div>
+    </div>
+    <aside>
+      <div class="lab">Structured answers</div>
+      <div class="fld"><span>Primary goal</span><strong>Better release notes</strong></div>
+      <div class="fld"><span>Team size</span><strong>8 people</strong></div>
+      <div class="fld pending"><span>Release cadence</span><strong>Listening…</strong></div>
+      <div class="fld pending"><span>Platform</span><strong>Listening…</strong></div>
+    </aside>
+  </div>
+</div>
+
+<!-- TRUTH CARD -->
+<div class="board" id="truth">
+  <div class="logo">
+    <svg width="48" height="48" viewBox="0 0 64 64" fill="none"><path d="M32 4C17.088 4 5 14.745 5 28c0 7.41 3.73 14.08 9.62 18.68L11 56l10.92-5.46C24.34 51.5 28.08 52 32 52c14.912 0 27-10.745 27-24S46.912 4 32 4z" fill="#d05a36"/><rect x="22" y="20" width="3" height="16" rx="1.5" fill="#fff"/><rect x="28" y="15" width="3" height="26" rx="1.5" fill="#fff"/><rect x="34" y="18" width="3" height="20" rx="1.5" fill="#fff"/><rect x="40" y="22" width="3" height="12" rx="1.5" fill="#fff"/></svg>
+    <strong style="font-size:38px">Talkform</strong>
+  </div>
+  <h2 style="margin-top:70px">You always know when it's <em style="color:var(--accent)">listening.</em></h2>
+  <div class="row">
+    <div class="chip listen" style="padding:18px 30px;font-size:26px">
+      <span class="dot" style="width:18px;height:18px"><span class="halo" style="inset:-9px"></span></span>
+      Listening
+    </div>
+    <p><b>Green, pulsing.</b> The mic is live and the interview is capturing your answer.</p>
+  </div>
+  <div class="row">
+    <div class="chip off" style="padding:18px 30px;font-size:26px">
+      <span class="dot" style="width:18px;height:18px"></span>
+      Mic off
+    </div>
+    <p><b>Amber, still.</b> Nothing is heard until you tap to talk. Type instead, any time.</p>
+  </div>
+  <p style="margin-top:auto;color:var(--muted);font-size:24px">Voice optional. Every answer reviewable before it's sent. &nbsp;·&nbsp; talkform.ai</p>
+</div>
+
+</body>
+</html>

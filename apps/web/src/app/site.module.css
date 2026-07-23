@@ -215,6 +215,19 @@
   border-top: none;
 }
 
+.homeDemo {
+  display: grid;
+  gap: 1rem;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.demoLink {
+  justify-self: center;
+  color: var(--accent-dark);
+  font-weight: 600;
+}
+
 .sectionHeaderRow {
   display: flex;
   gap: 1rem;

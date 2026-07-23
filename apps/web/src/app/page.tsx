@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { audioformSessionResultJsonSchema } from "@talkform/core";
 import { JsonLd } from "./_components/content";
+import { LiveDemoShowcase } from "@/components/live-demo-showcase";
+import { MarketingVideo } from "@/components/marketing-video";
 import styles from "./site.module.css";
 
 const homeFaqs = [
@@ -81,6 +83,36 @@ export default function HomePage() {
             <p>MCP tools, a CLI, JSON schemas, and docs that explain exactly how to configure and consume Talkform.</p>
           </div>
         </div>
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeaderRow}>
+          <div>
+            <div className={styles.eyebrow}>Try it live</div>
+            <h2 className={styles.sectionTitle}>Pick a use case. Hear the <em>interview</em>.</h2>
+            <p className={styles.sectionIntro}>
+              Every example below is a real Talkform config. Answer one question and watch it land
+              as structured JSON — the same result your app, workflow, or agent receives.
+            </p>
+          </div>
+        </div>
+        <LiveDemoShowcase
+          vendorUrl={process.env.NEXT_PUBLIC_AUDIOFORM_VENDOR_URL ?? ""}
+          voiceEnabled={process.env.TALKFORM_ENABLE_PUBLIC_REALTIME === "true"}
+        />
+      </section>
+
+      <section className={`${styles.section} ${styles.homeDemo}`}>
+        <MarketingVideo
+          videoId="talkform-demo-home"
+          eyebrow="38-second product story"
+          title="See the form become a conversation"
+          description="A quick look at the problem, the guided interview, and the structured result Talkform sends downstream."
+          src="/videos/talkform-demo.mp4"
+          poster="/videos/talkform-demo-poster.jpg"
+          captions="/videos/talkform-demo.vtt"
+        />
+        <Link href="/use-cases" className={styles.demoLink}>Explore feedback, onboarding, and personalization <span aria-hidden="true">→</span></Link>
       </section>
 
       <section className={styles.section}>

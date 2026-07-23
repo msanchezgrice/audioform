@@ -27,4 +27,27 @@ if (token) {
     acquisition_campaign: attribution.campaign,
   });
   if (attribution.source) posthog.capture("search_landing", attribution);
+
+  const marketingVideoEvents = {
+    played: "marketing_video_played",
+    progress: "marketing_video_progress",
+    completed: "marketing_video_completed",
+  } as const;
+
+  window.addEventListener("talkform:marketing-video", (event) => {
+    if (!(event instanceof CustomEvent) || !event.detail || typeof event.detail !== "object") return;
+    const { action, videoId, milestone } = event.detail as {
+      action?: string;
+      videoId?: string;
+      milestone?: number;
+    };
+    if (!videoId || !action || !(action in marketingVideoEvents)) return;
+
+    posthog.capture(marketingVideoEvents[action as keyof typeof marketingVideoEvents], {
+      video_id: videoId,
+      ...(action === "progress" && [25, 50, 75].includes(milestone ?? 0)
+        ? { milestone }
+        : {}),
+    });
+  });
 }

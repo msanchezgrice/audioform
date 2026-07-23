@@ -50,6 +50,16 @@
     "relatedPosts": ["customer-interview-workflow", "audio-form-privacy-security"]
   },
   {
+    "slug": "product-personalization",
+    "title": "In-product personalization",
+    "description": "Let customers describe their goals, preferences, and constraints in their own words, then turn that context into reviewed fields your product can use.",
+    "audience": "Product, growth, and lifecycle teams",
+    "fields": ["Primary goal", "Current situation", "Preferences", "Constraints", "Desired next step"],
+    "workflow": ["Explain how answers shape the experience", "Invite a natural description", "Ask only the missing follow-ups", "Let the customer review the structured profile before applying it"],
+    "limitations": ["Personalization should remain editable and reversible", "Do not infer sensitive traits or make high-impact decisions from voice"],
+    "relatedPosts": ["openai-realtime-structured-extraction", "audio-form-privacy-security"]
+  },
+  {
     "slug": "job-applications",
     "title": "Job application intake",
     "description": "Offer candidates a conversational path for role history and motivation while preserving an equivalent text option and human review.",

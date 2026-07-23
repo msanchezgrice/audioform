@@ -1,0 +1,123 @@
+{
+  "provider": "elevenlabs",
+  "model": "eleven_multilingual_v2",
+  "outputFormat": "mp3_44100_128",
+  "voice": {
+    "preferredNames": ["River", "Sarah", "Alice", "Jessica"],
+    "settings": {
+      "stability": 0.46,
+      "similarity_boost": 0.8,
+      "style": 0.2,
+      "use_speaker_boost": true,
+      "speed": 1.03
+    }
+  },
+  "compositions": [
+    {
+      "id": "TalkformDemo",
+      "captionOutput": "captions/demo.json",
+      "webVttOutput": "../web/public/videos/talkform-demo.vtt",
+      "tracks": [
+        {
+          "id": "demo-hook",
+          "startMs": 0,
+          "maxDurationMs": 5400,
+          "output": "audio/elevenlabs/demo-hook.mp3",
+          "text": "Most forms lose nearly half the people who start them.",
+          "captions": ["Most forms lose nearly half the people who start them."]
+        },
+        {
+          "id": "demo-friction",
+          "startMs": 5600,
+          "maxDurationMs": 5400,
+          "output": "audio/elevenlabs/demo-friction.mp3",
+          "text": "And the people who finish still squeeze a real story into rigid little boxes.",
+          "captions": ["And the people who finish still squeeze a real story into rigid little boxes."]
+        },
+        {
+          "id": "demo-interview",
+          "startMs": 11200,
+          "maxDurationMs": 7300,
+          "output": "audio/elevenlabs/demo-interview.mp3",
+          "text": "Talkform turns boxes into a guided voice conversation. People answer naturally. Talkform asks the useful follow-up.",
+          "captions": [
+            "Talkform turns boxes into a guided voice conversation.",
+            "People answer naturally.",
+            "Talkform asks the useful follow-up."
+          ]
+        },
+        {
+          "id": "demo-structure",
+          "startMs": 18800,
+          "maxDurationMs": 5550,
+          "output": "audio/elevenlabs/demo-structure.mp3",
+          "text": "Every answer becomes structured data, ready for your product, CRM, workflows, or agents.",
+          "captions": [
+            "Every answer becomes structured data,",
+            "ready for your product, CRM, workflows, or agents."
+          ]
+        },
+        {
+          "id": "demo-uses",
+          "startMs": 24400,
+          "maxDurationMs": 7300,
+          "output": "audio/elevenlabs/demo-uses.mp3",
+          "text": "Use it to collect richer feedback, onboard with context, or personalize the product around what someone actually means.",
+          "captions": [
+            "Use it to collect richer feedback, onboard with context,",
+            "or personalize the product around what someone actually means."
+          ]
+        },
+        {
+          "id": "demo-cta",
+          "startMs": 32000,
+          "maxDurationMs": 5700,
+          "output": "audio/elevenlabs/demo-cta.mp3",
+          "text": "Keep the schema. Lose the form friction. Start with Talkform.",
+          "captions": ["Keep the schema.", "Lose the form friction.", "Start with Talkform."]
+        }
+      ]
+    },
+    {
+      "id": "TalkformSocial",
+      "captionOutput": "captions/social.json",
+      "webVttOutput": "../web/public/videos/talkform-social.vtt",
+      "tracks": [
+        {
+          "id": "social",
+          "startMs": 0,
+          "maxDurationMs": 14900,
+          "output": "audio/elevenlabs/social.mp3",
+          "text": "Most forms lose nearly half their starters. Talkform lets people answer naturally, asks the useful follow-up, then returns structured data. Richer feedback. Smarter onboarding. Real personalization. Keep the schema. Lose the form.",
+          "captions": [
+            "Most forms lose nearly half their starters.",
+            "Talkform lets people answer naturally, asks the useful follow-up,",
+            "then returns structured data.",
+            "Richer feedback. Smarter onboarding. Real personalization.",
+            "Keep the schema. Lose the form."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "TalkformHiggsfield",
+      "captionOutput": "captions/higgsfield.json",
+      "webVttOutput": "../web/public/videos/talkform-higgsfield.vtt",
+      "tracks": [
+        {
+          "id": "higgsfield",
+          "startMs": 0,
+          "maxDurationMs": 14800,
+          "output": "audio/elevenlabs/higgsfield.mp3",
+          "text": "People have more to say than a form knows how to ask. With Talkform, they simply talk. You get the context, follow-ups, and structured answers your product needs. Talkform. More human in. Clean data out.",
+          "captions": [
+            "People have more to say than a form knows how to ask.",
+            "With Talkform, they simply talk.",
+            "You get the context, follow-ups, and structured answers your product needs.",
+            "Talkform. More human in. Clean data out."
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -23,12 +23,14 @@ const ALLOWED_EVENTS = new Set([
   "signup_started",
   "template_selected",
   "view_mode_selected",
+  "landing_demo_use_case_selected",
 ]);
 
 const ALLOWED_PROPERTY_KEYS = new Set([
   "mode",
   "formId",
   "templateId",
+  "useCaseId",
   "view",
   "outcome",
   "stage",

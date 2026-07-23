@@ -1,0 +1,2 @@
+packages/react:build:cd /Users/miguel/audioform/packages/react && npm run build
+packages/react:tsc:cd /Users/miguel/audioform/packages/react && npx tsc --noEmit

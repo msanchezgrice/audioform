@@ -104,7 +104,7 @@ test("blog references do not use sources already verified as missing", () => {
   }
 });
 
-test("content inventories cover ten use cases and four provider migration guides", () => {
+test("content inventories cover eleven use cases and four provider migration guides", () => {
   const useCases = readJson<Array<{ slug: string; title: string; fields: string[]; limitations: string[] }>>(
     path.join(contentRoot, "use-cases.json"),
   );
@@ -112,7 +112,7 @@ test("content inventories cover ten use cases and four provider migration guides
     path.join(contentRoot, "providers.json"),
   );
 
-  assert.equal(useCases.length, 10);
+  assert.equal(useCases.length, 11);
   assert.deepEqual(
     useCases.map((entry) => entry.slug).sort(),
     [
@@ -122,6 +122,7 @@ test("content inventories cover ten use cases and four provider migration guides
       "education-intake",
       "job-applications",
       "lead-qualification",
+      "product-personalization",
       "project-kickoff",
       "sales-discovery",
       "support-triage",
@@ -131,6 +132,21 @@ test("content inventories cover ten use cases and four provider migration guides
   assert.ok(useCases.every((entry) => entry.fields.length >= 4 && entry.limitations.length >= 2));
   assert.deepEqual(providers.map((entry) => entry.slug).sort(), ["google-forms", "hubspot", "jotform", "typeform"]);
   assert.ok(providers.every((entry) => entry.limitations.length >= 2));
+});
+
+test("the use-cases page leads with the completion problem and the three core workflows", () => {
+  const page = readFileSync(path.join(appRoot, "use-cases/page.tsx"), "utf8");
+  const css = readFileSync(path.join(appRoot, "use-cases/use-cases.module.css"), "utf8");
+
+  assert.match(page, /93,022,997|93 million/i);
+  assert.match(page, /Zuko/i);
+  assert.match(page, /customer feedback/i);
+  assert.match(page, /onboarding/i);
+  assert.match(page, /product personalization/i);
+  assert.match(page, /structured (?:data|JSON)/i);
+  assert.match(page, /MarketingVideo/);
+  assert.match(css, /@media \(max-width:/);
+  assert.match(css, /prefers-reduced-motion/);
 });
 
 test("all public discovery, content, legal, and trust routes exist", () => {
