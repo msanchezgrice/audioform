@@ -1,6 +1,6 @@
 create extension if not exists pgcrypto;
 
-create table accounts (
+create table if not exists accounts (
   id uuid primary key default gen_random_uuid(),
   clerk_user_id text not null unique,
   stripe_customer_id text unique,
@@ -8,7 +8,7 @@ create table accounts (
   updated_at timestamptz not null default now()
 );
 
-create table subscriptions (
+create table if not exists subscriptions (
   stripe_subscription_id text primary key,
   account_id uuid not null references accounts(id) on delete cascade,
   stripe_price_id text not null,
@@ -19,7 +19,7 @@ create table subscriptions (
   updated_at timestamptz not null default now()
 );
 
-create table entitlements (
+create table if not exists entitlements (
   account_id uuid not null references accounts(id) on delete cascade,
   feature_key text not null,
   enabled boolean not null default false,
@@ -29,14 +29,14 @@ create table entitlements (
   primary key (account_id, feature_key)
 );
 
-create table stripe_events (
+create table if not exists stripe_events (
   event_id text primary key,
   event_type text not null,
   event_created_at timestamptz not null,
   processed_at timestamptz not null default now()
 );
 
-create table checkout_sessions (
+create table if not exists checkout_sessions (
   account_id uuid primary key references accounts(id) on delete cascade,
   stripe_session_id text not null unique,
   stripe_price_id text not null,
@@ -46,7 +46,7 @@ create table checkout_sessions (
   updated_at timestamptz not null default now()
 );
 
-create table usage_counters (
+create table if not exists usage_counters (
   account_id uuid not null references accounts(id) on delete cascade,
   metric text not null,
   period_start date not null,
@@ -54,7 +54,7 @@ create table usage_counters (
   primary key (account_id, metric, period_start)
 );
 
-create table api_keys (
+create table if not exists api_keys (
   id uuid primary key default gen_random_uuid(),
   account_id uuid not null references accounts(id) on delete cascade,
   key_prefix text not null unique,
@@ -65,7 +65,7 @@ create table api_keys (
   revoked_at timestamptz
 );
 
-create table handoffs (
+create table if not exists handoffs (
   id uuid primary key default gen_random_uuid(),
   account_id uuid not null references accounts(id) on delete cascade,
   config jsonb not null,
@@ -81,5 +81,5 @@ create table handoffs (
   check ((status <> 'completed') or (result_ciphertext is not null and completed_at is not null and result_expires_at is not null))
 );
 
-create index handoffs_account_created_idx on handoffs(account_id, created_at desc);
-create index handoffs_expiry_idx on handoffs(invite_expires_at, result_expires_at) where deleted_at is null;
+create index if not exists handoffs_account_created_idx on handoffs(account_id, created_at desc);
+create index if not exists handoffs_expiry_idx on handoffs(invite_expires_at, result_expires_at) where deleted_at is null;

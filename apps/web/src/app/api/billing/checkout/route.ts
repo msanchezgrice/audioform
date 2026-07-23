@@ -62,6 +62,7 @@ export async function POST(request: Request) {
     createSession: async () => {
       const session = await stripe.checkout.sessions.create({
         mode: "subscription",
+        integration_identifier: "talkform_web_checkout",
         line_items: [{ price: priceId, quantity: 1 }],
         customer: customerId,
         client_reference_id: userId,
