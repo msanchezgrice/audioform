@@ -58,25 +58,34 @@ export function DemoTemplateGallery({ templates, vendorUrl, voiceEnabled = false
       </section>
 
       <div className={styles.modeRow}>
-        <span className={`${styles.modeLabel} ${!consumerMode ? styles.modeLabelActive : ""}`}>Developer</span>
-        <button
-          type="button"
-          className={`${styles.modeToggle} ${consumerMode ? styles.modeToggleActive : ""}`}
-          onClick={() => {
-            const nextMode = !consumerMode;
-            setConsumerMode(nextMode);
-            emitTalkformEvent("view_mode_selected", { view: nextMode ? "consumer" : "developer" });
-          }}
-          aria-label="Toggle consumer view"
-          role="switch"
-          aria-checked={consumerMode}
-          data-testid="view-mode-toggle"
-        >
-          <span className={styles.modeThumb} />
-        </button>
-        <span className={`${styles.modeLabel} ${consumerMode ? styles.modeLabelActive : ""}`}>Consumer</span>
+        <div className={styles.viewSwitch} role="group" aria-label="Demo view" data-testid="view-mode-toggle">
+          <button
+            type="button"
+            aria-pressed={!consumerMode}
+            className={`${styles.viewOption}${!consumerMode ? ` ${styles.viewOptionActive}` : ""}`}
+            onClick={() => {
+              if (!consumerMode) return;
+              setConsumerMode(false);
+              emitTalkformEvent("view_mode_selected", { view: "developer" });
+            }}
+          >
+            Developer view
+          </button>
+          <button
+            type="button"
+            aria-pressed={consumerMode}
+            className={`${styles.viewOption}${consumerMode ? ` ${styles.viewOptionActive}` : ""}`}
+            onClick={() => {
+              if (consumerMode) return;
+              setConsumerMode(true);
+              emitTalkformEvent("view_mode_selected", { view: "consumer" });
+            }}
+          >
+            End-user view
+          </button>
+        </div>
         <span className={styles.modeHint}>
-          {consumerMode ? "Minimal view your end-users see" : "Full view with sidebar and exports"}
+          {consumerMode ? "The minimal interview your end-users see" : "Full view with sidebar, transcript, and exports"}
         </span>
       </div>
 

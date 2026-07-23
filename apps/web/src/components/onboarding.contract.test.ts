@@ -52,8 +52,9 @@ test("widget controls expose live status, progress, transcript, and labels to as
 test("template and view selectors announce selection and the demo owns the page h1", () => {
   assert.match(gallery, /<h1>/);
   assert.match(gallery, /aria-pressed=\{isActive\}/);
-  assert.match(gallery, /role="switch"/);
-  assert.match(gallery, /aria-checked=\{consumerMode\}/);
+  assert.match(gallery, /role="group"/);
+  assert.match(gallery, /aria-pressed=\{consumerMode\}/);
+  assert.match(gallery, /aria-pressed=\{!consumerMode\}/);
   assert.match(gallery, /template_selected/);
   assert.match(gallery, /view_mode_selected/);
 });

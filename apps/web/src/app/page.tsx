@@ -50,12 +50,6 @@ export default function HomePage() {
         <article className={styles.heroCard}>
           <div className={styles.eyebrow}>Audio-first forms</div>
           <h1>Turn any form into a live <em>audio interview</em></h1>
-          <p className={styles.answerBlock}>
-            Talkform converts online forms into guided voice interviews. You import a public form or define its
-            fields, Talkform asks each question aloud in the browser, writes the answers into structured fields,
-            and exports the results as clean JSON. It imports Typeform, Google Forms, Jotform, and HubSpot forms,
-            and the browser demo is free to try.
-          </p>
           <p className={styles.lede}>
             Talkform asks questions aloud, fills structured fields from the conversation,
             and exports clean JSON for your apps, workflows, and agents.
@@ -304,6 +298,12 @@ export default function HomePage() {
             </p>
           </div>
         </div>
+        <p className={styles.answerBlock}>
+          Talkform converts online forms into guided voice interviews. You import a public form or define its
+          fields, Talkform asks each question aloud in the browser, writes the answers into structured fields,
+          and exports the results as clean JSON. It imports Typeform, Google Forms, Jotform, and HubSpot forms,
+          and the browser demo is free to try.
+        </p>
         <div className={styles.faqList}>
           {homeFaqs.map((faq) => (
             <article key={faq.question} className={styles.faqItem}>

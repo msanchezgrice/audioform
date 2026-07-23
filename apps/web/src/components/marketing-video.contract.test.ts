@@ -29,12 +29,6 @@ test("rendered marketing assets have declared posters and caption tracks", () =>
     "public/videos/talkform-demo.mp4",
     "public/videos/talkform-demo-poster.jpg",
     "public/videos/talkform-demo.vtt",
-    "public/videos/talkform-social.mp4",
-    "public/videos/talkform-social-poster.jpg",
-    "public/videos/talkform-social.vtt",
-    "public/videos/talkform-higgsfield.mp4",
-    "public/videos/talkform-higgsfield-poster.jpg",
-    "public/videos/talkform-higgsfield.vtt",
   ];
 
   for (const asset of requiredAssets) {

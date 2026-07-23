@@ -147,35 +147,6 @@ export default function UseCasesPage() {
 }`}</code></pre>
       </section>
 
-      <section className={styles.cutsSection}>
-        <header className={styles.sectionHeader}>
-          <span className={styles.eyebrow}>Built for the feed, too</span>
-          <h2>Two short ways to tell the story</h2>
-          <p>A product-led motion cut and a cinematic Higgsfield concept, both captioned and ready to test.</p>
-        </header>
-        <div className={styles.cutsGrid}>
-          <MarketingVideo
-            videoId="talkform-social"
-            eyebrow="Remotion · 15 seconds"
-            title="The product hook"
-            description="Fast, graphic, and UI-led for paid social or an organic product post."
-            src="/videos/talkform-social.mp4"
-            poster="/videos/talkform-social-poster.jpg"
-            captions="/videos/talkform-social.vtt"
-            portrait
-          />
-          <MarketingVideo
-            videoId="talkform-higgsfield"
-            eyebrow="Higgsfield · 15 seconds"
-            title="The cinematic hook"
-            description="A presenter-free visual story that moves from form overload to natural speech and structured context."
-            src="/videos/talkform-higgsfield.mp4"
-            poster="/videos/talkform-higgsfield-poster.jpg"
-            captions="/videos/talkform-higgsfield.vtt"
-            portrait
-          />
-        </div>
-      </section>
 
       <section className={styles.additionalSection}>
         <header className={styles.sectionHeader}>

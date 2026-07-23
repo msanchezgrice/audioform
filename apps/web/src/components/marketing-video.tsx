@@ -72,7 +72,7 @@ export function MarketingVideo({
           }}
         >
           <source src={src} type="video/mp4" />
-          <track src={captions} kind="captions" srcLang="en" label="English" default />
+          <track src={captions} kind="captions" srcLang="en" label="English" />
           Your browser does not support embedded video.
         </video>
       </div>

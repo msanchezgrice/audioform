@@ -68,7 +68,7 @@
 }
 
 .templateCard:focus-visible,
-.modeToggle:focus-visible {
+.viewOption:focus-visible {
   outline: 3px solid rgba(208, 90, 54, 0.32);
   outline-offset: 3px;
 }
@@ -123,50 +123,39 @@
   padding: 0.75rem 0;
 }
 
-.modeLabel {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--ink-tertiary);
-  transition: color 200ms ease;
+.viewSwitch {
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border-radius: 999px;
+  background: var(--bg-warm);
+  border: 1px solid var(--line);
 }
 
-.modeLabelActive {
+.viewOption {
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--muted);
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 180ms ease;
+}
+
+.viewOption:hover {
   color: var(--ink);
 }
 
-.modeToggle {
-  position: relative;
-  width: 44px;
-  height: 24px;
-  border-radius: 12px;
-  background: rgba(44, 40, 37, 0.16);
-  cursor: pointer;
-  transition: background 200ms ease;
-  border: none;
-  padding: 0;
-  flex-shrink: 0;
-  min-width: 44px;
-  min-height: 44px;
+.viewOptionActive {
+  background: var(--ink);
+  color: var(--bg);
 }
 
-.modeToggleActive {
-  background: var(--accent);
-}
-
-.modeThumb {
-  position: absolute;
-  top: 12px;
-  left: 2px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--surface);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-  transition: transform 200ms ease;
-}
-
-.modeToggleActive .modeThumb {
-  transform: translateX(20px);
+.viewOptionActive:hover {
+  color: var(--bg);
 }
 
 .modeHint {
@@ -257,8 +246,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .templateCard,
-  .modeToggle,
-  .modeThumb {
+  .viewOption {
     transition: none !important;
   }
 }

@@ -831,9 +831,15 @@ export function AudioformWidget({
                 <p className={styles.promptHint}>
                   About a few minutes for {config.fields.length} questions. Choose how you would like to answer.
                 </p>
-                <p className={styles.dataNotice}>
-                  <strong>Voice</strong> asks Talkform for a short-lived realtime token, then streams audio browser-to-OpenAI. Transcript, summary, and structured answers stay in your browser until export. <strong>Typing</strong> is browser-local too.
-                </p>
+                {consumerMode ? (
+                  <p className={styles.dataNotice}>
+                    Speak or type — your answers stay in your browser until you choose to export them.
+                  </p>
+                ) : (
+                  <p className={styles.dataNotice}>
+                    <strong>Voice</strong> asks Talkform for a short-lived realtime token, then streams audio browser-to-OpenAI. Transcript, summary, and structured answers stay in your browser until export. <strong>Typing</strong> is browser-local too.
+                  </p>
+                )}
                 <p className={styles.consentLinks}>
                   By continuing, you acknowledge our <a href="/privacy">Privacy Policy</a> and <a href="/terms">Terms</a>.
                 </p>

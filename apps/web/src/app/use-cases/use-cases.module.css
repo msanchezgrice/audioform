@@ -122,9 +122,6 @@
 
 .demoSection,
 .primarySection,
-.cutsSection,
-.additionalSection { padding: 6rem 0; }
-
 .demoSection { border-top: 1px solid var(--line); }
 
 .thesis {
@@ -187,8 +184,6 @@
 .integrationBand a { color: var(--accent-dark); font-weight: 600; }
 .integrationBand pre { overflow-x: auto; margin: 0; padding: 1.6rem; border-radius: var(--radius-lg); background: #2c2825; color: #f8e9df; box-shadow: var(--shadow); font-size: 0.9rem; line-height: 1.65; }
 
-.cutsGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3rem; max-width: 52rem; margin: 0 auto; }
-
 .additionalSection { border-top: 1px solid var(--line); }
 .additionalGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
 .additionalGrid article { padding: 1.7rem; border-radius: var(--radius-lg); background: var(--bg-warm); }
@@ -214,14 +209,11 @@
 @media (max-width: 680px) {
   .page { padding-top: 3rem; }
   .heroCopy h1 { font-size: clamp(2.8rem, 13vw, 4.3rem); }
-  .demoSection, .primarySection, .cutsSection, .additionalSection { padding: 4.25rem 0; }
-  .thesis { margin-inline: -0.25rem; padding: 2rem 1.25rem; }
+  .demoSection, .primarySection,   .thesis { margin-inline: -0.25rem; padding: 2rem 1.25rem; }
   .flow { grid-template-columns: 1fr; }
   .flow article { min-height: auto; }
   .flow i { transform: rotate(90deg); text-align: center; }
-  .cutsGrid, .additionalGrid { grid-template-columns: 1fr; }
-  .cutsGrid { max-width: 22rem; }
-  .integrationBand { padding: 2rem 1.25rem; }
+      .integrationBand { padding: 2rem 1.25rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
