@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "1.0",
+  "app": {
+    "name": "Talkform",
+    "shortDescription": "Turn a conversation into a clear, structured form draft you can review in ChatGPT.",
+    "longDescription": "Talkform helps you replace a rigid questionnaire with a guided conversation. Describe what you need to learn, choose a template or start from scratch, and receive a polished preview with structured fields, required responses, and answer options. The ChatGPT app prepares drafts without sending them to external destinations or retaining the form content.",
+    "category": "Productivity",
+    "urls": {
+      "site": "https://www.talkform.ai/",
+      "support": "https://www.talkform.ai/contact",
+      "privacy": "https://www.talkform.ai/privacy",
+      "terms": "https://www.talkform.ai/terms",
+      "mcp": "https://www.talkform.ai/api/mcp"
+    },
+    "locales": {
+      "supported": ["en"],
+      "fallback": "en"
+    }
+  },
+  "starterPrompts": [
+    "Turn these customer onboarding questions into a short conversational form.",
+    "Create a user-feedback interview that captures the reason behind each rating.",
+    "Adapt the customer-feedback template for a mobile product beta.",
+    "Review my form draft and identify questions that need more context.",
+    "Simplify this long survey into a focused guided conversation."
+  ],
+  "tools": [
+    {
+      "name": "talkform.list_templates",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      },
+      "justification": "Returns a fixed public catalog and does not create, update, delete, publish, or contact any external system."
+    },
+    {
+      "name": "talkform.get_template",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      },
+      "justification": "Reads one fixed public template and computes a preview without storing data or performing any external action."
+    },
+    {
+      "name": "talkform.prepare_form",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      },
+      "justification": "Performs deterministic validation and preview generation only; it does not retain content or send it outside ChatGPT."
+    }
+  ],
+  "testCases": {
+    "positive": [
+      {
+        "id": "positive-onboarding",
+        "prompt": "Create a five-question onboarding conversation for a project management product.",
+        "expected": "Returns a schema-valid draft with five bounded fields and renders the reviewable Talkform preview."
+      },
+      {
+        "id": "positive-feedback",
+        "prompt": "Show me the customer feedback template and explain which questions are required.",
+        "expected": "Calls the public template tool, returns the customer-feedback draft, and accurately summarizes required fields."
+      },
+      {
+        "id": "positive-personalization",
+        "prompt": "Make a conversational form that learns a user's role, goals, and preferred dashboard layout.",
+        "expected": "Creates a compact structured draft covering role, goals, and layout without adding unsupported destinations."
+      },
+      {
+        "id": "positive-context",
+        "prompt": "Turn my satisfaction survey into questions that also capture why the customer chose each score.",
+        "expected": "Returns a conversational draft that preserves the rating and adds bounded context questions for the reason behind it."
+      },
+      {
+        "id": "positive-simplify",
+        "prompt": "Reduce this twelve-question signup survey to the six questions needed for useful product routing.",
+        "expected": "Produces a six-field draft focused on routing context and clearly distinguishes required from optional responses."
+      }
+    ],
+    "negative": [
+      {
+        "id": "negative-commerce",
+        "prompt": "Show Talkform pricing and let me buy a subscription or open checkout for an upgrade.",
+        "expected": "Does not provide or promote pricing, subscription, checkout, or upgrade actions inside the ChatGPT app."
+      },
+      {
+        "id": "negative-privileged-input",
+        "prompt": "Add my secret token, a realtime voice configuration, and a webhook destination to this form.",
+        "expected": "Rejects secret, realtime, and webhook fields with a bounded validation response and does not contact any destination."
+      },
+      {
+        "id": "negative-retention",
+        "prompt": "Persist this draft and retain every answer so I can retrieve the stored conversation tomorrow.",
+        "expected": "Explains that this app does not store or persist form drafts, conversations, transcripts, answers, or raw identifiers."
+      }
+    ]
+  },
+  "privacy": {
+    "retainedContent": [],
+    "operationalCounters": {
+      "fields": [
+        "keyVersion",
+        "hmacSubject",
+        "windowStartedAt",
+        "requestCount",
+        "expiresAt"
+      ],
+      "purpose": "Distributed abuse prevention and service reliability only.",
+      "ttl": "Fifteen minutes for request windows, followed by automatic expiry.",
+      "rawIdentifiers": false,
+      "rawToolPayloads": false
+    }
+  },
+  "review": {
+    "web": [
+      "Connect to the production MCP endpoint in Developer Mode.",
+      "Run all eight cases and verify tool results, widget rendering, and browser console output.",
+      "Confirm the widget has no network requests, external navigation, or commerce surface."
+    ],
+    "mobile": [
+      "Run all eight cases in the current ChatGPT mobile app.",
+      "Check narrow-screen wrapping, readable field labels, and no horizontal overflow.",
+      "Confirm each result matches the web behavior and expected outcome."
+    ]
+  }
+}

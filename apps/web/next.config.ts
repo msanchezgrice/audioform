@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 import path from "node:path";
 
 const nextConfig: NextConfig = {
-  transpilePackages: ["@talkform/core", "@talkform/http", "@talkform/react"],
+  transpilePackages: ["@talkform/core", "@talkform/http", "@talkform/mcp", "@talkform/react"],
   outputFileTracingRoot: path.join(__dirname, "../.."),
   async headers() {
     return [

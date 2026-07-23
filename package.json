@@ -9,7 +9,7 @@
     "billing:migrate": "pnpm exec tsx apps/web/scripts/migrate-billing.ts",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm --filter @talkform/core build && pnpm exec tsx --test apps/web/next.config.test.ts apps/web/src/app/api/billing/checkout/billing.test.ts apps/web/src/app/api/release-docs.contract.test.ts apps/web/src/app/api/security.integration.test.ts apps/web/src/components/onboarding.contract.test.ts apps/web/src/lib/analytics-client.test.ts apps/web/src/lib/billing/subscription.test.ts apps/web/src/lib/content.contract.test.ts apps/web/src/lib/docs-heading.regression-1.test.ts apps/web/src/lib/docs.regression-1.test.ts apps/web/src/lib/import/index.test.ts apps/web/src/lib/pricing.test.ts packages/cli/src/api-client.test.ts packages/cli/src/install.test.ts packages/core/src/handoff.test.ts packages/core/src/model-defaults.test.ts packages/core/src/session-validity.test.ts packages/core/src/templates/index.test.ts packages/http/src/index.test.ts packages/mcp/src/resources.test.ts packages/react/src/AudioformWidget.analytics.test.ts packages/react/src/AudioformWidget.completion.regression-1.test.ts packages/react/src/AudioformWidget.draft-preservation.regression-1.test.ts packages/react/src/AudioformWidget.empty-send.regression-1.test.ts packages/react/src/AudioformWidget.helpers.test.ts packages/react/src/AudioformWidget.runtime.test.ts packages/react/src/AudioformWidget.send-state.regression-1.test.ts test/distribution.contract.test.ts",
+    "test": "pnpm --filter @talkform/core build && pnpm --filter @talkform/mcp build && pnpm exec tsx --test apps/web/next.config.test.ts apps/web/src/app/.well-known/openai-apps-challenge/route.test.ts apps/web/src/app/api/billing/checkout/billing.test.ts apps/web/src/app/api/mcp/route.test.ts apps/web/src/app/api/release-docs.contract.test.ts apps/web/src/app/api/security.integration.test.ts apps/web/src/components/onboarding.contract.test.ts apps/web/src/lib/analytics-client.test.ts apps/web/src/lib/billing/subscription.test.ts apps/web/src/lib/content.contract.test.ts apps/web/src/lib/docs-heading.regression-1.test.ts apps/web/src/lib/docs.regression-1.test.ts apps/web/src/lib/import/index.test.ts apps/web/src/lib/openai-app/rate-limit.test.ts apps/web/src/lib/pricing.test.ts openai-submission/submission.contract.test.ts packages/cli/src/api-client.test.ts packages/cli/src/install.test.ts packages/core/src/handoff.test.ts packages/core/src/model-defaults.test.ts packages/core/src/session-validity.test.ts packages/core/src/templates/index.test.ts packages/http/src/index.test.ts packages/mcp/src/app.test.ts packages/mcp/src/resources.test.ts packages/react/src/AudioformWidget.analytics.test.ts packages/react/src/AudioformWidget.completion.regression-1.test.ts packages/react/src/AudioformWidget.draft-preservation.regression-1.test.ts packages/react/src/AudioformWidget.empty-send.regression-1.test.ts packages/react/src/AudioformWidget.helpers.test.ts packages/react/src/AudioformWidget.runtime.test.ts packages/react/src/AudioformWidget.send-state.regression-1.test.ts test/distribution.contract.test.ts",
     "test:distribution": "pnpm build && pnpm exec tsx --test test/distribution.contract.test.ts",
     "test:e2e": "pnpm build && node --test apps/web/src/components/onboarding.browser.test.mjs"
   },
@@ -23,13 +23,14 @@
   "pnpm": {
     "overrides": {
       "cheerio>undici": "7.28.0",
-      "hono": "4.12.25",
-      "@hono/node-server": "1.19.13",
+      "hono": "4.12.31",
+      "@hono/node-server": "2.0.11",
+      "body-parser": "2.3.0",
       "path-to-regexp": "8.4.0",
       "fast-uri": "3.1.4",
       "ip-address": "10.1.1",
       "qs": "6.15.2",
-      "postcss": "8.5.10",
+      "postcss": "8.5.12",
       "@babel/core": "7.29.6",
       "sharp": "0.35.3"
     }

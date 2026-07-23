@@ -1,13 +1,16 @@
 {
   "name": "@talkform/mcp",
   "version": "0.1.0",
-  "description": "Local MCP server for Talkform schemas, templates, and config validation.",
+  "description": "Talkform MCP server for local developer tools and the hosted stateless OpenAI App.",
   "mcpName": "io.github.msanchezgrice/talkform",
   "type": "module",
   "bin": {
     "talkform-mcp": "./dist/server.js"
   },
-  "exports": { ".": "./dist/server.js" },
+  "exports": {
+    ".": "./dist/server.js",
+    "./http": "./dist/http.js"
+  },
   "files": ["dist", "server.json", "README.md"],
   "license": "UNLICENSED",
   "homepage": "https://talkform.ai/docs/mcp",
@@ -15,7 +18,7 @@
   "engines": { "node": ">=20" },
   "publishConfig": { "access": "public" },
   "scripts": {
-    "build": "tsup src/server.ts --format esm --dts --clean --sourcemap --platform node",
+    "build": "tsup src/server.ts src/http.ts --format esm --dts --clean --sourcemap --platform node",
     "lint": "tsc --noEmit -p tsconfig.json",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
