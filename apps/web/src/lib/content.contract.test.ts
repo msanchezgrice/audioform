@@ -104,6 +104,24 @@ test("blog references do not use sources already verified as missing", () => {
   }
 });
 
+test("the lead qualification guide matches the exact search intent with a reusable template", () => {
+  const manifestFile = path.join(contentRoot, "blog/manifest.json");
+  const posts = readJson<BlogManifestEntry[]>(manifestFile);
+  const post = posts.find((entry) => entry.slug === "conversational-lead-qualification");
+  const body = readFileSync(
+    path.join(contentRoot, "blog/conversational-lead-qualification.md"),
+    "utf8",
+  );
+
+  assert.ok(post);
+  assert.match(post.title, /^Lead Qualification Form:/);
+  assert.equal(post.updatedAt, "2026-07-28");
+  assert.match(post.description, /questions/i);
+  assert.match(post.description, /template/i);
+  assert.match(body, /^## Copyable lead qualification form template$/m);
+  assert.match(body, /What prompted you to look at this now\?/);
+});
+
 test("content inventories cover eleven use cases and four provider migration guides", () => {
   const useCases = readJson<Array<{ slug: string; title: string; fields: string[]; limitations: string[] }>>(
     path.join(contentRoot, "use-cases.json"),

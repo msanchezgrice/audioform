@@ -1,8 +1,25 @@
-# Designing a conversational lead qualification form that sales can trust
+# Lead qualification form: questions, template, and voice workflow
 
 Lead qualification sits between marketing curiosity and a consequential sales decision. A useful intake gathers enough context to route a prospect and prepare a human conversation without pretending that a model can judge the value of a person or company. Voice can make the exchange feel less like database entry, but the output must remain consistent, reviewable, and limited to information the business genuinely needs.
 
 The strongest design is not an autonomous closer. It is a guided intake that asks neutral questions, confirms exact values, records a structured brief, and hands that brief to a trained person. Talkform's current browser interview and JSON export can support that narrow workflow. Claims about automatic CRM write-back, enrichment, scoring, or booking should wait until those paths are implemented and verified.
+
+## Copyable lead qualification form template
+
+Use this as a starting point, then remove every question that does not affect preparation, routing, consent, or the promised next step:
+
+1. What prompted you to look at this now?
+2. How do you handle this today?
+3. What is the hardest part of the current process?
+4. What outcome would make this project worthwhile?
+5. Who will use or approve the result?
+6. When do you need a solution in place?
+7. Are there technical, policy, or procurement constraints we should know?
+8. What tools or systems must the solution work with?
+9. What range have you set aside, if you are comfortable sharing it?
+10. What would you like the next step to be?
+
+For each answer, store the prospect's words separately from any generated summary. Confirm names, email addresses, dates, quantities, and budget ranges in editable fields before completion. End with specific consent for the next step instead of treating form completion as permission for unrelated marketing.
 
 ## Define the decision the intake supports
 
