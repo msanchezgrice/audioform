@@ -205,6 +205,13 @@ test("SEO primitives use the canonical www host and expose structured data", () 
   assert.match(layout, /Use Cases/);
   assert.match(layout, /Privacy/);
   assert.match(layout, /support@talkform\.ai/);
+  assert.match(layout, /className="mobileNav"/);
+  assert.match(layout, /<summary>Menu<\/summary>/);
+
+  const globals = readFileSync(path.join(appRoot, "globals.css"), "utf8");
+  assert.match(globals, /\.mobileNav\s*\{/);
+  assert.match(globals, /@media \(max-width: 560px\)[\s\S]*\.siteNav\s*\{[\s\S]*display:\s*none/);
+  assert.match(globals, /@media \(max-width: 560px\)[\s\S]*\.mobileNav\s*\{[\s\S]*display:\s*block/);
 
   const seoFile = path.join(webRoot, "src/lib/seo.ts");
   assert.ok(existsSync(seoFile), "src/lib/seo.ts is missing");
