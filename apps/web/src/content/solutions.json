@@ -1,0 +1,158 @@
+[
+  {
+    "slug": "voice-form",
+    "query": "voice form",
+    "title": "Voice form: collect spoken answers as structured fields",
+    "description": "A practical guide to voice forms: what they are, when spoken answers help, how review and text fallback work, and how to try one safely in your browser.",
+    "templateId": "customer-feedback",
+    "eyebrow": "Voice input with a reviewable result",
+    "definition": "A voice form lets someone answer form questions by speaking instead of typing every response. A useful implementation does more than save a transcript: it maps each answer to an expected field, asks for missing details, and gives the respondent a chance to review or correct the result. Talkform keeps the public demo in the browser and offers an equivalent text path when voice is unavailable or unwanted.",
+    "bestFor": [
+      "Open-ended feedback where the reason matters as much as the rating",
+      "Intake that asks for goals, constraints, or a recent example",
+      "Mobile situations where a long typed answer creates avoidable effort"
+    ],
+    "workflow": [
+      "Define only the fields the receiving workflow actually needs",
+      "Explain why voice is offered and keep text available as an equal option",
+      "Ask one clear question at a time and clarify only missing fields",
+      "Let the respondent review structured values before export or submission"
+    ],
+    "tradeoffs": [
+      "Voice is not appropriate in every environment, so text fallback is essential",
+      "Transcription and extraction can be wrong; respondents need field-level correction",
+      "A voice form does not by itself improve completion or make a sample representative"
+    ],
+    "questions": [
+      {
+        "question": "What is a voice form?",
+        "answer": "It is a form experience that accepts spoken answers and maps them into defined, reviewable fields instead of treating the recording or transcript as the final result."
+      },
+      {
+        "question": "Can respondents type instead?",
+        "answer": "They should be able to. Talkform's demo supports a text interview path, and a production implementation should not require microphone access when text can collect the same information."
+      },
+      {
+        "question": "Where does the public demo store answers?",
+        "answer": "The public demo keeps transcript, summary, and answer state in the respondent's browser until they choose to export. Do not place answer text in analytics events."
+      }
+    ]
+  },
+  {
+    "slug": "conversational-forms",
+    "query": "conversational forms",
+    "title": "Conversational forms: a field-by-field guide",
+    "description": "Learn how conversational forms turn a fixed schema into a guided voice or text interview, when follow-up questions help, and where ordinary forms remain better.",
+    "templateId": "lead-generation",
+    "eyebrow": "A conversation backed by a schema",
+    "definition": "Conversational forms present a form as a sequence of natural questions while still producing the named fields a downstream system expects. The conversation can acknowledge an answer, clarify a missing date or choice, and then show the structured record for review. The form schema remains the source of truth; the assistant should not invent fields, make eligibility decisions, or silently submit an answer the respondent has not checked.",
+    "bestFor": [
+      "Lead or project intake that mixes fixed choices with open-ended context",
+      "Customer onboarding where goals and constraints need clarification",
+      "Research screeners that benefit from a consistent question sequence"
+    ],
+    "workflow": [
+      "Start from the destination schema and remove fields that are not needed",
+      "Write neutral prompts that make the purpose and expected effort clear",
+      "Use follow-ups only to complete or disambiguate a defined field",
+      "Review the resulting record before a human uses or exports it"
+    ],
+    "tradeoffs": [
+      "A conversation can take longer than a short form with familiar fields",
+      "Adaptive follow-ups require careful testing so the interview stays in scope",
+      "Consequential routing and qualification still require transparent rules and human review"
+    ],
+    "questions": [
+      {
+        "question": "How is a conversational form different from a chatbot?",
+        "answer": "A conversational form is bounded by a known set of fields and a defined completion state. An open chatbot can range across topics without producing a complete, validated form record."
+      },
+      {
+        "question": "Does it have to use voice?",
+        "answer": "No. A conversational form can run in text, voice, or offer both. The important distinction is guided field collection with review, not the input modality."
+      },
+      {
+        "question": "Can it qualify leads automatically?",
+        "answer": "It can collect consistent qualification inputs, but Talkform should not make unreviewed eligibility decisions. Route the reviewed export to a person or a separately governed rules process."
+      }
+    ]
+  },
+  {
+    "slug": "chat-form",
+    "query": "chat form",
+    "title": "Chat form: guided text intake without a blank message box",
+    "description": "See how a chat form differs from live chat and traditional forms, how to keep it bounded to a schema, and how to test a text-first interview in Talkform.",
+    "templateId": "customer-onboarding",
+    "eyebrow": "Text conversation with a defined finish line",
+    "definition": "A chat form collects a known set of fields through a message-style interface. Unlike general live chat, it has an explicit purpose, required fields, validation rules, and a review step. Unlike a static form, it can present one question at a time and ask a narrow follow-up when an answer is incomplete. Talkform's text mode demonstrates this pattern without requiring microphone permission or pretending an unbounded support agent is present.",
+    "bestFor": [
+      "Onboarding flows where one-question-at-a-time pacing reduces cognitive load",
+      "Structured intake that needs a short clarification before moving on",
+      "Respondents who prefer text but benefit from a guided sequence"
+    ],
+    "workflow": [
+      "State the purpose, field count, and what happens to the completed record",
+      "Present one question with a visible way to skip optional fields",
+      "Validate the field without discarding the respondent's prior work",
+      "Show all captured values for correction before export or submission"
+    ],
+    "tradeoffs": [
+      "One-question-at-a-time flows can hide overall length unless progress is visible",
+      "A chat presentation should not imply a human is responding when it is automated",
+      "For names, dates, and short choices, a conventional field may remain faster"
+    ],
+    "questions": [
+      {
+        "question": "What is a chat form?",
+        "answer": "It is a structured form presented as a text conversation, with defined fields, validation, progress, and a completion state."
+      },
+      {
+        "question": "Is a chat form the same as live chat?",
+        "answer": "No. Live chat is usually an open support or sales conversation. A chat form is bounded intake and should make its automated behavior and expected output clear."
+      },
+      {
+        "question": "Can a chat form also offer voice?",
+        "answer": "Yes, provided text remains fully usable. Talkform models voice and text as two paths to the same reviewable fields rather than separate data formats."
+      }
+    ]
+  },
+  {
+    "slug": "voice-survey",
+    "query": "voice survey",
+    "title": "Voice survey: capture a score and the story behind it",
+    "description": "Plan a voice survey that combines ratings with open-ended context, keeps consent and text fallback clear, and returns answers people can review before export.",
+    "templateId": "nps-survey",
+    "eyebrow": "Ratings plus explain-it-in-your-own-words context",
+    "definition": "A voice survey lets a respondent speak some or all of a survey response while preserving structured questions such as ratings, choices, and follow-up consent. It is most useful when an open-ended explanation would be burdensome to type. A responsible design still shows the survey purpose, provides text input, confirms extracted fields, and treats the resulting comments as personal data rather than harmless analytics metadata.",
+    "bestFor": [
+      "NPS or satisfaction surveys that need the reason behind a score",
+      "Post-project feedback where respondents can describe one concrete example",
+      "Short research follow-ups that combine ratings and qualitative context"
+    ],
+    "workflow": [
+      "Keep the rating question and scale explicit rather than inferring sentiment",
+      "Invite one focused spoken explanation after the structured response",
+      "Ask separately for follow-up permission and a safe contact method",
+      "Review scores, extracted fields, and comments before analysis or routing"
+    ],
+    "tradeoffs": [
+      "A voice option does not correct sampling bias or guarantee more responses",
+      "Do not infer emotion, demographics, or customer value from vocal characteristics",
+      "Long recordings increase privacy, review, and retention responsibilities"
+    ],
+    "questions": [
+      {
+        "question": "Can a voice survey include ratings?",
+        "answer": "Yes. Keep the scale visible and explicit, then use voice or text for the explanation. Do not infer a rating from tone of voice."
+      },
+      {
+        "question": "Should every survey question accept a long spoken answer?",
+        "answer": "Usually not. Use voice where context is valuable and keep simple choices simple. Removing unnecessary questions is often more useful than changing their modality."
+      },
+      {
+        "question": "How should voice survey data be analyzed?",
+        "answer": "Analyze reviewed fields and comments with the same privacy controls used for other survey data. Keep transcripts and personal answers out of ordinary product analytics."
+      }
+    ]
+  }
+]

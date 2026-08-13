@@ -33,6 +33,7 @@ export const metadata: Metadata = {
 };
 
 const navItems = [
+  { href: "/solutions", label: "Solutions" },
   { href: "/use-cases", label: "Use Cases" },
   { href: "/import", label: "Import" },
   { href: "/blog", label: "Blog" },
@@ -42,7 +43,7 @@ const navItems = [
 ];
 
 const footerGroups = [
-  { title: "Product", links: [{ href: "/app", label: "Demo" }, { href: "/import", label: "Import" }, { href: "/use-cases", label: "Use cases" }, { href: "/pricing", label: "Pricing" }] },
+  { title: "Product", links: [{ href: "/app", label: "Demo" }, { href: "/import", label: "Import" }, { href: "/solutions", label: "Solutions" }, { href: "/use-cases", label: "Use cases" }, { href: "/pricing", label: "Pricing" }] },
   { title: "Resources", links: [{ href: "/blog", label: "Blog" }, { href: "/docs", label: "Docs" }, { href: "/faq", label: "FAQ" }, { href: "/changelog", label: "Changelog" }, { href: "/feed.xml", label: "RSS" }] },
   { title: "Company", links: [{ href: "/about", label: "About" }, { href: "/contact", label: "Contact" }, { href: "/status", label: "Status" }, { href: "/security", label: "Security" }, { href: "/accessibility", label: "Accessibility" }] },
   { title: "Legal", links: [{ href: "/privacy", label: "Privacy" }, { href: "/terms", label: "Terms" }, { href: "/cookies", label: "Cookies" }, { href: "/subprocessors", label: "Subprocessors" }] },

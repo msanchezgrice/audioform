@@ -8,12 +8,17 @@ import styles from "./demo-template-gallery.module.css";
 
 type DemoTemplateGalleryProps = {
   templates: AudioformConfig[];
+  initialTemplateId?: string;
   vendorUrl?: string;
   voiceEnabled?: boolean;
 };
 
-export function DemoTemplateGallery({ templates, vendorUrl, voiceEnabled = false }: DemoTemplateGalleryProps) {
-  const [selectedTemplateId, setSelectedTemplateId] = useState(templates[0]?.id ?? "");
+export function DemoTemplateGallery({ templates, initialTemplateId, vendorUrl, voiceEnabled = false }: DemoTemplateGalleryProps) {
+  const [selectedTemplateId, setSelectedTemplateId] = useState(
+    templates.some((template) => template.id === initialTemplateId)
+      ? initialTemplateId ?? ""
+      : templates[0]?.id ?? "",
+  );
   const [consumerMode, setConsumerMode] = useState(false);
   const selectedTemplate =
     templates.find((template) => template.id === selectedTemplateId) ?? templates[0];
