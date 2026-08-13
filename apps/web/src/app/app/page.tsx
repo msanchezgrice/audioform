@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import {
-  CUSTOMER_FEEDBACK_TEMPLATE,
-  JOB_APPLICATION_TEMPLATE,
-  LEAD_GENERATION_TEMPLATE,
+  AUDIOFORM_TEMPLATES,
+  getAudioformTemplate,
 } from "@talkform/core";
 import { DemoTemplateGallery } from "@/components/demo-template-gallery";
 import { createMetadata } from "@/lib/seo";
@@ -14,14 +13,20 @@ export const metadata: Metadata = createMetadata({
   noIndex: true,
 });
 
-export default function AppPage() {
+export default async function AppPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ template?: string | string[] }>;
+}) {
+  const requestedTemplate = (await searchParams).template;
+  const templateId = typeof requestedTemplate === "string" && getAudioformTemplate(requestedTemplate)
+    ? requestedTemplate
+    : AUDIOFORM_TEMPLATES[0]?.id;
+
   return (
     <DemoTemplateGallery
-      templates={[
-        CUSTOMER_FEEDBACK_TEMPLATE,
-        LEAD_GENERATION_TEMPLATE,
-        JOB_APPLICATION_TEMPLATE,
-      ]}
+      templates={AUDIOFORM_TEMPLATES}
+      initialTemplateId={templateId}
       vendorUrl={process.env.NEXT_PUBLIC_AUDIOFORM_VENDOR_URL ?? ""}
       voiceEnabled={process.env.TALKFORM_ENABLE_PUBLIC_REALTIME === "true"}
     />
