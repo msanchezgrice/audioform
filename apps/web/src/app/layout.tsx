@@ -83,6 +83,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               ))}
               <Link href="/app" className="ctaNav" data-agent-action="try-demo" data-testid="nav-cta-try-demo">Try demo</Link>
             </nav>
+            <details className="mobileNav">
+              <summary>Menu</summary>
+              <nav className="mobileNavPanel" aria-label="Mobile primary" data-agent-nav="primary">
+                {navItems.map((item) => (
+                  <Link key={item.href} href={item.href}>
+                    {item.label}
+                  </Link>
+                ))}
+                <Link href="/app" className="mobileNavCta" data-agent-action="try-demo">Try demo</Link>
+              </nav>
+            </details>
           </header>
           <div id="main-content">{children}</div>
           <footer className="siteFooter">
