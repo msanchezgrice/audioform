@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Outfit, Fraunces } from "next/font/google";
 import { createMetadata, organizationJsonLd, websiteJsonLd } from "@/lib/seo";
 import { AuthProvider } from "@/components/auth-provider";
+import { TalkformGoogleAnalytics } from "@/components/talkform-google-analytics";
 import "./globals.css";
 
 const bodyFont = Outfit({
@@ -60,6 +61,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className={`${bodyFont.variable} ${displayFont.variable}`}>
+        <TalkformGoogleAnalytics measurementId={process.env.NEXT_PUBLIC_TALKFORM_GA_MEASUREMENT_ID} />
         <AuthProvider>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([organizationJsonLd, websiteJsonLd]).replace(/</g, "\\u003c") }} />
         <a className="skipLink" href="#main-content">Skip to main content</a>
