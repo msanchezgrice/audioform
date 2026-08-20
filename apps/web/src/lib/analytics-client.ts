@@ -45,6 +45,14 @@ const ALLOWED_PROPERTY_KEYS = new Set([
 ]);
 
 type SafeValue = string | number | boolean;
+type AnalyticsSink = (event: string, properties: Record<string, SafeValue>) => void;
+
+export function telemetryAllowed(
+  navigatorDoNotTrack: string | null | undefined,
+  windowDoNotTrack: string | null | undefined,
+) {
+  return navigatorDoNotTrack !== "1" && windowDoNotTrack !== "1";
+}
 
 export function analyticsEventFromCustomEvent(value: unknown): {
   event: string;
@@ -64,6 +72,17 @@ export function analyticsEventFromCustomEvent(value: unknown): {
   ) as Record<string, SafeValue>;
 
   return { event: detail.event, properties };
+}
+
+export function dispatchAnalyticsEvent(
+  value: unknown,
+  sinks: { posthog?: AnalyticsSink; ga4?: AnalyticsSink },
+) {
+  const safeEvent = analyticsEventFromCustomEvent(value);
+  if (!safeEvent) return false;
+  sinks.posthog?.(safeEvent.event, safeEvent.properties);
+  sinks.ga4?.(safeEvent.event, safeEvent.properties);
+  return true;
 }
 
 export function searchAttributionFromUrl(url: URL, referrer: string) {
