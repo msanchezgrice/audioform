@@ -50,8 +50,13 @@ type AnalyticsSink = (event: string, properties: Record<string, SafeValue>) => v
 export function telemetryAllowed(
   navigatorDoNotTrack: string | null | undefined,
   windowDoNotTrack: string | null | undefined,
+  navigatorGlobalPrivacyControl: boolean | null | undefined = false,
+  windowGlobalPrivacyControl: boolean | null | undefined = false,
 ) {
-  return navigatorDoNotTrack !== "1" && windowDoNotTrack !== "1";
+  return navigatorDoNotTrack !== "1" &&
+    windowDoNotTrack !== "1" &&
+    navigatorGlobalPrivacyControl !== true &&
+    windowGlobalPrivacyControl !== true;
 }
 
 export function analyticsEventFromCustomEvent(value: unknown): {

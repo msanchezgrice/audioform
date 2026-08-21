@@ -18,6 +18,8 @@ test("Talkform's loader honors Do Not Track and disables Google advertising sign
   const source = await readFile(path.join(here, "../components/talkform-google-analytics.tsx"), "utf8");
   assert.match(source, /navigator\.doNotTrack/);
   assert.match(source, /window\.doNotTrack/);
+  assert.match(source, /navigator\.globalPrivacyControl/);
+  assert.match(source, /window\.globalPrivacyControl/);
   assert.match(source, /allow_google_signals:\s*false/);
   assert.match(source, /allow_ad_personalization_signals:\s*false/);
 });
