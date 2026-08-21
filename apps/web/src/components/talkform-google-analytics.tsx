@@ -6,7 +6,7 @@ export function TalkformGoogleAnalytics({ measurementId }: { measurementId?: str
 
   return (
     <Script id="talkform-google-analytics" strategy="afterInteractive">
-      {`if (navigator.doNotTrack !== '1' && window.doNotTrack !== '1') {
+      {`if (navigator.doNotTrack !== '1' && window.doNotTrack !== '1' && navigator.globalPrivacyControl !== true && window.globalPrivacyControl !== true) {
 window.dataLayer = window.dataLayer || [];
 window.gtag = window.gtag || function gtag(){window.dataLayer.push(arguments);};
 window.gtag('js', new Date());

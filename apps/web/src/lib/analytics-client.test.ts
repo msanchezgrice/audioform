@@ -39,6 +39,12 @@ test("Do Not Track disables both analytics providers", () => {
   assert.equal(telemetryAllowed(null, null), true);
 });
 
+test("Global Privacy Control disables both analytics providers", () => {
+  assert.equal(telemetryAllowed(null, null, true), false);
+  assert.equal(telemetryAllowed(null, null, false, true), false);
+  assert.equal(telemetryAllowed(null, null, false, false), true);
+});
+
 test("search attribution records source and landing context without query text", () => {
   assert.deepEqual(
     searchAttributionFromUrl(

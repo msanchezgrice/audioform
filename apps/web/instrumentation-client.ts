@@ -9,6 +9,8 @@ const token = process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN?.trim();
 const analyticsEnabled = telemetryAllowed(
   navigator.doNotTrack,
   (window as Window & { doNotTrack?: string | null }).doNotTrack,
+  (navigator as Navigator & { globalPrivacyControl?: boolean }).globalPrivacyControl,
+  (window as Window & { globalPrivacyControl?: boolean }).globalPrivacyControl,
 );
 const ga4Capture = (event: string, properties: Record<string, string | number | boolean>) => {
   const gtag = (window as Window & { gtag?: (...args: unknown[]) => void }).gtag;
