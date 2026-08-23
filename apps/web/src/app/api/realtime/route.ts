@@ -11,11 +11,12 @@ import {
   readBoundedJson,
   safetyIdentifierForOwner,
 } from "../_lib/request-security";
+import { captureApiRequest } from "../../../lib/server-analytics";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function POST(request: Request) {
+async function handleRealtimePost(request: Request) {
   if (!publicRealtimeIssuanceEnabled()) return publicRealtimeIssuanceUnavailable();
   const authorizationError = mutationAuthorizationError(request);
   if (authorizationError) return authorizationError;
@@ -74,4 +75,18 @@ export async function POST(request: Request) {
       { status },
     );
   }
+}
+
+export async function POST(request: Request) {
+  const startedAt = Date.now();
+  const response = await handleRealtimePost(request);
+  await captureApiRequest({
+    request,
+    route: "/api/realtime",
+    startedAt,
+    response,
+    actorKind: request.headers.has("authorization") ? "machine" : "browser",
+    properties: { provider: "openai_realtime" },
+  });
+  return response;
 }

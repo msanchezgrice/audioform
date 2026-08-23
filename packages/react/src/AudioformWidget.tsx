@@ -337,7 +337,9 @@ export function AudioformWidget({
           emitTalkformEvent("interview_completed", {
             mode: sourceMode,
             formId: config.id,
+            captured: nextCompletion.captured,
             required: nextCompletion.required,
+            percent: nextCompletion.percent,
           });
         }
       }

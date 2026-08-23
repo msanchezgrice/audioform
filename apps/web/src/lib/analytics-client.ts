@@ -21,6 +21,7 @@ const ALLOWED_EVENTS = new Set([
   "session_connected",
   "session_failed",
   "signup_started",
+  "signup_completed",
   "template_selected",
   "view_mode_selected",
   "landing_demo_use_case_selected",

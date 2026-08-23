@@ -67,9 +67,38 @@ if (analyticsEnabled && token) {
 
 if (analyticsEnabled) {
   window.addEventListener("talkform:event", (event) => {
-    dispatchAnalyticsEvent((event as CustomEvent<unknown>).detail, {
+    const detail = (event as CustomEvent<unknown>).detail;
+    const dispatched = dispatchAnalyticsEvent(detail, {
       posthog: token ? (name, properties) => posthog.capture(name, properties) : undefined,
       ga4: ga4Capture,
     });
+    if (!dispatched || !detail || typeof detail !== "object") return;
+    const safeDetail = detail as { event?: unknown; properties?: Record<string, unknown> };
+    if (safeDetail.event !== "interview_completed") return;
+    const properties = safeDetail.properties ?? {};
+    void fetch("/api/analytics/interview-completion", {
+      method: "POST",
+      keepalive: true,
+      headers: {
+        "content-type": "application/json",
+        ...(token ? { "x-posthog-distinct-id": posthog.get_distinct_id() } : {}),
+        ...(token && posthog.get_session_id() ? { "x-posthog-session-id": posthog.get_session_id() } : {}),
+      },
+      body: JSON.stringify({
+        mode: properties.mode,
+        formId: properties.formId,
+        captured: properties.captured,
+        required: properties.required,
+        percent: properties.percent,
+      }),
+    }).catch(() => undefined);
+  });
+
+  window.addEventListener("talkform:identify", (event) => {
+    if (!token || !(event instanceof CustomEvent) || !event.detail || typeof event.detail !== "object") return;
+    const userId = (event.detail as { userId?: unknown }).userId;
+    if (typeof userId === "string" && /^user_[A-Za-z0-9]{8,}$/.test(userId)) {
+      posthog.identify(userId);
+    }
   });
 }

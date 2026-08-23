@@ -28,10 +28,14 @@ function request(body = initializeBody, headers: Record<string, string> = {}) {
 
 test("the hosted MCP route initializes statelessly with a fresh server per request", async () => {
   let allowed = 0;
+  const recorded: Array<{ status: number; protocolMethod?: unknown }> = [];
   const dependencies = {
     allowRequest: async () => {
       allowed += 1;
       return { allowed: true, retryAfter: 60 };
+    },
+    recordRequest: async ({ response, properties }: { response: Response; properties?: Record<string, unknown> }) => {
+      recorded.push({ status: response.status, protocolMethod: properties?.protocol_method });
     },
   };
 
@@ -42,6 +46,10 @@ test("the hosted MCP route initializes statelessly with a fresh server per reque
   assert.equal(first.headers.get("mcp-session-id"), null);
   assert.equal(second.headers.get("mcp-session-id"), null);
   assert.equal(allowed, 2);
+  assert.deepEqual(recorded, [
+    { status: 200, protocolMethod: "initialize" },
+    { status: 200, protocolMethod: "initialize" },
+  ]);
 
   const firstPayload = await first.json() as { result?: { serverInfo?: { name?: string } } };
   const secondPayload = await second.json() as { result?: { serverInfo?: { name?: string } } };

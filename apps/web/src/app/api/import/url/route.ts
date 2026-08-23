@@ -7,11 +7,12 @@ import {
   hasAllowedOrigin,
   readBoundedJson,
 } from "../../_lib/request-security";
+import { captureApiRequest } from "../../../../lib/server-analytics";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function POST(request: Request) {
+async function handleImportPost(request: Request) {
   if (!hasAllowedOrigin(request)) {
     return NextResponse.json({ ok: false, error: "Origin not allowed." }, { status: 403 });
   }
@@ -57,4 +58,18 @@ export async function POST(request: Request) {
       { status },
     ), request, owner);
   }
+}
+
+export async function POST(request: Request) {
+  const startedAt = Date.now();
+  const response = await handleImportPost(request);
+  await captureApiRequest({
+    request,
+    route: "/api/import/url",
+    startedAt,
+    response,
+    actorKind: request.headers.has("authorization") ? "machine" : "browser",
+    properties: { provider: "url_import" },
+  });
+  return response;
 }

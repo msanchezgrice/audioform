@@ -17,6 +17,10 @@ test("only approved Talkform funnel events and properties reach analytics", () =
   );
   assert.equal(analyticsEventFromCustomEvent({ event: "arbitrary_event", properties: {} }), null);
   assert.equal(analyticsEventFromCustomEvent({ event: "interview_completed", properties: "bad" }), null);
+  assert.deepEqual(
+    analyticsEventFromCustomEvent({ event: "signup_completed", properties: { source: "clerk_signup", email: "private@example.com" } }),
+    { event: "signup_completed", properties: { source: "clerk_signup" } },
+  );
 });
 
 test("safe product events are mirrored to PostHog and GA4 without private answers", () => {
