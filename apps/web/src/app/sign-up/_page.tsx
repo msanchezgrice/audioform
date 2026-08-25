@@ -1,7 +1,16 @@
+import type { Metadata } from "next";
 import { SignUp } from "@clerk/nextjs";
 import { PageHero, Prose } from "../_components/content";
 import styles from "../content.module.css";
 import { SignupFlowTracker } from "../../components/auth-analytics";
+import { createMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = createMetadata({
+  title: "Create an account",
+  description: "Create a Talkform account.",
+  path: "/sign-up",
+  noIndex: true,
+});
 
 export default function SignUpPage() {
   const configured = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim());

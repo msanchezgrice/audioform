@@ -83,6 +83,16 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           ))}
         </CardGrid>
       </section>
+      <aside className={styles.ctaBand}>
+        <div>
+          <h2>Apply this to one real form</h2>
+          <p>Run a measured guided pilot for one workflow, with an agreed result and no automatic subscription.</p>
+        </div>
+        <div className={styles.actions}>
+          <Link href="/pilot" className={styles.primaryButton} data-agent-action="request-pilot">Request a guided pilot</Link>
+          <Link href="/import" className={styles.secondaryButton} data-agent-action="import-form">Convert a public form</Link>
+        </div>
+      </aside>
       <p><Link href="/blog">← All Talkform articles</Link></p>
     </main>
   );

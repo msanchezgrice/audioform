@@ -3,7 +3,11 @@ import { randomUUID } from "node:crypto";
 type SafeValue = string | number | boolean;
 
 export type ServerAnalyticsEvent = {
-  event: "api_request_started" | "api_request_completed" | "interview_completion_recorded";
+  event:
+    | "api_request_started"
+    | "api_request_completed"
+    | "interview_completion_recorded"
+    | "pilot_payment_completed";
   properties?: Record<string, unknown>;
   timestamp?: string;
 };
@@ -16,6 +20,7 @@ const ALLOWED_PROPERTY_KEYS = new Set([
   "form_kind",
   "mode",
   "outcome",
+  "plan",
   "percent",
   "protocol_method",
   "provider",

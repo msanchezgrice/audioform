@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { DELETE, GET, POST, handleMcpPost } from "./route";
+import { handleMcpPost } from "./handler";
+import { DELETE, GET, POST } from "./route";
 
 const initializeBody = JSON.stringify({
   jsonrpc: "2.0",

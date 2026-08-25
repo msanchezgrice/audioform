@@ -6,6 +6,17 @@ type BillingAccount = {
   stripe_customer_id: string | null;
 };
 
+export type PilotRequestRecord = {
+  id: string;
+  business_email: string;
+  use_case: string;
+  source_form_url: string | null;
+  status: "requested" | "checkout_open" | "paid" | "refunded";
+  stripe_checkout_session_id: string | null;
+  checkout_url: string | null;
+  checkout_expires_at: Date | null;
+};
+
 type SubscriptionProjection = {
   clerkUserId: string | null;
   customerId: string;
@@ -117,6 +128,115 @@ export async function createOrReuseCheckoutSession(input: {
           updated_at = now()
     `;
     return { url: session.url, reused: false, priceMismatch: false };
+  });
+}
+
+export async function createPilotRequest(input: {
+  email: string;
+  useCase: string;
+  formUrl?: string;
+}) {
+  const sql = database();
+  const [request] = await sql<PilotRequestRecord[]>`
+    insert into pilot_requests (business_email, use_case, source_form_url)
+    values (${input.email}, ${input.useCase}, ${input.formUrl ?? null})
+    returning
+      id, business_email, use_case, source_form_url, status,
+      stripe_checkout_session_id, checkout_url, checkout_expires_at
+  `;
+  if (!request) throw new Error("Pilot request was not created.");
+  return request;
+}
+
+export async function getPilotRequest(requestId: string) {
+  const sql = database();
+  const [request] = await sql<PilotRequestRecord[]>`
+    select
+      id, business_email, use_case, source_form_url, status,
+      stripe_checkout_session_id, checkout_url, checkout_expires_at
+    from pilot_requests
+    where id = ${requestId}
+    limit 1
+  `;
+  return request ?? null;
+}
+
+export async function createOrReusePilotCheckoutSession(input: {
+  requestId: string;
+  createSession: () => Promise<{ id: string; url: string; expiresAt: Date }>;
+}) {
+  const sql = database();
+  return sql.begin(async (tx) => {
+    await tx`select pg_advisory_xact_lock(hashtext(${"pilot-checkout:" + input.requestId}))`;
+    const [request] = await tx<PilotRequestRecord[]>`
+      select
+        id, business_email, use_case, source_form_url, status,
+        stripe_checkout_session_id, checkout_url, checkout_expires_at
+      from pilot_requests
+      where id = ${input.requestId}
+      for update
+    `;
+    if (!request) return { found: false, paid: false, url: null, reused: false };
+    if (request.status === "paid") return { found: true, paid: true, url: null, reused: false };
+    if (
+      request.status === "checkout_open" &&
+      request.checkout_url &&
+      request.checkout_expires_at &&
+      request.checkout_expires_at.getTime() > Date.now()
+    ) {
+      return { found: true, paid: false, url: request.checkout_url, reused: true };
+    }
+
+    const session = await input.createSession();
+    await tx`
+      update pilot_requests
+      set status = 'checkout_open',
+          stripe_checkout_session_id = ${session.id},
+          checkout_url = ${session.url},
+          checkout_expires_at = ${session.expiresAt},
+          updated_at = now()
+      where id = ${input.requestId}
+    `;
+    return { found: true, paid: false, url: session.url, reused: false };
+  });
+}
+
+export async function applyStripePilotPaymentEvent(input: {
+  eventId: string;
+  eventType: string;
+  eventCreatedAt: Date;
+  requestId: string;
+  checkoutSessionId: string;
+  paymentIntentId: string;
+}) {
+  const sql = database();
+  return sql.begin(async (tx) => {
+    const inserted = await tx<{ event_id: string }[]>`
+      insert into stripe_events (event_id, event_type, event_created_at)
+      values (${input.eventId}, ${input.eventType}, ${input.eventCreatedAt})
+      on conflict (event_id) do nothing
+      returning event_id
+    `;
+    if (inserted.length === 0) return { duplicate: true };
+
+    await tx`select pg_advisory_xact_lock(hashtext(${"pilot-payment:" + input.requestId}))`;
+    const paid = await tx<{ id: string }[]>`
+      update pilot_requests
+      set status = 'paid',
+          stripe_payment_intent_id = ${input.paymentIntentId},
+          stripe_event_created_at = ${input.eventCreatedAt},
+          paid_at = coalesce(paid_at, ${input.eventCreatedAt}),
+          checkout_url = null,
+          updated_at = now()
+      where id = ${input.requestId}
+        and stripe_checkout_session_id = ${input.checkoutSessionId}
+        and status in ('requested', 'checkout_open', 'paid')
+      returning id
+    `;
+    if (paid.length === 0) {
+      throw new Error("Pilot payment does not match a durable Talkform Checkout request.");
+    }
+    return { duplicate: false };
   });
 }
 

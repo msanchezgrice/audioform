@@ -56,6 +56,7 @@ async function main() {
       checkout_sessions: string | null;
       entitlements: string | null;
       handoffs: string | null;
+      pilot_requests: string | null;
       stripe_events: string | null;
       subscriptions: string | null;
       usage_counters: string | null;
@@ -67,6 +68,7 @@ async function main() {
         to_regclass('public.checkout_sessions')::text as checkout_sessions,
         to_regclass('public.entitlements')::text as entitlements,
         to_regclass('public.handoffs')::text as handoffs,
+        to_regclass('public.pilot_requests')::text as pilot_requests,
         to_regclass('public.stripe_events')::text as stripe_events,
         to_regclass('public.subscriptions')::text as subscriptions,
         to_regclass('public.usage_counters')::text as usage_counters
@@ -78,6 +80,7 @@ async function main() {
       result.checkout_sessions !== "checkout_sessions" ||
       result.entitlements !== "entitlements" ||
       result.handoffs !== "handoffs" ||
+      result.pilot_requests !== "pilot_requests" ||
       result.stripe_events !== "stripe_events" ||
       result.subscriptions !== "subscriptions" ||
       result.usage_counters !== "usage_counters"

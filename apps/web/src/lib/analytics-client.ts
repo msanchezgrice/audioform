@@ -25,6 +25,11 @@ const ALLOWED_EVENTS = new Set([
   "template_selected",
   "view_mode_selected",
   "landing_demo_use_case_selected",
+  "marketing_video_completed",
+  "marketing_video_played",
+  "marketing_video_progress",
+  "pilot_form_started",
+  "pilot_request_submitted",
 ]);
 
 const ALLOWED_PROPERTY_KEYS = new Set([
@@ -43,6 +48,8 @@ const ALLOWED_PROPERTY_KEYS = new Set([
   "format",
   "destination",
   "plan",
+  "video_id",
+  "milestone",
 ]);
 
 type SafeValue = string | number | boolean;

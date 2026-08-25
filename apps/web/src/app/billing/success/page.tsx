@@ -1,7 +1,16 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHero, Prose } from "../../_components/content";
 import { ManageBillingButton } from "./manage-billing-button";
+import { createMetadata } from "@/lib/seo";
 import styles from "../../content.module.css";
+
+export const metadata: Metadata = createMetadata({
+  title: "Billing return",
+  description: "Return page for Talkform billing checkout.",
+  path: "/billing/success",
+  noIndex: true,
+});
 
 export default function BillingSuccessPage() {
   return <main className={styles.page}>

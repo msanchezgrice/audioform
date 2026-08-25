@@ -22,7 +22,10 @@ if (analyticsEnabled && token) {
     api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com",
     ui_host: "https://us.posthog.com",
     defaults: "2026-05-30",
-    capture_exceptions: true,
+    autocapture: false,
+    capture_exceptions: false,
+    disable_session_recording: true,
+    persistence: "memory",
     respect_dnt: true,
     debug: process.env.NODE_ENV === "development",
   });
@@ -41,28 +44,6 @@ if (analyticsEnabled && token) {
     ga4Capture("search_landing", attribution);
   }
 
-  const marketingVideoEvents = {
-    played: "marketing_video_played",
-    progress: "marketing_video_progress",
-    completed: "marketing_video_completed",
-  } as const;
-
-  window.addEventListener("talkform:marketing-video", (event) => {
-    if (!(event instanceof CustomEvent) || !event.detail || typeof event.detail !== "object") return;
-    const { action, videoId, milestone } = event.detail as {
-      action?: string;
-      videoId?: string;
-      milestone?: number;
-    };
-    if (!videoId || !action || !(action in marketingVideoEvents)) return;
-
-    posthog.capture(marketingVideoEvents[action as keyof typeof marketingVideoEvents], {
-      video_id: videoId,
-      ...(action === "progress" && [25, 50, 75].includes(milestone ?? 0)
-        ? { milestone }
-        : {}),
-    });
-  });
 }
 
 if (analyticsEnabled) {
