@@ -1,6 +1,15 @@
+import type { Metadata } from "next";
 import { SignIn } from "@clerk/nextjs";
 import { PageHero, Prose } from "../_components/content";
+import { createMetadata } from "@/lib/seo";
 import styles from "../content.module.css";
+
+export const metadata: Metadata = createMetadata({
+  title: "Sign in",
+  description: "Sign in to a Talkform account.",
+  path: "/sign-in",
+  noIndex: true,
+});
 
 export default function SignInPage() {
   const configured = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim());

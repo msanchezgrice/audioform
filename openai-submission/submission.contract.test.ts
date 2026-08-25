@@ -114,6 +114,10 @@ test("the web route consumes the built MCP package boundary", async () => {
     new URL("../apps/web/src/app/api/mcp/route.ts", import.meta.url),
     "utf8",
   );
+  const handler = await readFile(
+    new URL("../apps/web/src/app/api/mcp/handler.ts", import.meta.url),
+    "utf8",
+  );
   const webManifest = JSON.parse(
     await readFile(new URL("../apps/web/package.json", import.meta.url), "utf8"),
   ) as { dependencies?: Record<string, string> };
@@ -121,8 +125,8 @@ test("the web route consumes the built MCP package boundary", async () => {
     await readFile(new URL("../packages/mcp/package.json", import.meta.url), "utf8"),
   ) as { exports?: Record<string, string> };
 
-  assert.match(route, /from "@talkform\/mcp\/http"/);
-  assert.doesNotMatch(route, /packages\/mcp\/src/);
+  assert.match(handler, /from "@talkform\/mcp\/http"/);
+  assert.doesNotMatch(`${route}\n${handler}`, /packages\/mcp\/src/);
   assert.equal(webManifest.dependencies?.["@talkform/mcp"], "workspace:*");
   assert.equal(mcpManifest.exports?.["./http"], "./dist/http.js");
 });

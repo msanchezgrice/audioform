@@ -22,3 +22,13 @@ test("MCP analytics records only known protocol and Talkform tool names", () => 
     params: { name: "attacker.private_tool" },
   }), { protocol_method: "tools/call" });
 });
+
+test("payment analytics keeps only offer and outcome metadata", () => {
+  assert.deepEqual(sanitizeServerAnalyticsProperties({
+    source: "stripe_webhook",
+    plan: "guided_pilot",
+    outcome: "paid",
+    email: "private@example.com",
+    stripe_customer_id: "cus_private",
+  }), { source: "stripe_webhook", plan: "guided_pilot", outcome: "paid" });
+});

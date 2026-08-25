@@ -3,8 +3,8 @@ import { ImportWorkbench } from "@/components/import-workbench";
 import { createMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = createMetadata({
-  title: "Import a form",
-  description: "Paste a public form URL, extract its fields, and launch an editable Talkform draft.",
+  title: "Free conversational form converter",
+  description: "Convert a public Google Form, Typeform, or other form into an editable conversational voice or text interview preview.",
   path: "/import",
 });
 

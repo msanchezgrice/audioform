@@ -30,16 +30,16 @@ export default function PricingPage() {
             <CommercialLink
               className={styles.primaryButton}
               plan={plan.slug}
-              href={`mailto:support@talkform.ai?subject=${encodeURIComponent(`Talkform ${plan.name}`)}&body=${encodeURIComponent(`I’m interested in the ${plan.name} plan. My use case is:`)}`}
-              data-agent-action={plan.slug === "pro" ? "start-pro" : "request-pilot"}
-            >{plan.slug === "pro" ? "Start Pro" : "Request a pilot"}</CommercialLink>
+              href={plan.slug === "pro" ? "/pilot?source=pricing_pro" : "/pilot?source=pricing_team"}
+              data-agent-action="request-pilot"
+            >{plan.slug === "pro" ? "Request a guided pilot" : "Scope a team pilot"}</CommercialLink>
           )}
         </article>
       ))}
     </section>
     <section className={styles.prose}>
       <h2>Commercial availability</h2>
-      <p>Pro is the launch offer and target price. Checkout opens after Talkform&apos;s account-backed handoff, customer authentication, and subscription entitlement path are live. Until then, the button starts a direct pilot conversation and no card is charged.</p>
+      <p>Pro is the launch offer and target subscription price. Recurring checkout stays closed until Talkform&apos;s account-backed handoff, customer authentication, and subscription entitlement path are live. Today, you can request a measured guided pilot for one form and one workflow; no card is charged by submitting the request. An accepted pilot may use a separate one-time Stripe Checkout and does not start a Pro subscription.</p>
       <h2>Why 100 minutes?</h2>
       <p>Realtime voice has a variable provider cost, while ordinary form responses do not. The launch plan uses a visible hard limit so early customers can predict spend while Talkform measures actual interview length and model usage.</p>
       <h2>Data boundary</h2>

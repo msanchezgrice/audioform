@@ -6,6 +6,14 @@ const requiredKeys = [
   "DATABASE_URL", "TALKFORM_BILLING_READY",
 ] as const;
 
+const requiredPilotKeys = [
+  "STRIPE_SECRET_KEY",
+  "STRIPE_WEBHOOK_SECRET",
+  "STRIPE_PRICE_GUIDED_PILOT",
+  "DATABASE_URL",
+  "TALKFORM_PILOT_PAYMENTS_READY",
+] as const;
+
 export function billingReadiness(env: BillingEnvironment) {
   const missing = requiredKeys.filter((key) => !env[key]?.trim() || (key === "TALKFORM_BILLING_READY" && env[key] !== "true"));
   return { ready: missing.length === 0, missing: [...missing] };
@@ -16,4 +24,15 @@ export function resolvePriceId(plan: unknown, interval: unknown, env: BillingEnv
   if (interval === "month") return env.STRIPE_PRICE_PRO_MONTHLY?.trim() || null;
   if (interval === "year") return env.STRIPE_PRICE_PRO_ANNUAL?.trim() || null;
   return null;
+}
+
+export function pilotBillingReadiness(env: BillingEnvironment) {
+  const missing = requiredPilotKeys.filter((key) =>
+    !env[key]?.trim() || (key === "TALKFORM_PILOT_PAYMENTS_READY" && env[key] !== "true")
+  );
+  return { ready: missing.length === 0, missing: [...missing] };
+}
+
+export function resolvePilotPriceId(env: BillingEnvironment) {
+  return env.STRIPE_PRICE_GUIDED_PILOT?.trim() || null;
 }

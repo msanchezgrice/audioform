@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { JsonLd, PageHero } from "../../_components/content";
+import { MarketingVideo } from "@/components/marketing-video";
 import { SolutionCta } from "@/components/solution-cta";
 import { getSolution, solutions } from "@/lib/solutions";
 import { absoluteUrl, createMetadata } from "@/lib/seo";
@@ -26,7 +27,8 @@ export default async function SolutionPage({ params }: { params: Promise<{ slug:
   if (!solution) notFound();
 
   const url = absoluteUrl(`/solutions/${solution.slug}`);
-  const graph = [
+  const showMarketingVideo = ["voice-form", "conversational-forms", "voice-survey"].includes(solution.slug);
+  const graph: Record<string, unknown>[] = [
     {
       "@type": "WebPage",
       name: solution.title,
@@ -51,10 +53,44 @@ export default async function SolutionPage({ params }: { params: Promise<{ slug:
     },
   ];
 
+  if (showMarketingVideo) {
+    graph.push({
+      "@type": "VideoObject",
+      name: `See how Talkform turns a ${solution.query} into structured answers`,
+      description: "A 38-second product demonstration of a guided Talkform interview and its reviewable structured result.",
+      thumbnailUrl: absoluteUrl("/videos/talkform-demo-poster.jpg"),
+      contentUrl: absoluteUrl("/videos/talkform-demo.mp4"),
+      uploadDate: "2026-08-23",
+      duration: "PT38S",
+    });
+  }
+
   return (
     <main className={styles.page}>
       <JsonLd data={{ "@context": "https://schema.org", "@graph": graph }} />
       <PageHero eyebrow={solution.eyebrow} title={solution.title} description={solution.description} />
+
+      {showMarketingVideo ? (
+        <section className={styles.section}>
+          <MarketingVideo
+            videoId={`solution-${solution.slug}`}
+            title={`See a ${solution.query} produce a reviewable result`}
+            description="Watch the interview collect defined fields, then inspect the structured output. The demo uses sample data and does not claim a conversion lift."
+            src="/videos/talkform-demo.mp4"
+            poster="/videos/talkform-demo-poster.jpg"
+            captions="/videos/talkform-demo.vtt"
+            eyebrow="38-second product walkthrough"
+          />
+          <div className={styles.actions}>
+            <Link href="/pilot" className={styles.primaryButton} data-agent-action="request-pilot">
+              Run one measured pilot
+            </Link>
+            <Link href="/import" className={styles.secondaryButton} data-agent-action="import-form">
+              Convert my public form
+            </Link>
+          </div>
+        </section>
+      ) : null}
 
       <article className={styles.prose}>
         <section>

@@ -17,6 +17,7 @@ export async function generateMetadata({ params }: { params: Promise<{ tag: stri
     title: `${label} articles`,
     description: `Talkform guides about ${label}, with practical examples and links to authoritative sources.`,
     path: `/blog/tag/${tag}`,
+    noIndex: true,
   });
 }
 

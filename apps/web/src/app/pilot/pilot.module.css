@@ -1,0 +1,192 @@
+.page {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 4.5rem 0 2rem;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(22rem, 0.95fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.heroCopy,
+.formCard,
+.scopeCard {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.heroCopy {
+  padding: clamp(2rem, 5vw, 4rem);
+  background: radial-gradient(circle at top left, var(--accent-soft), transparent 22rem), var(--surface);
+}
+
+.heroCopy h1,
+.formCard h2,
+.scopeCard h2 {
+  margin: 0.7rem 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.03em;
+}
+
+.heroCopy h1 {
+  font-size: clamp(2.65rem, 6vw, 4.8rem);
+  line-height: 1.02;
+}
+
+.heroCopy > p,
+.formCard > p,
+.scopeCard p,
+.scopeCard li {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.eyebrow {
+  display: inline-flex;
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.proofLine {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+.proofLine div {
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--bg-warm) 75%, transparent);
+}
+
+.proofLine strong,
+.proofLine span {
+  display: block;
+}
+
+.proofLine span {
+  margin-top: 0.25rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.formCard {
+  display: grid;
+  gap: 1rem;
+  padding: 2rem;
+}
+
+.formCard h2,
+.formCard p {
+  margin-top: 0;
+}
+
+.field {
+  display: grid;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.field small {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg);
+  padding: 0.9rem 1rem;
+  color: var(--ink);
+  font: inherit;
+}
+
+.field input:focus,
+.field textarea:focus {
+  outline: 0;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.primaryAction {
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.8rem 1.25rem;
+  background: var(--ink);
+  color: white;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.primaryAction:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.finePrint,
+.statusNote {
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+.statusNote {
+  border-radius: var(--radius);
+  padding: 0.85rem 1rem;
+  background: var(--bg-warm);
+}
+
+.error {
+  color: #a23419 !important;
+  font-weight: 600;
+}
+
+.textLink {
+  color: var(--accent-dark);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.scopeGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.scopeCard {
+  padding: 1.5rem;
+}
+
+.scopeCard h2 {
+  font-size: 1.5rem;
+}
+
+.scopeCard ul {
+  margin-bottom: 0;
+  padding-left: 1.1rem;
+}
+
+@media (max-width: 800px) {
+  .page { padding-top: 3rem; }
+  .hero, .scopeGrid { grid-template-columns: 1fr; }
+  .proofLine { grid-template-columns: 1fr; }
+}

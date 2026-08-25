@@ -19,8 +19,11 @@ test("marketing videos are self-hosted, captioned, and observable without answer
   assert.match(component, /playsInline/);
   assert.match(component, /preload="metadata"/);
   assert.match(component, /kind="captions"/);
-  assert.match(component, /talkform:marketing-video/);
-  assert.match(instrumentation, /marketing_video_(?:played|progress|completed)/);
+  assert.match(component, /talkform:event/);
+  assert.match(component, /marketing_video_played/);
+  assert.match(component, /marketing_video_progress/);
+  assert.match(component, /marketing_video_completed/);
+  assert.match(instrumentation, /dispatchAnalyticsEvent/);
   assert.doesNotMatch(instrumentation, /transcript|answer|response_text/i);
 });
 

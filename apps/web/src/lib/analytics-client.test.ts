@@ -37,6 +37,54 @@ test("safe product events are mirrored to PostHog and GA4 without private answer
   assert.deepEqual(ga4, [["interview_completed", { mode: "text", captured: 4 }]]);
 });
 
+test("the commercial funnel accepts pilot actions but strips contact and form details", () => {
+  assert.deepEqual(analyticsEventFromCustomEvent({
+    event: "pilot_form_started",
+    properties: { source: "pricing", email: "private@example.com" },
+  }), {
+    event: "pilot_form_started",
+    properties: { source: "pricing" },
+  });
+  assert.deepEqual(analyticsEventFromCustomEvent({
+    event: "pilot_request_submitted",
+    properties: {
+      source: "import_success",
+      plan: "guided_pilot",
+      email: "private@example.com",
+      formUrl: "https://example.com/private",
+      useCase: "private workflow",
+    },
+  }), {
+    event: "pilot_request_submitted",
+    properties: { source: "import_success", plan: "guided_pilot" },
+  });
+  assert.equal(analyticsEventFromCustomEvent({
+    event: "pilot_payment_completed",
+    properties: { plan: "guided_pilot", outcome: "paid" },
+  }), null, "payment completion must only come from the authoritative server event");
+});
+
+test("marketing video milestones use the shared privacy-safe dispatcher", () => {
+  const posthog: unknown[][] = [];
+  const ga4: unknown[][] = [];
+  assert.equal(dispatchAnalyticsEvent({
+    event: "marketing_video_progress",
+    properties: {
+      video_id: "typeform-to-voice",
+      milestone: 50,
+      currentTime: 19.3,
+    },
+  }, {
+    posthog: (...args) => posthog.push(args),
+    ga4: (...args) => ga4.push(args),
+  }), true);
+  assert.deepEqual(posthog, [["marketing_video_progress", {
+    video_id: "typeform-to-voice",
+    milestone: 50,
+  }]]);
+  assert.deepEqual(ga4, posthog);
+});
+
 test("Do Not Track disables both analytics providers", () => {
   assert.equal(telemetryAllowed("1", null), false);
   assert.equal(telemetryAllowed(null, "1"), false);

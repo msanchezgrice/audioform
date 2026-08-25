@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import styles from "./marketing-video.module.css";
 
-const VIDEO_EVENT_NAME = "talkform:marketing-video";
+const VIDEO_EVENT_NAME = "talkform:event";
 
 type MarketingVideoProps = {
   videoId: string;
@@ -18,10 +18,22 @@ type MarketingVideoProps = {
 
 type MarketingVideoAction = "played" | "progress" | "completed";
 
+const VIDEO_EVENTS: Record<MarketingVideoAction, string> = {
+  played: "marketing_video_played",
+  progress: "marketing_video_progress",
+  completed: "marketing_video_completed",
+};
+
 function emitVideoEvent(videoId: string, action: MarketingVideoAction, milestone?: number) {
   window.dispatchEvent(
     new CustomEvent(VIDEO_EVENT_NAME, {
-      detail: { videoId, action, milestone },
+      detail: {
+        event: VIDEO_EVENTS[action],
+        properties: {
+          video_id: videoId,
+          ...(action === "progress" && milestone ? { milestone } : {}),
+        },
+      },
     }),
   );
 }

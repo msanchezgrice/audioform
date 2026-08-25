@@ -2,6 +2,7 @@
 
 import { startTransition, useMemo, useState } from "react";
 import type { FormEvent } from "react";
+import Link from "next/link";
 import { audioformConfigSchema, type AudioformConfig, type AudioformField, type AudioformFieldType } from "@talkform/core";
 import { emitTalkformEvent } from "@talkform/react";
 import { AudioformClient } from "@/components/audioform-client";
@@ -198,8 +199,8 @@ export function ImportWorkbench({ vendorUrl = "" }: ImportWorkbenchProps) {
     <main className={styles.page}>
       <section className={styles.hero}>
         <div className={styles.heroCopy}>
-          <div className={styles.eyebrow}>Import existing forms</div>
-          <h1>Paste any public form URL. Talkform will extract it, map it, and let you ship the audio version fast.</h1>
+          <div className={styles.eyebrow}>Free conversational form converter</div>
+          <h1>Turn a public form into a guided voice or text interview.</h1>
           <p>
             The importer tries structured adapters first, then static HTML, embedded payloads, iframe discovery,
             rendered DOM parsing, and finally Playwright if the page needs a browser.
@@ -522,6 +523,34 @@ export function ImportWorkbench({ vendorUrl = "" }: ImportWorkbenchProps) {
               />
             </section>
           ) : null}
+
+          <aside className={styles.commercialBand} aria-label="Use this converted form with Talkform">
+            <div>
+              <div className={styles.eyebrow}>Your converted draft is ready</div>
+              <h2>Run this with my team</h2>
+              <p>
+                Use a measured guided pilot for one real workflow, or review the self-serve plan before deciding.
+              </p>
+            </div>
+            <div className={styles.commercialActions}>
+              <Link
+                href="/pilot"
+                className={styles.primaryAction}
+                onClick={() => emitTalkformEvent("conversion_clicked", { source: "import_success", destination: "/pilot", plan: "guided_pilot" })}
+                data-agent-action="request-pilot"
+              >
+                Run this with my team
+              </Link>
+              <Link
+                href="/pricing"
+                className={styles.secondaryAction}
+                onClick={() => emitTalkformEvent("conversion_clicked", { source: "import_success", destination: "/pricing", plan: "pro" })}
+                data-agent-action="view-pricing"
+              >
+                Start Pro
+              </Link>
+            </div>
+          </aside>
         </>
       ) : null}
     </main>
