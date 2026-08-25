@@ -97,3 +97,11 @@ test("the pilot return page waits for webhook-authoritative confirmation", () =>
   assert.match(success, /signed webhook/i);
   assert.doesNotMatch(success, /Stripe received the payment/i);
 });
+
+test("Clerk middleware is scoped to the two authenticated billing mutations", () => {
+  const proxy = read("src/proxy.ts");
+  assert.match(proxy, /clerkMiddleware/);
+  assert.match(proxy, /\/api\/billing\/checkout/);
+  assert.match(proxy, /\/api\/billing\/portal/);
+  assert.doesNotMatch(proxy, /\(\?!_next|\/\(api\|trpc\)/);
+});
