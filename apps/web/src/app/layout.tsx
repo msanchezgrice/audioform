@@ -103,6 +103,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <strong>Talkform</strong>
               <p>Guided browser voice interviews with reviewable structured answers.</p>
               <a href="mailto:support@talkform.ai">support@talkform.ai</a>
+              <a href="https://twelve.tools" target="_blank">
+                <img src="https://twelve.tools/badge1-light.svg" alt="Featured on Twelve Tools" width="148" height="40" />
+              </a>
             </div>
             <div className="footerGroups">
               {footerGroups.map((group) => (
