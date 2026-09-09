@@ -250,3 +250,8 @@
     transition: none !important;
   }
 }
+
+@media (max-width: 560px) {
+  .shell { gap: 0.75rem; }
+  .modeRow { padding: 0.25rem 0; }
+}

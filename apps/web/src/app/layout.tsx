@@ -119,7 +119,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   {item.label}
                 </Link>
               ))}
-              <Link href="/dashboard" className="ctaNav" data-agent-action="get-started-free" data-testid="nav-cta-get-started-free">Get started free</Link>
+              <Link href="/dashboard" prefetch={false} className="ctaNav" data-agent-action="get-started-free" data-testid="nav-cta-get-started-free">Get started free</Link>
             </nav>
             <details className="mobileNav">
               <summary>Menu</summary>
@@ -129,7 +129,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     {item.label}
                   </Link>
                 ))}
-                <Link href="/dashboard" className="mobileNavCta" data-agent-action="get-started-free">Get started free</Link>
+                <Link href="/dashboard" prefetch={false} className="mobileNavCta" data-agent-action="get-started-free">Get started free</Link>
               </nav>
             </details>
           </header>

@@ -15,6 +15,8 @@
 
 The operator report covers 30 days in UTC. Activation requires a submitted handoff whose JSON was retrieved. Repeat use requires first retrievals on at least two different UTC dates. Polling the same result repeatedly does not manufacture adoption. Test projects and internal owners are excluded from the main totals. Account and project IDs are available in the private operational report; answers and respondent identities are not included. Serving JSON proves delivery by Talkform, not downstream processing by another system.
 
+The report also shows trusted REST/MCP/dashboard/respondent surfaces, completed UTC-week usage with explicit project denominators, and next-week retention cohorts. A durable first-retrieval timestamp prevents 90-day event cleanup from turning established projects into new cohorts. `handoff.opened` means successful authenticated configuration loading, not a verified human view. Optional `X-Talkform-SDK` and `X-Talkform-SDK-Version` headers are bounded, sanitized and self-reported; they cannot select the trusted surface. Per-project AI estimates cover hosted voice, while public demos/imports remain in shared totals.
+
 Hosted workflow metadata stays in the existing operational database. It is not exported to PostHog. Marketing analytics remain separate, and private respondent routes are excluded.
 
 ## Cost controls
@@ -32,9 +34,11 @@ These are conservative admission limits using estimated provider usage, not guar
 
 Use the existing Talkform Vercel project and its Neon, Clerk and OpenAI credentials. `.env.example` documents local variable names. `TALKFORM_DATA_ENCRYPTION_KEY` must be a random 32-byte base64 key; losing or replacing it makes existing encrypted handoffs unreadable. Keep it stable and use the provider's secret management. `CRON_SECRET` authenticates maintenance.
 
-Production `prebuild` applies checksum-verified additive migrations using the existing deployment database credential. Preview and local builds skip production migration. The final migration set includes 0005 platform, 0006 costs and 0007 event query index. Failure prevents a new production deployment.
+Production `prebuild` applies checksum-verified additive migrations using the existing deployment database credential. Preview and local builds skip production migration. The final migration set includes 0005 platform, 0006 costs, 0007 event query index and 0008 event surfaces / durable first retrieval. Failure prevents a new production deployment.
 
 Daily Vercel cron routes: `/api/internal/maintenance` at 04:17 UTC and `/api/realtime/cleanup` at 04:23 UTC. Both require `CRON_SECRET`; ordinary API reads also enforce expiry immediately.
+
+The existing Vercel project uses Root Directory `apps/web`, framework `nextjs`, and includes workspace files outside that root. `apps/web/vercel.json` carries the build settings and cron schedules. The legacy repository-root builder and `/apps/web/$1` catch-all rewrite were removed after production testing found that dynamic API and respondent routes returned 404.
 
 Deploy through the existing GitHub-to-Vercel integration. Confirm commit SHA, READY deployment, production aliases, HTTP health, private API auth, and a test-environment handoff from browser submission through an independent API result retrieval. Test signup too: code audit found the deployed CSP blocking Clerk's Cloudflare CAPTCHA script and fixed the required domains.
 

@@ -1,31 +1,35 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import { existsSync, readdirSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { existsSync } from "node:fs";
+import { dirname } from "node:path";
 import test, { after, before } from "node:test";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
+import { chromium } from "playwright-core";
 
 const baseUrl = process.env.TALKFORM_BASE_URL ?? "http://localhost:3107";
 const executablePath =
   process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE ??
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const workspaceRoot = dirname(dirname(dirname(dirname(dirname(fileURLToPath(import.meta.url))))));
-const pnpmModules = join(workspaceRoot, "node_modules", ".pnpm");
-const playwrightPackage = existsSync(pnpmModules)
-  ? readdirSync(pnpmModules).find((entry) => entry.startsWith("playwright-core@"))
-  : undefined;
-const playwright = playwrightPackage
-  ? await import(pathToFileURL(join(pnpmModules, playwrightPackage, "node_modules", "playwright-core", "index.mjs")).href)
-  : null;
-const chromium = playwright?.chromium;
-const canLaunch = Boolean(chromium) && existsSync(executablePath);
+const canLaunch = existsSync(executablePath);
+const browserTestOptions = canLaunch || process.env.CI ? {} : { skip: "Chrome is unavailable locally" };
 let ownedServer;
+
+if (process.env.CI && !canLaunch) {
+  throw new Error(`Chrome executable not found at ${executablePath}`);
+}
+
+function requireBrowser() {
+  if (!canLaunch) {
+    throw new Error(`Chrome executable not found at ${executablePath}`);
+  }
+}
 
 function captureRuntimeErrors(page) {
   const errors = [];
   page.on("pageerror", (error) => errors.push(`pageerror: ${error.message}`));
   page.on("console", (message) => {
-    if (message.type() === "error") errors.push(`console: ${message.text()}`);
+    if (message.type() === "error") errors.push(`console: ${message.text()} (${message.location().url})`);
   });
   return errors;
 }
@@ -42,7 +46,8 @@ async function serverIsReady() {
 }
 
 before(async () => {
-  if (!canLaunch || process.env.TALKFORM_BASE_URL || await serverIsReady()) return;
+  if (!canLaunch) return;
+  if (process.env.TALKFORM_BASE_URL || await serverIsReady()) return;
 
   ownedServer = spawn(
     "pnpm",
@@ -78,17 +83,18 @@ after(() => {
   }
 });
 
-test("local text onboarding completes without API traffic and emits only safe funnel data", { skip: !canLaunch }, async () => {
+test("local text onboarding completes without AI requests and sends only bounded completion metadata", browserTestOptions, async () => {
+  requireBrowser();
   const browser = await chromium.launch({ executablePath, headless: true });
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   const apiRequests = [];
   const runtimeErrors = captureRuntimeErrors(page);
   page.on("request", (request) => {
-    if (new URL(request.url()).pathname.startsWith("/api/")) apiRequests.push(request.url());
+    if (new URL(request.url()).pathname.startsWith("/api/")) apiRequests.push({ path: new URL(request.url()).pathname, method: request.method(), body: request.postData() });
   });
 
   try {
-    await page.goto(`${baseUrl}/app`, { waitUntil: "networkidle" });
+    await page.goto(`${baseUrl}/app`, { waitUntil: "domcontentloaded" });
     await page.evaluate(() => {
       window.__talkformEvents = [];
       window.addEventListener("talkform:event", (event) => {
@@ -97,9 +103,13 @@ test("local text onboarding completes without API traffic and emits only safe fu
     });
     apiRequests.length = 0;
 
-    await page.getByRole("button", { name: "Continue with typing" }).click();
+    const typingChoice = page.getByRole("button", { name: "Continue with typing" });
+    await typingChoice.waitFor({ state: "visible" });
+    assert.equal(await typingChoice.isVisible(), true);
+    await typingChoice.click();
     await page.getByText("Typing", { exact: true }).waitFor();
 
+    const completionBeacon = page.waitForRequest((request) => new URL(request.url()).pathname === "/api/analytics/interview-completion");
     const answers = ["Miguel", "Onboarding", "5", "The setup took too long", "No"];
     for (let index = 0; index < answers.length; index += 1) {
       const input = page.getByLabel("Type your answer");
@@ -109,7 +119,18 @@ test("local text onboarding completes without API traffic and emits only safe fu
     }
 
     await page.getByRole("heading", { name: "Your answers are ready" }).waitFor();
-    assert.deepEqual(apiRequests, []);
+    await completionBeacon;
+    assert.equal(apiRequests.length, 1, "Text completion should send only its coarse completion beacon");
+    assert.equal(apiRequests[0].path, "/api/analytics/interview-completion");
+    assert.equal(apiRequests[0].method, "POST");
+    const completionMetadata = JSON.parse(apiRequests[0].body);
+    assert.deepEqual(Object.keys(completionMetadata).sort(), ["captured", "formId", "mode", "percent", "required"]);
+    assert.equal(completionMetadata.mode, "text");
+    assert.equal(completionMetadata.captured, 5);
+    assert.equal(completionMetadata.percent, 100);
+    assert.ok(Number.isInteger(completionMetadata.required) && completionMetadata.required > 0 && completionMetadata.required <= 5);
+    assert.match(completionMetadata.formId, /^[a-z0-9][a-z0-9_-]{0,79}$/);
+    assert.doesNotMatch(apiRequests[0].body, /Miguel|setup took|Onboarding|transcript|summary|sessionId/i);
 
     const customerName = page.getByLabel("Edit Customer name");
     await customerName.fill("Miguel C.");
@@ -128,13 +149,14 @@ test("local text onboarding completes without API traffic and emits only safe fu
   }
 });
 
-test("mobile onboarding choices remain visible and app/embed pages do not overflow", { skip: !canLaunch }, async () => {
+test("mobile onboarding choices remain visible and app/embed pages do not overflow", browserTestOptions, async () => {
+  requireBrowser();
   const browser = await chromium.launch({ executablePath, headless: true });
   const page = await browser.newPage({ viewport: { width: 375, height: 812 } });
   const runtimeErrors = captureRuntimeErrors(page);
 
   try {
-    await page.goto(`${baseUrl}/app`, { waitUntil: "networkidle" });
+    await page.goto(`${baseUrl}/app`, { waitUntil: "domcontentloaded" });
     const typingChoice = page.getByRole("button", { name: "Continue with typing" });
     const choiceBox = await typingChoice.boundingBox();
     assert.ok(choiceBox, "typing choice should be visible");
@@ -148,7 +170,7 @@ test("mobile onboarding choices remain visible and app/embed pages do not overfl
       true,
       "/app should not overflow horizontally",
     );
-    await page.goto(`${baseUrl}/embed`, { waitUntil: "networkidle" });
+    await page.goto(`${baseUrl}/embed`, { waitUntil: "domcontentloaded" });
     assert.equal(
       await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
       true,

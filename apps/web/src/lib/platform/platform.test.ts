@@ -8,6 +8,7 @@ import {
   validateAudioformConfig,
   validateRespondentSubmission,
 } from "./auth";
+import { platformClientMetadata, platformEventContext } from "./events";
 
 const config = {
   id: "lead-intake",
@@ -81,4 +82,19 @@ test("respondent submission enforces the exact configured field contract", () =>
   assert.deepEqual(validateRespondentSubmission(config, {
     values: { ...createEmptyValues(config), email: "hello@example.com" }, mode: "text",
   }).values, { email: "hello@example.com", teamSize: null });
+});
+
+test("event context trusts the server surface and bounds self-reported SDK labels", () => {
+  const request = new Request("https://talkform.test/api/v1/handoffs", { headers: {
+    "x-talkform-sdk": "@talkform/node",
+    "x-talkform-sdk-version": "1.2.3-beta.1",
+  } });
+  assert.deepEqual(platformEventContext(request, "rest"), {
+    surface: "rest",
+    client: { name: "@talkform/node", version: "1.2.3-beta.1", selfReported: true },
+  });
+  assert.equal(platformClientMetadata(new Request("https://talkform.test", { headers: {
+    "x-talkform-sdk": "bad sdk name",
+    "x-talkform-sdk-version": "x".repeat(33),
+  } })), null);
 });

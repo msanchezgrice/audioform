@@ -9,7 +9,7 @@ The user approved all four audit recommendations, implementation, deployment, an
 - Sol `cost_controls`: voice duration authority, cost ledger and importer fallback, provider usage and failure tests.
 - Root: contracts and review, dashboard/operator UI, widget submission and voice transport, hosted MCP, production configuration, verification and release.
 
-## Delivery status before deployment
+## Delivery status
 
 - [x] Free no-card pricing and onboarding; both new checkout endpoints return 410.
 - [x] Existing Stripe open Checkout Sessions checked in the correct live account: none.
@@ -23,8 +23,14 @@ The user approved all four audit recommendations, implementation, deployment, an
 - [x] Final migrations applied from scratch and safely rerun on an isolated database.
 - [x] Production encryption/cron secrets and verified operator email configured on the existing Vercel project.
 - [x] Root review identified and fixed deployed Clerk CAPTCHA CSP and post-login destination.
-- [ ] Cost review race/timeout fixes independently rechecked and final tests/build completed.
-- [ ] Push release via existing GitHub-to-Vercel integration.
+- [x] Cost review race/timeout fixes independently rechecked; 180 regression tests, lint, workspace typecheck, and patched Next production build pass.
+- [x] First release `76d14497` pushed through the existing integration; production migrations and email signup verified.
+- [x] Production dynamic-route 404 traced to legacy Vercel rewrite. Existing project root/framework corrected; canonical app-level config prepared for follow-up release.
+- [x] Event surfaces, completed-week retention, durable first-retrieval milestone, and per-project cost reporting independently reviewed.
+- [x] Production dependency audit now reports no known vulnerabilities.
+- [x] Browser runner made an explicit dependency, with missing-runner/Chrome failures enforced in CI.
+- [x] Both real Chrome tests now pass without skips: local text completion sends only bounded anonymous metadata; mobile controls fit the first 375x812 viewport and neither demo nor embed overflows.
+- [x] Root fixed private-dashboard prefetching and independently corrected/audited Luna mobile CSS.
 - [ ] Verify deployed SHA, aliases, migrations, production account onboarding, and independent hosted handoff retrieval.
 
 ## Environment and limits

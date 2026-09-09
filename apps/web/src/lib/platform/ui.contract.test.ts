@@ -17,7 +17,13 @@ test("respondent UI keeps its bearer token in a request header and submits revie
   assert.match(respondent, /X-Talkform-Respondent-Token/);
   assert.match(respondent, /values: result\.fields/);
   assert.match(respondent, /data\.status === "completed"/);
+  assert.match(respondent, /respondentToken/);
+  assert.doesNotMatch(respondent, /token\.current/);
   assert.doesNotMatch(respondent, /[?&]token=/);
+  assert.ok(
+    respondent.indexOf("if (error)") < respondent.indexOf("if (submitted)"),
+    "a failed load must take precedence over a prior completed state",
+  );
 });
 
 test("respondent route explicitly loads the published widget stylesheet", () => {

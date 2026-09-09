@@ -30,6 +30,8 @@ Implemented the tenant-scoped project, API key, durable handoff, respondent subm
 - `apps/web/src/lib/platform/platform.test.ts` - pure validation and crypto coverage.
 - `apps/web/src/lib/platform/platform.database.test.ts` - isolated Postgres integration coverage.
 - `apps/web/src/lib/platform/operator.ts` - safe env test seam and exact activation aggregate.
+- `apps/web/src/lib/platform/operator-observability.ts` - surface, weekly cohort, and handoff-scoped cost aggregates.
+- `packages/db/migrations/0008_platform_event_surfaces.sql` - trusted event surfaces, bounded self-reported SDK labels, opened events, and durable first-result milestone.
 
 ## Decisions Made
 
@@ -37,6 +39,9 @@ Implemented the tenant-scoped project, API key, durable handoff, respondent subm
 - API keys use `tfk_<12-char-prefix>_<43-char-secret>` so prefix parsing is unambiguous. Only the prefix and SHA-256 digest persist.
 - Respondent and result payloads remain encrypted until strict expiry; expiry and deletion clear config, token, result, and fingerprint content.
 - Completed invite GET returns config plus status so the UI can render a closed state without exposing answers.
+- Event surfaces are selected by the server (`rest`, `mcp`, `dashboard`, or `respondent`); `X-Talkform-SDK` and `X-Talkform-SDK-Version` are optional bounded self-reported labels and cannot choose the surface.
+- `handoff.opened` means an authenticated config load and is deduplicated per handoff. It is not evidence that a person read the form.
+- Weekly retention cohorts use the durable `tf_projects.first_result_retrieved_at` milestone so 90-day event cleanup cannot reclassify old projects.
 
 ## TDD Verification
 
@@ -47,6 +52,8 @@ Implemented the tenant-scoped project, API key, durable handoff, respondent subm
 - [x] `TALKFORM_PLATFORM_TEST_DATABASE_URL=... node --import tsx --test apps/web/src/lib/platform/platform.database.test.ts` -> 2 passing against isolated schema `api_worker`.
 - [x] `pnpm test` -> 162 passing.
 - [x] `pnpm --filter @talkform/web typecheck` -> passing.
+- [x] Migrations 0001-0008 applied in order to fresh isolated schema `obs_api_b82d4`.
+- [x] Observability-focused unit tests -> 6 passing; platform database integration -> 2 passing against `obs_api_b82d4`.
 
 ## Issues Encountered
 
@@ -55,4 +62,4 @@ Implemented the tenant-scoped project, API key, durable handoff, respondent subm
 
 ## Next Task Context
 
-Production still needs migrations 0005, 0006, and 0007 applied in order, a random base64 32-byte `TALKFORM_DATA_ENCRYPTION_KEY`, and the existing GitHub-to-Vercel release path. `cleanupExpiredHandoffs()` must run on a recurring server schedule. No production database, Vercel, or PostHog mutation was performed by this task.
+The next production release must include additive migration 0008. The production build script automatically scans and sorts every numeric `packages/db/migrations/*.sql` file, so 0008 is included without runner changes. `cleanupExpiredHandoffs()` must keep running on the recurring server schedule. No production database, Vercel, or PostHog mutation was performed by this task.

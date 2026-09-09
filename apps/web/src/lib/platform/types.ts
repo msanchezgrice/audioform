@@ -18,8 +18,11 @@ export type RespondentHandoff = { id: string; config: AudioformConfig; status: H
 export type RespondentSubmission = { values: AudioformFieldMap; mode: RespondentMode };
 export type HostedAudioformSessionResult = Omit<AudioformSessionResult, "metadata"> & { metadata: AudioformSessionResult["metadata"] & { mode: RespondentMode } };
 export type ProjectDashboard = { project: PlatformProject; counts: Record<HostedHandoffStatus, number>; handoffsCreatedToday: number; keys: PlatformApiKey[]; recentHandoffs: PlatformHandoff[] };
-export type PlatformEventName = "handoff.created" | "handoff.completed" | "handoff.result_retrieved" | "handoff.deleted";
-export type PlatformEvent = { id: string; eventKey: string; eventName: PlatformEventName; projectId: string; keyId: string | null; handoffId: string | null; environment: ProjectEnvironment; createdAt: string };
+export type PlatformEventName = "handoff.created" | "handoff.opened" | "handoff.completed" | "handoff.result_retrieved" | "handoff.deleted";
+export type PlatformEventSurface = "rest" | "mcp" | "dashboard" | "respondent" | "unknown";
+export type PlatformClientMetadata = { name: string | null; version: string | null; selfReported: true };
+export type PlatformEventContext = { surface: PlatformEventSurface; client?: PlatformClientMetadata | null };
+export type PlatformEvent = { id: string; eventKey: string; eventName: PlatformEventName; projectId: string; keyId: string | null; handoffId: string | null; environment: ProjectEnvironment; surface: PlatformEventSurface; client: PlatformClientMetadata | null; createdAt: string };
 export class PlatformError extends Error {
   constructor(public readonly code: string, public readonly status: number, message: string) { super(message); this.name = "PlatformError"; }
 }

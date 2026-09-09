@@ -2,6 +2,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { platformDatabase } from "./database";
 import { PlatformError } from "./types";
 import { getCostPolicy, getCostSummary } from "../cost/database";
+import { getOperatorObservability } from "./operator-observability";
 
 export function operatorIdentityAllowed(user: { id: string; emailAddresses: { emailAddress: string; verification: { status: string } | null }[] }, env: Record<string, string | undefined> = process.env) {
   const ids = new Set((env.TALKFORM_OPERATOR_USER_IDS || "").split(",").map((v) => v.trim()).filter(Boolean));
@@ -20,10 +21,11 @@ export async function requireOperator() {
 export async function getOperatorUsage(operatorId: string) {
   const sql = platformDatabase();
   const internalIds = [...new Set([operatorId, ...(process.env.TALKFORM_INTERNAL_USER_IDS || "").split(",").map((id) => id.trim()).filter(Boolean)])];
-  const [projects, daily, cost, policy, totals] = await Promise.all([
-    sql<{ id: string; name: string; account_id: string; environment: string; internal: boolean; created: number; completed: number; retrieved: number; active_keys: number; last_used_at: Date | null; retrieval_days: number }[]>`
+  const [projectRows, daily, cost, policy, totals, observability] = await Promise.all([
+    sql<{ id: string; name: string; account_id: string; environment: string; internal: boolean; created: number; opened: number; completed: number; retrieved: number; active_keys: number; last_used_at: Date | null; retrieval_days: number }[]>`
       select p.id, p.name, p.clerk_user_id as account_id, p.environment, p.clerk_user_id in ${sql(internalIds)} as internal,
         (select count(*)::int from tf_events e where e.project_id=p.id and e.event_name='handoff.created' and e.created_at>=now()-interval '30 days') as created,
+        (select count(*)::int from tf_events e where e.project_id=p.id and e.event_name='handoff.opened' and e.created_at>=now()-interval '30 days') as opened,
         (select count(*)::int from tf_events e where e.project_id=p.id and e.event_name='handoff.completed' and e.created_at>=now()-interval '30 days') as completed,
         (select count(*)::int from tf_events e where e.project_id=p.id and e.event_name='handoff.result_retrieved' and e.created_at>=now()-interval '30 days') as retrieved,
         (select count(*)::int from tf_api_keys k where k.project_id=p.id and k.revoked_at is null and k.last_used_at>=now()-interval '30 days') as active_keys,
@@ -35,10 +37,11 @@ export async function getOperatorUsage(operatorId: string) {
       from tf_events e join tf_projects p on p.id=e.project_id where e.created_at>=now()-interval '30 days'
       group by 1,2,3,4 order by 1 desc`,
     getCostSummary(), getCostPolicy(),
-    sql<{ projects: number; activated: number; repeat: number; created: number; submitted: number; retrieved: number }[]>`
+    sql<{ projects: number; activated: number; repeat: number; created: number; opened: number; submitted: number; retrieved: number }[]>`
       with usage as (
         select project_id,
           count(*) filter (where event_name='handoff.created') as created,
+          count(*) filter (where event_name='handoff.opened') as opened,
           count(*) filter (where event_name='handoff.completed') as submitted,
           count(*) filter (where event_name='handoff.result_retrieved') as retrieved,
           count(distinct (created_at at time zone 'utc')::date) filter (where event_name='handoff.result_retrieved') as retrieval_days,
@@ -51,23 +54,30 @@ export async function getOperatorUsage(operatorId: string) {
       ) select count(*)::int as projects,
         count(*) filter (where u.activated)::int as activated,
         count(*) filter (where u.retrieval_days>=2)::int as repeat,
-        coalesce(sum(u.created),0)::int as created, coalesce(sum(u.submitted),0)::int as submitted,
+        coalesce(sum(u.created),0)::int as created, coalesce(sum(u.opened),0)::int as opened, coalesce(sum(u.submitted),0)::int as submitted,
         coalesce(sum(u.retrieved),0)::int as retrieved
       from tf_projects p left join usage u on u.project_id=p.id
       where p.environment='production' and p.clerk_user_id not in ${sql(internalIds)}`,
-
+    getOperatorObservability(internalIds),
   ]);
   const summary = totals[0];
+  const projects = projectRows.map((project) => ({ ...project, ...observability.forProject(project.id) }));
   return {
     generatedAt: new Date().toISOString(), windowDays: 30, timezone: "UTC",
     summary: {
       externalProductionProjects: summary.projects,
+      activationDenominatorProjects: summary.projects,
       activatedProjects: summary.activated,
+      repeatDenominatorProjects: summary.projects,
       repeatProjects: summary.repeat,
       created: summary.created,
+      opened: summary.opened,
       submitted: summary.submitted,
       retrieved: summary.retrieved,
     },
+    surfaceCounts: observability.surfaceCounts,
+    weeklyExternalProjects: observability.weeklyExternalProjects,
+    completedWeekCohorts: observability.completedWeekCohorts,
     projects, projectLimit: 200, daily, cost, policy,
   };
 }

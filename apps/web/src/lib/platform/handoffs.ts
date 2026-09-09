@@ -2,7 +2,8 @@ import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
 import { getCompletion, type AudioformConfig, type AudioformFieldMap } from "@talkform/core";
 import { createRespondentToken, decryptPlatformData, encryptPlatformData, hashSecret, validateAudioformConfig, validateRespondentSubmission } from "./auth";
 import { platformDatabase } from "./database";
-import { PLATFORM_LIMITS, PlatformError, type AuthenticatedProjectKey, type CreatedPlatformHandoff, type HostedAudioformSessionResult, type HostedHandoffStatus, type ProjectEnvironment, type RespondentHandoff } from "./types";
+import { normalizedPlatformEventContext } from "./events";
+import { PLATFORM_LIMITS, PlatformError, type AuthenticatedProjectKey, type CreatedPlatformHandoff, type HostedAudioformSessionResult, type HostedHandoffStatus, type PlatformEventContext, type ProjectEnvironment, type RespondentHandoff } from "./types";
 
 type HandoffRow = {
   id: string; project_id: string; created_by_key_id: string | null; idempotency_key: string;
@@ -42,16 +43,19 @@ function createdResponse(row: HandoffRow, baseUrl: string, token: string): Creat
 export async function createHandoff(
   key: AuthenticatedProjectKey,
   input: { config: unknown; idempotencyKey: unknown; baseUrl: string },
+  eventContext?: PlatformEventContext,
 ) {
-  return createHandoffForProject(key, input);
+  return createHandoffForProject(key, input, eventContext);
 }
 
 export async function createHandoffForProject(
   actor: { projectId: string; keyId: string | null; environment: ProjectEnvironment },
   input: { config: unknown; idempotencyKey: unknown; baseUrl: string },
+  eventContext?: PlatformEventContext,
 ) {
   const config = validateAudioformConfig(input.config);
   const dedupeKey = idempotencyKey(input.idempotencyKey);
+  const event = normalizedPlatformEventContext(eventContext);
   const sql = platformDatabase();
   const outcome = await sql.begin(async (tx) => {
     await tx`select pg_advisory_xact_lock(hashtext(${`tf-handoff:${actor.projectId}:${dedupeKey}`}))`;
@@ -86,7 +90,7 @@ export async function createHandoffForProject(
       values (${id}, ${actor.projectId}, ${actor.keyId}, ${dedupeKey}, ${configCiphertext}, ${generated.tokenHash}, ${tokenCiphertext}, now() + interval '7 days')
       returning *
     `;
-    await tx`insert into tf_events (event_key, event_name, project_id, key_id, handoff_id, environment) values (${`handoff.created:${id}`}, 'handoff.created', ${actor.projectId}, ${actor.keyId}, ${id}, ${actor.environment}) on conflict (event_key) do nothing`;
+    await tx`insert into tf_events (event_key, event_name, project_id, key_id, handoff_id, environment, surface, client_sdk_name, client_sdk_version) values (${`handoff.created:${id}`}, 'handoff.created', ${actor.projectId}, ${actor.keyId}, ${id}, ${actor.environment}, ${event.surface}, ${event.client?.name ?? null}, ${event.client?.version ?? null}) on conflict (event_key) do nothing`;
     return { value: createdResponse(row, input.baseUrl, generated.token) };
   });
   if ("error" in outcome) throw outcome.error;
@@ -113,7 +117,8 @@ export async function getHandoff(key: AuthenticatedProjectKey, id: string) {
   return { id: row.id, projectId: row.project_id, status: row.status, createdAt: iso(row.created_at), expiresAt: iso(row.invite_expires_at), completedAt: row.completed_at ? iso(row.completed_at) : null, resultExpiresAt: row.result_expires_at ? iso(row.result_expires_at) : null };
 }
 
-export async function getHandoffResult(key: AuthenticatedProjectKey, id: string): Promise<HostedAudioformSessionResult> {
+export async function getHandoffResult(key: AuthenticatedProjectKey, id: string, eventContext?: PlatformEventContext): Promise<HostedAudioformSessionResult> {
+  const event = normalizedPlatformEventContext(eventContext);
   const sql = platformDatabase();
   const outcome = await sql.begin(async (tx) => {
     const [original] = await tx<HandoffRow[]>`select * from tf_handoffs where id=${id} and project_id=${key.projectId} for update`;
@@ -131,7 +136,8 @@ export async function getHandoffResult(key: AuthenticatedProjectKey, id: string)
     if (!original.config_ciphertext || !original.result_ciphertext || !original.completed_at || !original.mode) throw new Error("Completed handoff data is unavailable.");
     const config = decryptPlatformData<AudioformConfig>(original.config_ciphertext, CONFIG_AAD(id));
     const values = decryptPlatformData<AudioformFieldMap>(original.result_ciphertext, RESULT_AAD(id));
-    await tx`insert into tf_events (event_key, event_name, project_id, key_id, handoff_id, environment) values (${`handoff.result_retrieved:${id}`}, 'handoff.result_retrieved', ${key.projectId}, ${key.keyId}, ${id}, ${key.environment}) on conflict (event_key) do nothing`;
+    await tx`insert into tf_events (event_key, event_name, project_id, key_id, handoff_id, environment, surface, client_sdk_name, client_sdk_version) values (${`handoff.result_retrieved:${id}`}, 'handoff.result_retrieved', ${key.projectId}, ${key.keyId}, ${id}, ${key.environment}, ${event.surface}, ${event.client?.name ?? null}, ${event.client?.version ?? null}) on conflict (event_key) do nothing`;
+    await tx`update tf_projects set first_result_retrieved_at=coalesce(first_result_retrieved_at,now()) where id=${key.projectId}`;
     const completion = getCompletion(config, values);
     return { value: { schemaVersion: "1.0" as const, formId: config.id, sessionId: id, status: "completed" as const, completion, currentPrompt: null, fields: values, transcript: [], summary: "", metadata: { model: original.mode === "text" ? "local-text" : "client-managed-voice", voice: original.mode === "text" ? "none" : "client-managed", startedAt: iso(original.created_at), completedAt: iso(original.completed_at), mode: original.mode } } };
   });
@@ -139,14 +145,15 @@ export async function getHandoffResult(key: AuthenticatedProjectKey, id: string)
   return outcome.value;
 }
 
-export async function deleteHandoff(key: AuthenticatedProjectKey, id: string) {
+export async function deleteHandoff(key: AuthenticatedProjectKey, id: string, eventContext?: PlatformEventContext) {
+  const event = normalizedPlatformEventContext(eventContext);
   return platformDatabase().begin(async (tx) => {
     const [existing] = await tx<{ status: HostedHandoffStatus }[]>`select status from tf_handoffs where id=${id} and project_id=${key.projectId} for update`;
     if (!existing) throw new PlatformError("not_found", 404, "Handoff not found.");
     if (existing.status === "deleted") return { id, deleted: true as const };
     const [row] = await tx<{ id: string }[]>`update tf_handoffs set status='deleted', config_ciphertext=null, respondent_token_hash=null, respondent_token_ciphertext=null, result_ciphertext=null, response_fingerprint=null, deleted_at=coalesce(deleted_at,now()) where id=${id} and project_id=${key.projectId} and status <> 'deleted' returning id`;
     if (!row) throw new PlatformError("not_found", 404, "Handoff not found.");
-    await tx`insert into tf_events (event_key,event_name,project_id,key_id,handoff_id,environment) values (${`handoff.deleted:${id}`},'handoff.deleted',${key.projectId},${key.keyId},${id},${key.environment}) on conflict(event_key) do nothing`;
+    await tx`insert into tf_events (event_key,event_name,project_id,key_id,handoff_id,environment,surface,client_sdk_name,client_sdk_version) values (${`handoff.deleted:${id}`},'handoff.deleted',${key.projectId},${key.keyId},${id},${key.environment},${event.surface},${event.client?.name ?? null},${event.client?.version ?? null}) on conflict(event_key) do nothing`;
     return { id, deleted: true as const };
   });
 }
@@ -164,13 +171,33 @@ export async function authenticateRespondentHandoff(handoffId: string, token: st
   return { scopeKind: "handoff" as const, scopeId: handoffId, actorKey: `respondent:${createHash("sha256").update(token).digest("base64url")}`, projectId: row.project_id, environment: record.environment, row };
 }
 
-export async function getRespondentHandoff(id: string, token: string): Promise<RespondentHandoff> {
-  const auth = await authenticateRespondentHandoff(id, token);
-  if (!auth.row.config_ciphertext) throw new PlatformError("gone", 410, "Handoff content is no longer available.");
-  return { id, config: decryptPlatformData<AudioformConfig>(auth.row.config_ciphertext, CONFIG_AAD(id)), status: auth.row.status, expiresAt: iso(auth.row.invite_expires_at) };
+export async function getRespondentHandoff(id: string, token: string, eventContext?: PlatformEventContext): Promise<RespondentHandoff> {
+  const event = normalizedPlatformEventContext(eventContext);
+  const outcome = await platformDatabase().begin(async (tx) => {
+    const [row] = await tx<(Pick<HandoffRow, "id" | "project_id" | "respondent_token_hash" | "config_ciphertext" | "status" | "invite_expires_at" | "result_expires_at"> & { environment: ProjectEnvironment })[]>`
+      select h.id,h.project_id,h.respondent_token_hash,h.config_ciphertext,h.status,h.invite_expires_at,h.result_expires_at,p.environment
+      from tf_handoffs h join tf_projects p on p.id=h.project_id where h.id=${id} for update of h
+    `;
+    if (!row || !row.respondent_token_hash) throw new PlatformError("invalid_respondent_token", 401, "Invalid respondent token.");
+    const digest = hashSecret(token); const stored = Buffer.from(row.respondent_token_hash);
+    if (stored.length !== digest.length || !timingSafeEqual(stored, digest)) throw new PlatformError("invalid_respondent_token", 401, "Invalid respondent token.");
+    if (row.status === "deleted") throw new PlatformError("not_found", 404, "Handoff not found.");
+    const cutoff = row.status === "pending" ? row.invite_expires_at : row.result_expires_at;
+    if ((row.status === "pending" || row.status === "completed") && cutoff && new Date(cutoff).getTime() <= Date.now()) {
+      await tx`update tf_handoffs set status='expired',config_ciphertext=null,respondent_token_hash=null,respondent_token_ciphertext=null,result_ciphertext=null,response_fingerprint=null where id=${id}`;
+      return { error: new PlatformError("expired", 410, "Handoff has expired.") };
+    }
+    if (row.status === "expired" || !row.config_ciphertext) return { error: new PlatformError("gone", 410, "Handoff content is no longer available.") };
+    const config = decryptPlatformData<AudioformConfig>(row.config_ciphertext, CONFIG_AAD(id));
+    await tx`insert into tf_events(event_key,event_name,project_id,key_id,handoff_id,environment,surface,client_sdk_name,client_sdk_version) values (${`handoff.opened:${id}`},'handoff.opened',${row.project_id},null,${id},${row.environment},${event.surface},${event.client?.name ?? null},${event.client?.version ?? null}) on conflict(event_key) do nothing`;
+    return { value: { id, config, status: row.status, expiresAt: iso(row.invite_expires_at) } };
+  });
+  if ("error" in outcome) throw outcome.error;
+  return outcome.value;
 }
 
-export async function submitRespondentHandoff(id: string, token: string, input: unknown) {
+export async function submitRespondentHandoff(id: string, token: string, input: unknown, eventContext?: PlatformEventContext) {
+  const event = normalizedPlatformEventContext(eventContext);
   const sql = platformDatabase();
   const outcome = await sql.begin(async (tx) => {
     const [row] = await tx<(HandoffRow & { environment: ProjectEnvironment })[]>`select h.*,p.environment from tf_handoffs h join tf_projects p on p.id=h.project_id where h.id=${id} for update of h`;
@@ -196,7 +223,7 @@ export async function submitRespondentHandoff(id: string, token: string, input: 
     }
     const resultCiphertext = encryptPlatformData(submission.values, RESULT_AAD(id));
     const [completed] = await tx<{ completed_at: Date | string }[]>`update tf_handoffs set status='completed',result_ciphertext=${resultCiphertext},response_fingerprint=${fingerprint},mode=${submission.mode},completed_at=now(),result_expires_at=now()+interval '7 days' where id=${id} returning completed_at`;
-    await tx`insert into tf_events(event_key,event_name,project_id,key_id,handoff_id,environment) values (${`handoff.completed:${id}`},'handoff.completed',${row.project_id},${row.created_by_key_id},${id},${row.environment}) on conflict(event_key) do nothing`;
+    await tx`insert into tf_events(event_key,event_name,project_id,key_id,handoff_id,environment,surface,client_sdk_name,client_sdk_version) values (${`handoff.completed:${id}`},'handoff.completed',${row.project_id},${row.created_by_key_id},${id},${row.environment},${event.surface},${event.client?.name ?? null},${event.client?.version ?? null}) on conflict(event_key) do nothing`;
     return { value: { id, status: "completed" as const, completedAt: iso(completed.completed_at) } };
   });
   if ("error" in outcome) throw outcome.error;
