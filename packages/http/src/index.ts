@@ -243,69 +243,79 @@ export function deleteSession(sessionId: string, ownerId: string, options: Sessi
   return sessions.delete(sessionId);
 }
 
-type OpenAiClientSecretResponse = {
-  value?: string;
-  client_secret?: { value?: string; expires_at?: string | number | null };
-  expires_at?: string | number | null;
-  error?: { message?: string };
+type RealtimeCallOptions = {
+  apiKey: string;
+  safetyIdentifier: string;
+  sdp: string;
+  model: string;
+  voice: string;
+  idempotencyKey: string;
 };
 
-export async function createRealtimeBootstrap(config: AudioformConfig, apiKey: string, safetyIdentifier: string) {
-  const model = config.realtime?.model?.trim() || process.env.OPENAI_REALTIME_MODEL?.trim() || "gpt-realtime-2.1";
-  const voice = config.realtime?.voice?.trim() || process.env.OPENAI_REALTIME_VOICE?.trim() || "marin";
+export function buildRealtimeSessionConfig(config: AudioformConfig, model: string, voice: string) {
+  return {
+    type: "realtime",
+    model,
+    output_modalities: ["audio"],
+    max_output_tokens: 512,
+    reasoning: { effort: "low" },
+    instructions: buildRealtimeInstructions(config),
+    tool_choice: "auto",
+    truncation: {
+      type: "retention_ratio",
+      retention_ratio: 0.8,
+      token_limits: { post_instructions: 4_000 },
+    },
+    audio: {
+      input: {
+        noise_reduction: { type: "near_field" },
+        turn_detection: { type: "server_vad" },
+        transcription: { model: "gpt-4o-mini-transcribe" },
+      },
+      output: { voice },
+    },
+    tools: [buildRealtimeTool(config)],
+  };
+}
 
-  const openAiResponse = await fetch("https://api.openai.com/v1/realtime/client_secrets", {
+export async function createRealtimeCall(config: AudioformConfig, options: RealtimeCallOptions) {
+  const form = new FormData();
+  form.set("sdp", options.sdp);
+  form.set("session", JSON.stringify(buildRealtimeSessionConfig(config, options.model, options.voice)));
+  const openAiResponse = await fetch("https://api.openai.com/v1/realtime/calls", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-      "OpenAI-Safety-Identifier": safetyIdentifier,
+      Authorization: `Bearer ${options.apiKey}`,
+      "OpenAI-Safety-Identifier": options.safetyIdentifier,
+      "Idempotency-Key": options.idempotencyKey,
     },
-    body: JSON.stringify({
-      session: {
-        type: "realtime",
-        model,
-        output_modalities: ["audio"],
-        reasoning: {
-          effort: "low",
-        },
-        instructions: buildRealtimeInstructions(config),
-        tool_choice: "auto",
-        audio: {
-          input: {
-            noise_reduction: {
-              type: "near_field",
-            },
-            turn_detection: {
-              type: "server_vad",
-            },
-            transcription: {
-              model: "gpt-4o-mini-transcribe",
-            },
-          },
-          output: {
-            voice,
-          },
-        },
-        tools: [buildRealtimeTool(config)],
-      },
-    }),
+    body: form,
     cache: "no-store",
+    signal: AbortSignal.timeout(15_000),
   });
-
-  const payload = (await openAiResponse.json().catch(() => ({}))) as OpenAiClientSecretResponse;
-  const clientSecret = payload.value ?? payload.client_secret?.value ?? null;
-
-  if (!openAiResponse.ok || !clientSecret) {
-    throw new Error(payload.error?.message ?? "OpenAI Realtime did not return a client secret.");
+  const answerSdp = await openAiResponse.text();
+  if (!openAiResponse.ok) throw new Error("OpenAI Realtime rejected the server-controlled call.");
+  const location = openAiResponse.headers.get("location");
+  const callId = location?.split("/").filter(Boolean).pop() ?? "";
+  if (!/^rtc_[A-Za-z0-9_-]+$/.test(callId) || !answerSdp.startsWith("v=0")) {
+    throw new Error("OpenAI Realtime returned an invalid call response.");
   }
-
   return {
-    ok: true,
-    clientSecret,
-    model,
-    voice,
+    answerSdp,
+    callId,
+    model: options.model,
+    voice: options.voice,
     toolName: AUDIOFORM_REALTIME_TOOL_NAME,
-    expiresAt: payload.client_secret?.expires_at ?? payload.expires_at ?? null,
   };
+}
+
+export async function hangupRealtimeCall(callId: string, apiKey: string) {
+  if (!/^rtc_[A-Za-z0-9_-]+$/.test(callId)) throw new Error("Invalid Realtime call id.");
+  const response = await fetch(`https://api.openai.com/v1/realtime/calls/${encodeURIComponent(callId)}/hangup`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}` },
+    cache: "no-store",
+    signal: AbortSignal.timeout(8_000),
+  });
+  return response.ok;
 }

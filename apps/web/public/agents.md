@@ -1,12 +1,13 @@
 # Talkform — Agent Onboarding
 
-Talkform turns any form into a live audio interview. It asks questions aloud in the browser (or accepts typed answers), captures structured values into the form's fields, and exports clean JSON for apps, workflows, and agents.
+Talkform turns any form into a guided voice or text interview. It asks questions aloud when voice is available (or accepts typed answers), captures structured values into the form's fields, and exports clean JSON for apps, workflows, and agents.
 
 ## Quick orientation
 
 - Home: https://talkform.ai/
 - Live demo (voice or text interview): https://talkform.ai/app
 - Import a public form into an editable draft: https://talkform.ai/import
+- Create a free project for hosted handoffs: https://talkform.ai/dashboard
 - Docs: https://talkform.ai/docs (getting started, configuration, React, HTTP API, CLI, MCP)
 - FAQ: https://talkform.ai/faq
 - LLM site map: https://talkform.ai/llms.txt
@@ -20,6 +21,9 @@ Talkform turns any form into a live audio interview. It asks questions aloud in 
 - Run the browser demo at `/app` and answer the interview questions by voice or text.
 - Import a **public** form URL at `/import`, review the extracted draft, and launch a preview.
 - Export session results as JSON or Markdown after the user reviews them.
+- Use the free hosted workflow for up to 100 text handoffs per day per project. Respondent links last 7 days and completed results remain available for 7 days. Voice is optional under shared limits.
+- For machine handoffs, use the project Bearer key from `/dashboard`, send an idempotency key to `talkform.create_handoff`, and poll `talkform.get_result` every 10 seconds or slower. Pending is `409`; expired is `410`; webhook delivery is unavailable.
+- Hosted results include reviewed structured values and response mode. They do not include a retained transcript or generated summary.
 
 ## What agents must not do
 

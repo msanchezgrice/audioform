@@ -1,3 +1,5 @@
+import type { CaptureResult } from "posthog-js";
+
 const ALLOWED_EVENTS = new Set([
   "checkout_failed",
   "checkout_started",
@@ -65,6 +67,34 @@ export function telemetryAllowed(
     windowDoNotTrack !== "1" &&
     navigatorGlobalPrivacyControl !== true &&
     windowGlobalPrivacyControl !== true;
+}
+
+function isRespondentPath(pathname: string) {
+  return pathname === "/respond" || pathname.startsWith("/respond/");
+}
+
+function scrubUrlProperty(value: unknown) {
+  if (typeof value !== "string") return null;
+  try {
+    const parsed = new URL(value, "https://talkform.ai");
+    if (isRespondentPath(parsed.pathname) || parsed.hash || parsed.searchParams.has("token")) return null;
+    return `${parsed.origin}${parsed.pathname}`;
+  } catch {
+    return /\/respond(?:\/|$)|#token(?:=|&|$)|[?&]token=/i.test(value) ? null : value;
+  }
+}
+
+/** Drop SDK-generated events on respondent pages and remove bearer-bearing URL properties. */
+export function filterRespondentAnalyticsEvent(event: CaptureResult | null, pathname: string, blocked: boolean) {
+  if (!event || blocked || isRespondentPath(pathname)) return null;
+  const properties = { ...event.properties };
+  for (const [key, value] of Object.entries(properties)) {
+    if (!/(?:url|referrer|referer|path)/i.test(key)) continue;
+    const scrubbed = scrubUrlProperty(value);
+    if (scrubbed === null) delete properties[key];
+    else properties[key] = scrubbed;
+  }
+  return { ...event, properties };
 }
 
 export function analyticsEventFromCustomEvent(value: unknown): {

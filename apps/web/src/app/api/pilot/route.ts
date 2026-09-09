@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { createPilotRequest } from "../../../lib/billing/database";
 import { parsePilotRequest } from "../../../lib/pilot";
-import { pilotBillingReadiness } from "../billing/checkout/billing";
 import { hasAllowedOrigin, readBoundedJson } from "../_lib/request-security";
 
 export const runtime = "nodejs";
@@ -24,7 +23,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       ok: true,
       requestId: pilot.id,
-      checkoutAvailable: pilotBillingReadiness(process.env).ready,
+      checkoutAvailable: false,
     }, { status: 201, headers: { "cache-control": "no-store" } });
   } catch (error) {
     console.error("Talkform pilot request failed", {

@@ -79,11 +79,11 @@ export function PrimaryCta() {
   return (
     <aside className={styles.ctaBand}>
       <div>
-        <h2>Test a guided interview</h2>
-        <p>Try the browser demo or import a public form into an editable draft.</p>
+        <h2>Start a free project</h2>
+        <p>Create bounded hosted text handoffs, with optional voice under shared limits.</p>
       </div>
       <div className={styles.actions}>
-        <Link href="/app" className={styles.primaryButton}>Try the demo</Link>
+        <Link href="/dashboard" className={styles.primaryButton} data-agent-action="get-started-free">Get started free</Link>
         <Link href="/import" className={styles.secondaryButton}>Import a form</Link>
       </div>
     </aside>

@@ -3,7 +3,8 @@ import test from "node:test";
 import { LEAD_GENERATION_TEMPLATE } from "@talkform/core";
 import {
   createConfiguredSession,
-  createRealtimeBootstrap,
+  buildRealtimeSessionConfig,
+  createRealtimeCall,
   exportSession,
   getSessionResult,
   listSessions,
@@ -155,17 +156,18 @@ test("server corrections clear typed values explicitly and reject unknown field 
   );
 });
 
-test("Realtime client secrets use the current voice model, low reasoning, and a safety identifier", async () => {
+test("Realtime calls use server-owned SDP exchange with fixed bounded configuration", async () => {
   const originalFetch = globalThis.fetch;
   let capturedHeaders: Headers | undefined;
   let capturedBody: Record<string, any> | undefined;
 
   globalThis.fetch = async (_input, init) => {
     capturedHeaders = new Headers(init?.headers);
-    capturedBody = JSON.parse(String(init?.body));
-    return new Response(JSON.stringify({ value: "ek_test", expires_at: 123 }), {
+    const form = init?.body as FormData;
+    capturedBody = JSON.parse(String(form.get("session")));
+    return new Response("v=0\\r\\no=- test", {
       status: 200,
-      headers: { "content-type": "application/json" },
+      headers: { location: "/v1/realtime/calls/rtc_test" },
     });
   };
 
@@ -174,13 +176,27 @@ test("Realtime client secrets use the current voice model, low reasoning, and a 
       ...LEAD_GENERATION_TEMPLATE,
       realtime: { voice: "marin" },
     };
-    const result = await createRealtimeBootstrap(config, "api-key", "safety_hash_abc123");
+    const result = await createRealtimeCall(config, {
+      apiKey: "api-key", safetyIdentifier: "safety_hash_abc123", sdp: "v=0\\r\\no=- offer",
+      model: "gpt-realtime-2.1-mini", voice: "marin", idempotencyKey: "lease-id",
+    });
 
-    assert.equal(result.model, "gpt-realtime-2.1");
+    assert.equal(result.callId, "rtc_test");
     assert.equal(capturedHeaders?.get("OpenAI-Safety-Identifier"), "safety_hash_abc123");
-    assert.equal(capturedBody?.session?.model, "gpt-realtime-2.1");
-    assert.deepEqual(capturedBody?.session?.reasoning, { effort: "low" });
+    assert.equal(capturedHeaders?.get("Idempotency-Key"), "lease-id");
+    assert.equal(capturedBody?.model, "gpt-realtime-2.1-mini");
+    assert.equal(capturedBody?.max_output_tokens, 512);
+    assert.deepEqual(capturedBody?.reasoning, { effort: "low" });
   } finally {
     globalThis.fetch = originalFetch;
   }
+});
+
+test("Realtime session config ignores config model overrides", () => {
+  const config = { ...LEAD_GENERATION_TEMPLATE, realtime: { model: "expensive-model", voice: "echo" } };
+  const session = buildRealtimeSessionConfig(config, "gpt-realtime-2.1-mini", "marin");
+  assert.equal(session.model, "gpt-realtime-2.1-mini");
+  assert.deepEqual(session.truncation, {
+    type: "retention_ratio", retention_ratio: 0.8, token_limits: { post_instructions: 4_000 },
+  });
 });

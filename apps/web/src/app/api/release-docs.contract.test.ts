@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import { audioformConfigSchema } from "@talkform/core";
 
 function source(pathname: string) {
   return readFileSync(pathname, "utf8");
@@ -23,6 +24,14 @@ test("production docs state the hosted API boundary and explicit opt-ins", () =>
   assert.match(gettingStarted, /TALKFORM_API_TOKEN/);
 });
 
+test("the hosted HTTP example is valid AudioformConfig JSON", () => {
+  const httpDocs = source("content/docs/http-api.md");
+  const fenced = /```json\s*([\s\S]*?)\s*```/.exec(httpDocs)?.[1];
+  assert.ok(fenced, "HTTP docs must include a JSON request example");
+  const parsed = JSON.parse(fenced) as { config?: unknown };
+  assert.ok(audioformConfigSchema.safeParse(parsed.config).success, "HTTP example config must match the core schema");
+});
+
 test("CLI documents bearer auth while MCP stays within its local schema and template boundary", () => {
   const cliDocs = source("content/docs/cli.md");
   const mcpDocs = source("content/docs/mcp.md");
@@ -31,6 +40,7 @@ test("CLI documents bearer auth while MCP stays within its local schema and temp
   assert.match(cliDocs, /TALKFORM_API_TOKEN/);
   assert.match(mcpDocs, /talkform:\/\/templates/);
   assert.match(mcpDocs, /local schema|local config/i);
+  assert.doesNotMatch(mcpDocs, /can be limited to|least privilege needed/i);
   assert.doesNotMatch(mcpDocs, /audioform\.(?:create_session|get_session|export_session|list_exports)/);
   assert.doesNotMatch(mcpDocs, /coordinates browser-driven sessions/i);
 });

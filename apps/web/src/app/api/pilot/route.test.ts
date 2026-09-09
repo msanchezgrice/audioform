@@ -19,7 +19,7 @@ test("pilot mutations reject requests without a same-origin browser origin", asy
   }));
 
   assert.equal(requestResponse.status, 403);
-  assert.equal(checkoutResponse.status, 403);
+  assert.equal(checkoutResponse.status, 410);
 });
 
 test("pilot payments use durable request and Checkout records", () => {
@@ -37,4 +37,10 @@ test("pilot payments use durable request and Checkout records", () => {
     "utf8",
   );
   assert.match(migrationRunner, /pilot_requests/, "migration verification must read back pilot_requests");
+});
+
+test("new pilot checkout creation is disabled while historical billing routes remain present", () => {
+  const checkoutRoute = readFileSync(path.resolve(process.cwd(), "apps/web/src/app/api/pilot/checkout/route.ts"), "utf8");
+  assert.match(checkoutRoute, /status:\s*410/);
+  assert.match(checkoutRoute, /Talkform is free/i);
 });

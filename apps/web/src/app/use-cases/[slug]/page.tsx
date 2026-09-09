@@ -55,11 +55,11 @@ export default async function UseCasePage({ params }: { params: Promise<{ slug: 
       <PrimaryCta />
       <aside className={styles.ctaBand}>
         <div>
-          <h2>Test this use case in a measured pilot</h2>
-          <p>Start with one form, one workflow owner, and an agreed definition of a complete result.</p>
+          <h2>Try this workflow free</h2>
+          <p>Start a project, create bounded text handoffs, and add optional voice under shared limits.</p>
         </div>
         <div className={styles.actions}>
-          <Link href="/pilot" className={styles.primaryButton} data-agent-action="request-pilot">Request a guided pilot</Link>
+          <Link href="/dashboard" className={styles.primaryButton} data-agent-action="get-started-free">Get started free</Link>
           <Link href="/import" className={styles.secondaryButton} data-agent-action="import-form">Convert a public form</Link>
         </div>
       </aside>

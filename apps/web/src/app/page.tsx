@@ -9,7 +9,7 @@ const homeFaqs = [
   { question: "What does Talkform do today?", answer: "Talkform can turn supported fields from a public form URL into an editable draft, run a guided browser voice or text interview, and export structured JSON." },
   { question: "Is microphone access required?", answer: "No. Typing is available without a realtime audio connection and stays in your browser until export. A text-only deployment never requests microphone permission." },
   { question: "Which form providers can Talkform import?", answer: "The importer recognizes common patterns from Typeform, Google Forms, Jotform, and HubSpot public forms. Complex logic, uploads, payments, widgets, restricted forms, and provider automation may require manual work." },
-  { question: "How much does Talkform cost?", answer: "The browser demo and local developer tools are free. The Pro launch plan is $29 per month or $290 per year for 100 voice minutes and 100 hosted handoffs, with hard limits and no automatic overages." },
+  { question: "How much does Talkform cost?", answer: "Talkform is free for up to 100 hosted text handoffs per day per project. Respondent links and completed results are available for 7 days; voice is optional under shared limits." },
 ];
 
 const sampleResult = {
@@ -55,10 +55,13 @@ export default function HomePage() {
             and exports clean JSON for your apps, workflows, and agents.
           </p>
           <div className={styles.heroActions}>
-            <Link href="/app" className={styles.primaryAction} data-agent-action="try-demo" data-testid="cta-try-demo">
+            <Link href="/dashboard" className={styles.primaryAction} data-agent-action="get-started-free" data-testid="cta-get-started-free">
+              Get started free
+            </Link>
+            <Link href="/app" className={styles.secondaryAction} data-agent-action="try-demo" data-testid="cta-try-demo">
               Try the demo
             </Link>
-            <Link href="/import" className={styles.secondaryAction} data-agent-action="import-form" data-testid="cta-import-form">
+            <Link href="/import" className={styles.ghostAction} data-agent-action="import-form" data-testid="cta-import-form">
               Import a form
             </Link>
             <Link href="/docs" className={styles.ghostAction} data-testid="cta-read-docs">
@@ -145,12 +148,12 @@ export default function HomePage() {
             <tr>
               <th scope="row">Duration</th>
               <td>Respondent reads and types each answer</td>
-              <td>Evaluate in a controlled pilot</td>
+              <td>Answer, review, and continue</td>
             </tr>
             <tr>
               <th scope="row">Completion</th>
               <td>Use as the measured baseline</td>
-              <td>Compare in an A/B test</td>
+              <td>Measure what people complete</td>
             </tr>
           </tbody>
         </table>
@@ -260,9 +263,11 @@ export default function HomePage() {
         <article className={styles.outputCard}>
           <h3>Hosted API boundary</h3>
           <p>
-            Transient session APIs and public Realtime issuance are disabled in hosted production by default.
-            Enable them only after adding a durable session store, a distributed rate limiter, and server authentication;
-            the checked-in process-local implementations are for development and controlled evaluation.
+            Hosted text handoffs are bounded per project, with 7-day respondent links and 7-day completed-result access.
+            Voice is optional under shared limits. The public demo remains browser-local, and availability can vary while the hosted workflow matures.
+          </p>
+          <p className={styles.sectionIntro}>
+            Legacy process-local session routes are disabled in hosted production by default. Enabling those reference routes requires a durable session store, a distributed rate limit, and server authentication.
           </p>
         </article>
       </section>

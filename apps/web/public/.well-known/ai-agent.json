@@ -1,6 +1,6 @@
 {
   "name": "Talkform",
-  "description": "Talkform turns any form into a live audio interview: it asks questions aloud in the browser, captures structured answers into form fields, and exports clean JSON for apps, workflows, and agents.",
+  "description": "Talkform lets agents collect reviewed human answers through project-scoped, expiring text handoff links with optional voice, then retrieve structured JSON.",
   "url": "https://talkform.ai",
   "version": "1.0.0",
   "agent_card": "https://talkform.ai/.well-known/agent-card.json",
@@ -13,12 +13,30 @@
     "https://talkform.ai/schemas/audioform-session-result.json"
   ],
   "contact": "support@talkform.ai",
+  "hosted_handoff": {
+    "create": "talkform.create_handoff",
+    "read": "talkform.get_handoff",
+    "result": "talkform.get_result",
+    "delete": "talkform.delete_handoff",
+    "authentication": "Authorization: Bearer <project key from /dashboard>",
+    "daily_text_limit": 100,
+    "respondent_link_days": 7,
+    "completed_result_days": 7,
+    "retention": "7-day respondent links and 7-day completed-result access",
+    "pending_result_status": 409,
+    "expired_result_status": 410,
+    "poll_interval_seconds": 10,
+    "webhooks": false,
+    "webhook_status": "No webhook delivery is implemented.",
+    "result_contents": "Reviewed structured values and response mode; no retained transcript or generated summary."
+  },
   "guardrails": {
     "allowed_actions": [
       "Read public pages, docs, blog posts, JSON schemas, and protocol files (llms.txt, agents.md, agent-card.json).",
       "Run the browser demo interview at /app using voice or text input.",
       "Import a public form URL at /import and review the extracted editable draft.",
-      "Launch a preview of an imported draft and export reviewed session results as JSON or Markdown."
+      "Launch a preview of an imported draft and export reviewed session results as JSON or Markdown.",
+      "Create a project-scoped hosted handoff with a project key, send the expiring respondent link, and retrieve the reviewed result."
     ],
     "disallowed_actions": [
       "Never submit the source form on a third-party provider; the importer reads public responder pages only.",

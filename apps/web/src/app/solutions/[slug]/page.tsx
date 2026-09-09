@@ -82,8 +82,8 @@ export default async function SolutionPage({ params }: { params: Promise<{ slug:
             eyebrow="38-second product walkthrough"
           />
           <div className={styles.actions}>
-            <Link href="/pilot" className={styles.primaryButton} data-agent-action="request-pilot">
-              Run one measured pilot
+            <Link href="/dashboard" className={styles.primaryButton} data-agent-action="get-started-free">
+              Get started free
             </Link>
             <Link href="/import" className={styles.secondaryButton} data-agent-action="import-form">
               Convert my public form

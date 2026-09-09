@@ -65,8 +65,9 @@ export default function UseCasesPage() {
             and returns reviewed, structured data for the workflow you already use.
           </p>
           <div className={styles.actions}>
-            <Link href="/app" className={styles.primaryButton}>Try a conversation</Link>
-            <Link href="/import" className={styles.secondaryButton}>Import a form</Link>
+            <Link href="/dashboard" className={styles.primaryButton} data-agent-action="get-started-free">Get started free</Link>
+            <Link href="/app" className={styles.secondaryButton} data-agent-action="try-demo">Try a conversation</Link>
+            <Link href="/import" className={styles.secondaryButton} data-agent-action="import-form">Import a form</Link>
           </div>
         </div>
 
@@ -169,7 +170,8 @@ export default function UseCasesPage() {
         <span className={styles.eyebrow}>The next form can be a conversation</span>
         <h2>Give people room to answer. Keep the data structured.</h2>
         <div className={styles.actions}>
-          <Link href="/app" className={styles.primaryButton}>Try Talkform</Link>
+          <Link href="/dashboard" className={styles.primaryButton} data-agent-action="get-started-free">Get started free</Link>
+          <Link href="/app" className={styles.secondaryButton} data-agent-action="try-demo">Try Talkform</Link>
           <Link href="/import" className={styles.secondaryButton}>Import your current form</Link>
         </div>
       </section>

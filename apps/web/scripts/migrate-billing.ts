@@ -87,7 +87,11 @@ async function main() {
     ) {
       throw new Error("Billing migration verification failed.");
     }
-    console.log("Billing schema is ready.");
+    for (const table of ["tf_projects", "tf_api_keys", "tf_project_daily_usage", "tf_handoffs", "tf_events", "tf_rate_limits", "cost_control_settings", "cost_reservations", "cost_usage_events"]) {
+      const [verified] = await sql<{ name: string | null }[]>`select to_regclass(${`public.${table}`})::text as name`;
+      if (verified.name !== table) throw new Error(`Platform migration verification failed for ${table}.`);
+    }
+    console.log("Billing and free agent platform schemas are ready.");
   } finally {
     await sql.end();
   }

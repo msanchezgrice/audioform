@@ -4,6 +4,8 @@ import { load, type Cheerio, type CheerioAPI } from "cheerio";
 import ipaddr from "ipaddr.js";
 import JSON5 from "json5";
 import { Agent, fetch as undiciFetch } from "undici";
+import { markReservationExposureUnknown, reserveCost, settleImportReservation, type CostIdentity } from "../cost/database";
+import { estimateImportMicrousd } from "../cost/policy";
 
 export type ImportProvider =
   | "typeform"
@@ -279,10 +281,10 @@ export function sourceToAudioformConfig(source: ImportedSourceForm): AudioformCo
   };
 }
 
-export async function buildImportSuggestion(url: string): Promise<ImportSuggestion> {
+export async function buildImportSuggestion(url: string, options: { costIdentity?: CostIdentity | (() => CostIdentity) } = {}): Promise<ImportSuggestion> {
   const source = await importFormFromUrl(url);
   const deterministic = sourceToAudioformConfig(source);
-  const suggestedConfig = await refineAudioformConfig(source, deterministic);
+  const suggestedConfig = await refineAudioformConfig(source, deterministic, options.costIdentity);
 
   return {
     ok: true,
@@ -1519,16 +1521,24 @@ function discoverEmbeddedUrls(sourceUrl: string, html: string) {
   return Array.from(discovered);
 }
 
-async function refineAudioformConfig(source: ImportedSourceForm, draft: AudioformConfig) {
+async function refineAudioformConfig(source: ImportedSourceForm, draft: AudioformConfig, costIdentity?: CostIdentity | (() => CostIdentity)) {
   if (!isImportAiRefinementEnabled(process.env.TALKFORM_ENABLE_IMPORT_AI_REFINEMENT)) {
     return draft;
   }
 
   const apiKey = process.env.OPENAI_API_KEY?.trim();
-  if (!apiKey) {
+  if (!apiKey || !costIdentity) {
     return draft;
   }
 
+  let budget: Awaited<ReturnType<typeof reserveCost>>;
+  try {
+    budget = await reserveCost("import_refinement", typeof costIdentity === "function" ? costIdentity() : costIdentity);
+  } catch {
+    return draft;
+  }
+  if (!budget.ok) return draft;
+  const reservationId = budget.reservation.id;
   try {
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -1537,7 +1547,8 @@ async function refineAudioformConfig(source: ImportedSourceForm, draft: Audiofor
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: process.env.OPENAI_IMPORT_MODEL?.trim() || "gpt-4.1-mini",
+        model: budget.policy.importModel,
+        max_completion_tokens: budget.policy.importMaxOutputTokens,
         response_format: { type: "json_object" },
         messages: [
           {
@@ -1551,7 +1562,7 @@ async function refineAudioformConfig(source: ImportedSourceForm, draft: Audiofor
               schema: "AudioformConfig",
               source,
               draft,
-            }),
+            }).slice(0, 32 * 1_024),
           },
         ],
       }),
@@ -1559,21 +1570,33 @@ async function refineAudioformConfig(source: ImportedSourceForm, draft: Audiofor
     });
 
     if (!response.ok) {
+      await markReservationExposureUnknown(reservationId);
       return draft;
     }
 
     const payload = (await response.json().catch(() => ({}))) as {
       choices?: Array<{ message?: { content?: string } }>;
+      usage?: { prompt_tokens?: number; completion_tokens?: number };
     };
     const content = payload.choices?.[0]?.message?.content;
     if (!content) {
+      await markReservationExposureUnknown(reservationId);
       return draft;
     }
+
+    const inputTokens = Number.isSafeInteger(payload.usage?.prompt_tokens) ? payload.usage!.prompt_tokens! : -1;
+    const outputTokens = Number.isSafeInteger(payload.usage?.completion_tokens) ? payload.usage!.completion_tokens! : -1;
+    if (inputTokens < 0 || outputTokens < 0) {
+      await markReservationExposureUnknown(reservationId);
+      return draft;
+    }
+    await settleImportReservation(reservationId, inputTokens, outputTokens, estimateImportMicrousd(inputTokens, outputTokens));
 
     const parsedJson = JSON.parse(content) as unknown;
     const parsed = audioformConfigSchema.safeParse(parsedJson);
     return parsed.success ? mergeRefinedCopy(draft, parsed.data) : draft;
   } catch {
+    await markReservationExposureUnknown(reservationId).catch(() => undefined);
     return draft;
   }
 }

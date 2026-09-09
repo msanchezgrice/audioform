@@ -8,6 +8,7 @@ import {
   readBoundedJson,
 } from "../../_lib/request-security";
 import { captureApiRequest } from "../../../../lib/server-analytics";
+import { costIdentityForRequest } from "../../../../lib/cost/database";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -42,7 +43,7 @@ async function handleImportPost(request: Request) {
       );
     }
 
-    const suggestion = await buildImportSuggestion(url);
+    const suggestion = await buildImportSuggestion(url, { costIdentity: () => costIdentityForRequest(request, owner) });
     return attachBrowserOwner(NextResponse.json(suggestion), request, owner);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to import the provided form URL.";

@@ -1,6 +1,6 @@
 {
   "name": "Talkform",
-  "description": "Talkform turns any form into a live audio interview. It asks questions aloud in the browser, captures structured answers into form fields, and exports clean JSON for apps, workflows, and agents.",
+  "description": "Talkform gives agents a project-scoped way to collect reviewed human answers through expiring text handoff links, with optional voice, and returns structured JSON.",
   "url": "https://talkform.ai",
   "version": "1.0.0",
   "provider": {
@@ -31,8 +31,14 @@
       "name": "Export structured results",
       "description": "Export a completed interview session as JSON matching the AudioformSessionResult schema, or as Markdown.",
       "tags": ["export", "json", "schema"]
+    },
+    {
+      "id": "hosted-handoff",
+      "name": "Create a hosted handoff",
+      "description": "With a project Bearer key, create an idempotent handoff, send a respondent a 7-day link, poll for a reviewed result, or delete the handoff.",
+      "tags": ["handoff", "json", "agent", "project"]
     }
   ],
   "documentationUrl": "https://talkform.ai/docs",
-  "note": "Informational web discovery profile only. Talkform does not currently expose an A2A JSON-RPC endpoint or hosted remote-agent session transport."
+  "note": "Informational discovery profile; it is not an A2A JSON-RPC endpoint. Hosted handoffs use an Authorization Bearer project key, have 7-day links and 7-day completed-result access, and provide no webhook delivery."
 }

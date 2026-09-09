@@ -23,6 +23,7 @@ const ALLOWED_PROPERTY_KEYS = new Set([
   "plan",
   "percent",
   "protocol_method",
+  "protocol_outcome",
   "provider",
   "request_id",
   "request_method",

@@ -1,17 +1,19 @@
 import posthog from "posthog-js";
 import {
   dispatchAnalyticsEvent,
+  filterRespondentAnalyticsEvent,
   searchAttributionFromUrl,
   telemetryAllowed,
 } from "./src/lib/analytics-client";
 
 const token = process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN?.trim();
+const isRespondentRoute = () => window.location.pathname === "/respond" || window.location.pathname.startsWith("/respond/");
 const analyticsEnabled = telemetryAllowed(
   navigator.doNotTrack,
   (window as Window & { doNotTrack?: string | null }).doNotTrack,
   (navigator as Navigator & { globalPrivacyControl?: boolean }).globalPrivacyControl,
   (window as Window & { globalPrivacyControl?: boolean }).globalPrivacyControl,
-);
+) && !isRespondentRoute();
 const ga4Capture = (event: string, properties: Record<string, string | number | boolean>) => {
   const gtag = (window as Window & { gtag?: (...args: unknown[]) => void }).gtag;
   gtag?.("event", event, { ...properties, site_id: "talkform.ai" });
@@ -27,6 +29,11 @@ if (analyticsEnabled && token) {
     disable_session_recording: true,
     persistence: "memory",
     respect_dnt: true,
+    before_send: (event) => filterRespondentAnalyticsEvent(
+      event,
+      window.location.pathname,
+      (window as Window & { __talkformAnalyticsBlocked?: boolean }).__talkformAnalyticsBlocked === true,
+    ),
     debug: process.env.NODE_ENV === "development",
   });
   posthog.register({ site_id: "talkform.ai", site_name: "Talkform" });
@@ -48,6 +55,7 @@ if (analyticsEnabled && token) {
 
 if (analyticsEnabled) {
   window.addEventListener("talkform:event", (event) => {
+    if (isRespondentRoute()) return;
     const detail = (event as CustomEvent<unknown>).detail;
     const dispatched = dispatchAnalyticsEvent(detail, {
       posthog: token ? (name, properties) => posthog.capture(name, properties) : undefined,
@@ -76,6 +84,7 @@ if (analyticsEnabled) {
   });
 
   window.addEventListener("talkform:identify", (event) => {
+    if (isRespondentRoute()) return;
     if (!token || !(event instanceof CustomEvent) || !event.detail || typeof event.detail !== "object") return;
     const userId = (event.detail as { userId?: unknown }).userId;
     if (typeof userId === "string" && /^user_[A-Za-z0-9]{8,}$/.test(userId)) {

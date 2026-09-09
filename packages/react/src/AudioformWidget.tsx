@@ -23,6 +23,7 @@ import {
   type AudioformFieldMap,
   type AudioformFieldValue,
   type AudioformSession,
+  type AudioformSessionResult,
   type TranscriptEntry,
   type TranscriptSpeaker,
 } from "@talkform/core";
@@ -44,13 +45,9 @@ type ConnectionState = "idle" | "connecting" | "live" | "ended" | "error";
 type InterviewMode = "unselected" | "voice" | "text";
 type SyncSource = "voice" | "typed" | "manual";
 
-type RealtimeBootstrapResponse = {
+type RealtimeLeaseResponse = {
   ok: boolean;
-  clientSecret?: string;
-  model?: string;
-  voice?: string;
-  expiresAt?: string | null;
-  error?: string;
+  lease: { id: string; model: string; voice: string; maxDurationSeconds: number; controlUrl: string; callUrl: string };
 };
 
 type StructuredUpdate = {
@@ -64,7 +61,7 @@ type CompletedPrompt = {
   fieldId: string;
 };
 
-type AudioformWidgetProps = {
+export type AudioformWidgetProps = {
   config: AudioformConfig;
   apiBasePath?: string;
   heading?: string;
@@ -72,6 +69,9 @@ type AudioformWidgetProps = {
   vendorUrl?: string;
   consumerMode?: boolean;
   voiceEnabled?: boolean;
+  onChange?: (result: AudioformSessionResult, context: { mode: "voice" | "text" }) => void;
+  onComplete?: (result: AudioformSessionResult, context: { mode: "voice" | "text" }) => void | Promise<void>;
+  realtimeHeaders?: Record<string, string>;
 };
 
 const MAX_TRANSCRIPT_TURNS = 40;
@@ -115,13 +115,15 @@ function getChangedFieldIds(previous: AudioformFieldMap, next: AudioformFieldMap
   });
 }
 
-async function postJson<T>(url: string, body: Record<string, unknown>, method = "POST") {
+async function postJson<T>(url: string, body: Record<string, unknown>, method = "POST", headers: Record<string, string> = {}) {
   const response = await fetch(url, {
     method,
     headers: {
       "content-type": "application/json",
       "cache-control": "no-store",
+      ...headers,
     },
+    credentials: "same-origin",
     body: JSON.stringify(body),
   });
 
@@ -149,11 +151,16 @@ export function AudioformWidget({
   vendorUrl = "",
   consumerMode = false,
   voiceEnabled = true,
+  onChange,
+  onComplete,
+  realtimeHeaders,
 }: AudioformWidgetProps) {
   const [connectionState, setConnectionState] = useState<ConnectionState>("idle");
   const [interviewMode, setInterviewMode] = useState<InterviewMode>("unselected");
   const [statusMessage, setStatusMessage] = useState("Ready to start a live Talkform session.");
   const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const [values, setValues] = useState<AudioformFieldMap>(() => createEmptyValues(config));
   const [summary, setSummary] = useState("");
   const [transcript, setTranscript] = useState<TranscriptEntry[]>([]);
@@ -172,6 +179,9 @@ export function AudioformWidget({
   const localStreamRef = useRef<MediaStream | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const connectionTokenRef = useRef(0);
+  const leaseRef = useRef<string | null>(null);
+  const controlRef = useRef<EventSource | null>(null);
+  const deadlineTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const valuesRef = useRef(values);
   const summaryRef = useRef(summary);
   const completedPromptTimeoutsRef = useRef<number[]>([]);
@@ -219,6 +229,12 @@ export function AudioformWidget({
   );
 
   const payloadPreview = useMemo(() => JSON.stringify(sessionResult, null, 2), [sessionResult]);
+
+  const onChangeRef = useRef(onChange);
+  useEffect(() => { onChangeRef.current = onChange; }, [onChange]);
+  useEffect(() => {
+    if (sessionId) onChangeRef.current?.(sessionResult, { mode: interviewMode === "voice" ? "voice" : "text" });
+  }, [sessionResult, sessionId, interviewMode]);
 
   useEffect(() => {
     valuesRef.current = values;
@@ -272,6 +288,13 @@ export function AudioformWidget({
 
   const teardownConnection = useCallback(() => {
     connectionTokenRef.current += 1;
+    controlRef.current?.close();
+    controlRef.current = null;
+    if (deadlineTimerRef.current) clearTimeout(deadlineTimerRef.current);
+    deadlineTimerRef.current = null;
+    const leaseId = leaseRef.current;
+    leaseRef.current = null;
+    if (leaseId) void fetch(`${apiBasePath}/realtime/${encodeURIComponent(leaseId)}`, { method: "DELETE", credentials: "same-origin", keepalive: true }).catch(() => undefined);
     teardownRealtimeResources({
       dataChannel: dataChannelRef.current,
       peerConnection: peerConnectionRef.current,
@@ -282,7 +305,7 @@ export function AudioformWidget({
     peerConnectionRef.current = null;
     localStreamRef.current = null;
     setWaitingForAssistant(false);
-  }, []);
+  }, [apiBasePath]);
 
   const closeConnection = useCallback((nextState: ConnectionState = "ended") => {
     teardownConnection();
@@ -359,7 +382,7 @@ export function AudioformWidget({
         return;
       }
 
-      if (type === "response.audio_transcript.done") {
+      if (type === "response.output_audio_transcript.done" || type === "response.audio_transcript.done") {
         const transcriptText = typeof event.transcript === "string" ? event.transcript : "";
         setCurrentHostQuestion(transcriptText.trim() || null);
         setWaitingForAssistant(false);
@@ -426,6 +449,7 @@ export function AudioformWidget({
   }, [teardownConnection]);
 
   function resetInterviewData() {
+    setSubmitted(false);
     setError(null);
     setLastStructuredUpdate(null);
     completedPromptTimeoutsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
@@ -455,7 +479,7 @@ export function AudioformWidget({
     setModel("local-text");
     setVoice("none");
     setConnectionState("live");
-    setStatusMessage("Text-only interview started. Your answers stay in this browser until you export them.");
+    setStatusMessage("Text interview started. Review your answers before sharing them.");
     emitTalkformEvent("interview_mode_selected", { mode: "text", formId: config.id });
     emitTalkformEvent("interview_started", { mode: "text", formId: config.id });
     emitTalkformEvent("session_connected", { mode: "text", formId: config.id });
@@ -482,6 +506,7 @@ export function AudioformWidget({
     emitTalkformEvent("interview_mode_selected", { mode: "voice", formId: config.id });
     emitTalkformEvent("interview_started", { mode: "voice", formId: config.id });
 
+    let stage = "microphone";
     try {
       if (!navigator.mediaDevices?.getUserMedia) {
         throw new Error("This browser does not support microphone access. Continue with typing instead.");
@@ -510,14 +535,33 @@ export function AudioformWidget({
       }
       localStreamRef.current = stream;
 
-      const bootstrapRequest = buildBootstrapRequest(config);
-      const bootstrap = await postJson<RealtimeBootstrapResponse>(`${apiBasePath}/realtime`, bootstrapRequest);
-      if (!bootstrap.clientSecret || !bootstrap.model) {
-        throw new Error("Realtime session did not return a client secret.");
+      stage = "lease";
+      const { lease } = await postJson<RealtimeLeaseResponse>(`${apiBasePath}/realtime/lease`, buildBootstrapRequest(config), "POST", realtimeHeaders);
+      if (connectionToken !== connectionTokenRef.current) {
+        void fetch(`${apiBasePath}/realtime/${encodeURIComponent(lease.id)}`, { method: "DELETE", credentials: "same-origin", keepalive: true });
+        return;
       }
-
-      setModel(bootstrap.model);
-      setVoice(bootstrap.voice ?? voice);
+      leaseRef.current = lease.id;
+      setModel(lease.model);
+      setVoice(lease.voice);
+      stage = "control";
+      const control = new EventSource(lease.controlUrl, { withCredentials: true });
+      controlRef.current = control;
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => { control.close(); reject(new Error("Voice monitoring could not connect. Continue with typing.")); }, 10_000);
+        control.addEventListener("ready", () => { clearTimeout(timeout); resolve(); }, { once: true });
+        control.onerror = () => { clearTimeout(timeout); reject(new Error("Voice monitoring disconnected. Continue with typing.")); };
+      });
+      if (connectionToken !== connectionTokenRef.current) return;
+      const stopFromServer = () => {
+        if (connectionToken !== connectionTokenRef.current) return;
+        closeConnection("ended");
+        setStatusMessage("The voice session ended. Your answers are still here; continue with typing or review them.");
+      };
+      control.onerror = stopFromServer;
+      control.addEventListener("ending", stopFromServer);
+      control.addEventListener("ended", stopFromServer);
+      deadlineTimerRef.current = setTimeout(stopFromServer, lease.maxDurationSeconds * 1000);
 
       const peerConnection = new RTCPeerConnection();
       peerConnectionRef.current = peerConnection;
@@ -584,20 +628,8 @@ export function AudioformWidget({
         return;
       }
 
-      const realtimeResponse = await fetch("https://api.openai.com/v1/realtime/calls", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${bootstrap.clientSecret}`,
-          "Content-Type": "application/sdp",
-        },
-        body: offer.sdp ?? "",
-      });
-
-      if (!realtimeResponse.ok) {
-        throw new Error((await realtimeResponse.text().catch(() => "")) || "Unable to establish the realtime audio session.");
-      }
-
-      const answerSdp = await realtimeResponse.text();
+      stage = "sdp";
+      const { answerSdp } = await postJson<{ ok: boolean; answerSdp: string }>(lease.callUrl, { sdp: offer.sdp ?? "", ...buildBootstrapRequest(config) });
       if (connectionToken !== connectionTokenRef.current || peerConnectionRef.current !== peerConnection) {
         return;
       }
@@ -625,7 +657,7 @@ export function AudioformWidget({
       const message = startError instanceof Error ? startError.message : "Unable to start the Talkform call.";
       setError(message);
       setStatusMessage(message);
-      emitTalkformEvent("session_failed", { mode: "voice", stage: "start", formId: config.id });
+      emitTalkformEvent("session_failed", { mode: "voice", stage, formId: config.id });
     }
   }
 
@@ -774,6 +806,22 @@ export function AudioformWidget({
     });
   }
 
+  async function submitReviewedAnswers() {
+    if (!onComplete || submitting || submitted || !sessionId || missingFieldIds.length || invalidFieldIds.length) return;
+    setSubmitting(true);
+    setError(null);
+    closeConnection("ended");
+    try {
+      await onComplete(sessionResult, { mode: interviewMode === "voice" ? "voice" : "text" });
+      setSubmitted(true);
+      setStatusMessage("Your reviewed answers have been submitted.");
+    } catch (submissionError) {
+      setError(submissionError instanceof Error ? submissionError.message : "Your answers were not submitted. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   const [transcriptOpen, setTranscriptOpen] = useState(false);
 
   const isLive = connectionState === "live" && interviewMode === "voice";
@@ -831,15 +879,19 @@ export function AudioformWidget({
                 <div className={styles.stepLabel}>Private by choice</div>
                 <h2 id="talkform-preflight-title" className={styles.promptQuestion}>Before you begin</h2>
                 <p className={styles.promptHint}>
-                  About a few minutes for {config.fields.length} questions. Choose how you would like to answer.
+                  Allow a few minutes for {config.fields.length} questions. Choose how you would like to answer.
                 </p>
-                {consumerMode ? (
+                {onComplete ? (
+                  <p className={styles.dataNotice}>
+                    Review your answers, then choose “Submit reviewed answers” to share them with the project that invited you. Voice, when available, sends audio to OpenAI; typing stays in this browser until you submit.
+                  </p>
+                ) : consumerMode ? (
                   <p className={styles.dataNotice}>
                     Speak or type — your answers stay in your browser until you choose to export them.
                   </p>
                 ) : (
                   <p className={styles.dataNotice}>
-                    <strong>Voice</strong> asks Talkform for a short-lived realtime token, then streams audio browser-to-OpenAI. Transcript, summary, and structured answers stay in your browser until export. <strong>Typing</strong> is browser-local too.
+                    <strong>Voice</strong> sends audio to OpenAI for the live conversation. Talkform limits the call duration and records usage totals. Your transcript, summary, and structured answers stay in your browser until export. <strong>Typing</strong> stays in your browser too.
                   </p>
                 )}
                 <p className={styles.consentLinks}>
@@ -864,17 +916,17 @@ export function AudioformWidget({
                 </div>
                 {!voiceEnabled && (
                   <p id="talkform-voice-unavailable" className={styles.dataNotice} role="status">
-                    This deployment is text-only. Continuing with typing never requests microphone access.
+                    Voice is unavailable right now. You can complete every question by typing.
                   </p>
                 )}
                 <details className={styles.preflightDetails}>
                   <summary>How your data is handled</summary>
                   <ul className={styles.preflightList}>
                     <li>When enabled, voice asks for microphone permission only after you choose it.</li>
-                    <li>Talkform issues the short-lived token; the live audio connection is browser-to-OpenAI.</li>
-                    <li>Transcript, summary, and structured answers stay browser-local until you export.</li>
+                    <li>Live audio goes to OpenAI. Talkform controls the call duration and records usage totals.</li>
+                    <li>{onComplete ? "Only your reviewed structured answers are submitted to the inviting project. The conversation transcript is not included." : "Transcript, summary, and structured answers stay in your browser until you export."}</li>
                     <li>You can switch to typing if permission or the live connection fails.</li>
-                    <li>You can review and correct every answer before exporting.</li>
+                    <li>You can review and correct every answer before {onComplete ? "submitting" : "exporting"}.</li>
                   </ul>
                 </details>
               </section>
@@ -884,8 +936,8 @@ export function AudioformWidget({
                   <section className={styles.completionPanel} aria-labelledby="talkform-completion-title">
                     <div className={styles.stepLabel}>Complete</div>
                     <h2 id="talkform-completion-title" className={styles.promptQuestion}>Your answers are ready</h2>
-                    <p className={styles.promptHint}>Review and correct the captured answers, then export them or turn your own form into a Talkform.</p>
-                    <div className={styles.completionActions}>
+                    <p className={styles.promptHint}>{onComplete ? "Review and correct your answers in the form, then choose Submit reviewed answers." : "Review and correct the captured answers, then export them or turn your own form into a Talkform."}</p>
+                    {!onComplete && <div className={styles.completionActions}>
                       <a
                         href="/import"
                         className={styles.primaryLink}
@@ -900,7 +952,7 @@ export function AudioformWidget({
                       >
                         Build with Talkform
                       </a>
-                    </div>
+                    </div>}
                   </section>
                 ) : (
                   <>
@@ -1158,6 +1210,14 @@ export function AudioformWidget({
         </div>
 
         <div className={styles.sidebarFooter}>
+          {onComplete && <div className={styles.exportRow}>
+            <button type="button" className={`${styles.btnExport} ${styles.btnExportPrimary}`}
+              onClick={() => void submitReviewedAnswers()}
+              disabled={!sessionId || missingFieldIds.length > 0 || invalidFieldIds.length > 0 || submitting || submitted}
+              data-agent-action="submit-reviewed-answers" data-testid="submit-reviewed-answers">
+              {submitted ? "Answers submitted" : submitting ? "Submitting…" : "Submit reviewed answers"}
+            </button>
+          </div>}
           <div className={styles.summaryBlock}>
             <span className={styles.summaryLabel}>Live summary</span>
             <span>{summary || "Answers will be summarized here as they come in."}</span>

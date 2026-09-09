@@ -1,0 +1,6 @@
+import { authenticateProjectKey } from "@/lib/platform/auth";
+import { deleteHandoff, getHandoff } from "@/lib/platform/handoffs";
+import { consumePlatformRateLimit, platformErrorResponse, platformJson, requireUuid } from "../../_lib/http";
+export const runtime = "nodejs";
+export async function GET(request:Request,{params}:{params:Promise<{handoffId:string}>}) { try { const key=await authenticateProjectKey(request,"handoffs:read"); await consumePlatformRateLimit(request,`handoffs:read:${key.keyId}`); const {handoffId}=await params; return platformJson(await getHandoff(key,requireUuid(handoffId))); } catch(error){ return platformErrorResponse(error); } }
+export async function DELETE(request:Request,{params}:{params:Promise<{handoffId:string}>}) { try { const key=await authenticateProjectKey(request,"handoffs:delete"); await consumePlatformRateLimit(request,`handoffs:delete:${key.keyId}`,60); const {handoffId}=await params; return platformJson(await deleteHandoff(key,requireUuid(handoffId))); } catch(error){ return platformErrorResponse(error); } }

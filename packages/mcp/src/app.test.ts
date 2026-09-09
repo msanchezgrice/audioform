@@ -126,10 +126,44 @@ test("Apps SDK discovery exposes only the three public tools with accurate metad
   }
 
   const prepareTool = tools.find((tool) => tool.name === "talkform.prepare_form");
+  assert.deepEqual(prepareTool?.inputSchema.required, ["title", "fields"]);
+  const schema = prepareTool?.inputSchema as unknown as { properties: { title: { maxLength: number }; fields: { maxItems: number; items: { properties: Record<string, unknown> } } } };
+  assert.equal(schema.properties.title.maxLength, PREPARE_FORM_LIMITS.maxTitleChars);
+  assert.equal(schema.properties.fields.maxItems, PREPARE_FORM_LIMITS.maxFields);
+  assert.ok(schema.properties.fields.items.properties.type);
   assert.equal(
     (prepareTool?._meta as { ui?: { resourceUri?: string } })?.ui?.resourceUri,
     TALKFORM_WIDGET_URI,
   );
+});
+
+test("hosted tools expose the full contract and return semantic service failures", async (t) => {
+  const calls: unknown[] = [];
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  const server = createTalkformMcpServer({ hosted: {
+    createHandoff: async (input) => { calls.push(input); return { id: "2d8b1a0a-5615-4bb5-a34e-12814cb144d8", respondentUrl: "https://www.talkform.ai/respond/example#token=example" }; },
+    getHandoff: async (id) => ({ id, status: "pending" }),
+    getResult: async () => { throw { publicMessage: "result_pending: No reviewed answers yet." }; },
+    deleteHandoff: async (id) => ({ id, deleted: true }),
+  } });
+  const client = new Client({ name: "hosted-tests", version: "1" });
+  t.after(async () => { await client.close(); await server.close(); });
+  await server.connect(serverTransport);
+  await client.connect(clientTransport);
+  const { tools } = await client.listTools();
+  const create = tools.find((tool) => tool.name === "talkform.create_handoff");
+  assert.deepEqual(create?.inputSchema.required, ["config", "idempotencyKey"]);
+  const configSchema = (create?.inputSchema.properties as Record<string, { required?: string[] }>).config;
+  assert.ok(configSchema.required?.includes("fields"));
+  const created = await client.callTool({ name: "talkform.create_handoff", arguments: { config: prepareTalkformDraft(validInput).draft, idempotencyKey: "test-request-123" } });
+  assert.equal(created.isError, undefined);
+  assert.equal(calls.length, 1);
+  const pending = await client.callTool({ name: "talkform.get_result", arguments: { id: "2d8b1a0a-5615-4bb5-a34e-12814cb144d8" } });
+  assert.equal(pending.isError, true);
+  assert.match(JSON.stringify(pending.content), /result_pending/);
+  const invalid = await client.callTool({ name: "talkform.create_handoff", arguments: {} });
+  assert.equal(invalid.isError, true);
+  assert.equal(calls.length, 1);
 });
 
 test("the draft widget resource uses the MCP Apps MIME type and a zero-egress CSP", async (t) => {

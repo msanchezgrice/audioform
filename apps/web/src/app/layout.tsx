@@ -54,11 +54,47 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
-        <script
-          src="https://analytics.ahrefs.com/analytics.js"
-          data-key="WTZ2mV2darTRiyE51Tb5hA"
-          async
-        />
+        <script dangerouslySetInnerHTML={{ __html: `(function () {
+          var isRespondent = function (path) { return path === '/respond' || path.indexOf('/respond/') === 0; };
+          var trackingAllowed = function () {
+            return navigator.doNotTrack !== '1' && window.doNotTrack !== '1' && navigator.globalPrivacyControl !== true && window.globalPrivacyControl !== true;
+          };
+          var routePath = function (url) {
+            try { return new URL(url || window.location.href, window.location.href).pathname; } catch (_) { return window.location.pathname; }
+          };
+          var updateRoute = function (path) {
+            var blocked = isRespondent(path || window.location.pathname);
+            window.__talkformRespondentRoute = blocked;
+            window.__talkformAnalyticsBlocked = blocked;
+            window.dispatchEvent(new CustomEvent('talkform:route-change', { detail: { respondent: blocked } }));
+          };
+          ['pushState', 'replaceState'].forEach(function (method) {
+            var original = window.history[method];
+            window.history[method] = function () {
+              var nextUrl = null;
+              try { nextUrl = arguments.length > 2 && arguments[2] ? new URL(arguments[2], window.location.href).href : null; } catch (_) {}
+              var nextPath = nextUrl ? routePath(nextUrl) : window.location.pathname;
+              if (isRespondent(nextPath) && !isRespondent(window.location.pathname) && nextUrl) {
+                updateRoute(nextPath);
+                window.location.assign(nextUrl);
+                return;
+              }
+              updateRoute(nextPath);
+              var result = original.apply(this, arguments);
+              updateRoute();
+              return result;
+            };
+          });
+          window.addEventListener('popstate', function () { updateRoute(); });
+          updateRoute();
+          if (window.__talkformRespondentRoute || !trackingAllowed()) return;
+          var script = document.createElement('script');
+          script.src = 'https://analytics.ahrefs.com/analytics.js';
+          script.dataset.key = 'WTZ2mV2darTRiyE51Tb5hA';
+          script.dataset.talkformAhrefs = 'true';
+          script.async = true;
+          document.head.appendChild(script);
+        })();` }} />
       </head>
       <body className={`${bodyFont.variable} ${displayFont.variable}`}>
         <TalkformGoogleAnalytics measurementId={process.env.NEXT_PUBLIC_TALKFORM_GA_MEASUREMENT_ID} />
@@ -83,7 +119,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   {item.label}
                 </Link>
               ))}
-              <Link href="/app" className="ctaNav" data-agent-action="try-demo" data-testid="nav-cta-try-demo">Try demo</Link>
+              <Link href="/dashboard" className="ctaNav" data-agent-action="get-started-free" data-testid="nav-cta-get-started-free">Get started free</Link>
             </nav>
             <details className="mobileNav">
               <summary>Menu</summary>
@@ -93,7 +129,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     {item.label}
                   </Link>
                 ))}
-                <Link href="/app" className="mobileNavCta" data-agent-action="try-demo">Try demo</Link>
+                <Link href="/dashboard" className="mobileNavCta" data-agent-action="get-started-free">Get started free</Link>
               </nav>
             </details>
           </header>

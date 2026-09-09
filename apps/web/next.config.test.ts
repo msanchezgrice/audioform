@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import nextConfig from "./next.config";
+import { nextConfig } from "./next.config";
 
 test("production headers remove eval and set explicit browser security policies", async () => {
   const entries = await nextConfig.headers?.();
@@ -15,6 +15,11 @@ test("production headers remove eval and set explicit browser security policies"
   assert.match(csp, /https:\/\/analytics\.ahrefs\.com/);
   assert.match(csp, /https:\/\/us\.i\.posthog\.com/);
   assert.match(csp, /https:\/\/us-assets\.i\.posthog\.com/);
+  const directives = new Map(csp.split(";").map((entry) => { const [name, ...sources] = entry.trim().split(/\s+/); return [name, sources]; }));
+  assert.ok(directives.get("script-src")?.includes("https://challenges.cloudflare.com"), "Clerk signup CAPTCHA must be allowed to load");
+  assert.ok(directives.get("script-src")?.includes("https://*.protect.clerk.com"));
+  assert.ok(directives.get("connect-src")?.includes("https://*.protect.clerk.com:*"));
+  assert.ok(directives.get("frame-src")?.includes("https://*.protect.clerk.com"));
   assert.equal(values.get("x-content-type-options"), "nosniff");
   assert.equal(values.get("referrer-policy"), "strict-origin-when-cross-origin");
   assert.equal(values.get("cross-origin-opener-policy"), "same-origin");

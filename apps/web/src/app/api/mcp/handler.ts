@@ -1,4 +1,4 @@
-import { handleTalkformMcpProtocol } from "@talkform/mcp/http";
+import { handleTalkformMcpProtocol, type HostedMcpServices } from "@talkform/mcp/http";
 import type { AnonymousMcpRateLimitDecision } from "../../../lib/openai-app/rate-limit";
 import { mcpRequestAnalyticsMetadata } from "../../../lib/server-analytics";
 
@@ -6,6 +6,7 @@ const MAX_MCP_BODY_BYTES = 65_536;
 const PRODUCTION_HOSTS = new Set(["talkform.ai", "www.talkform.ai"]);
 
 export type McpRouteDependencies = {
+  hosted?: HostedMcpServices;
   allowRequest: (request: Request) => Promise<AnonymousMcpRateLimitDecision>;
   recordRequest?: (args: {
     request: Request;
@@ -93,7 +94,11 @@ export async function handleMcpPost(
   }
 
   try {
-    const response = await handleTalkformMcpProtocol(request, parsedBody);
+    const response = await handleTalkformMcpProtocol(request, parsedBody, dependencies.hosted);
+    if (response.headers.get("content-type")?.includes("application/json")) {
+      const payload = await response.clone().json().catch(() => null);
+      analyticsProperties.protocol_outcome = payload?.error ? "protocol_error" : payload?.result?.isError ? "tool_error" : "succeeded";
+    }
     const headers = new Headers(response.headers);
     headers.set("cache-control", "no-store");
     headers.set("x-content-type-options", "nosniff");

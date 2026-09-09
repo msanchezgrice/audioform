@@ -2,12 +2,15 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { pricingPlans } from "./pricing";
 
-test("pricing exposes a free evaluation path, one bounded paid plan, and a pilot path", () => {
-  assert.deepEqual(pricingPlans.map((plan) => plan.slug), ["free", "pro", "pilot"]);
-  const pro = pricingPlans[1];
-  assert.equal(pro.monthlyPriceUsd, 29);
-  assert.equal(pro.annualPriceUsd, 290);
-  assert.equal(pro.includedVoiceMinutes, 100);
-  assert.equal(pro.includedHandoffs, 100);
-  assert.match(pro.limitPolicy, /hard limit/i);
+test("pricing exposes one free plan with bounded hosted handoffs and retention", () => {
+  assert.deepEqual(pricingPlans.map((plan) => plan.slug), ["free"]);
+  const free = pricingPlans[0];
+  assert.equal(free.monthlyPriceUsd, 0);
+  assert.equal(free.annualPriceUsd, 0);
+  assert.equal(free.dailyHandoffs, 100);
+  assert.equal(free.respondentLinkDays, 7);
+  assert.equal(free.completedResultAccessDays, 7);
+  assert.equal(free.voiceAvailability, "Optional under shared limits");
+  assert.match(free.limitPolicy, /project/i);
+  assert.match(free.limitPolicy, /no production SLA/i);
 });

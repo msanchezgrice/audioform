@@ -284,137 +284,42 @@ test("production returns 503 for public Realtime issuance unless explicitly enab
   }
 });
 
-test("an explicit production Realtime opt-in enables client-secret issuance", async () => {
+test("an explicit production Realtime opt-in still fails closed without durable cost storage", async () => {
   const oldNodeEnv = process.env.NODE_ENV;
   const oldOptIn = process.env.TALKFORM_ENABLE_PUBLIC_REALTIME;
-  const oldApiKey = process.env.OPENAI_API_KEY;
-  const originalFetch = globalThis.fetch;
+  const oldDatabaseUrl = process.env.DATABASE_URL;
+  const oldEncryptionKey = process.env.TALKFORM_DATA_ENCRYPTION_KEY;
+  let fetchCalls = 0;
   (process.env as Record<string, string | undefined>).NODE_ENV = "production";
   process.env.TALKFORM_ENABLE_PUBLIC_REALTIME = "true";
-  process.env.OPENAI_API_KEY = "test-key";
-  globalThis.fetch = async () =>
-    new Response(JSON.stringify({ value: "ek_test", expires_at: 123 }), {
-      status: 200,
-      headers: { "content-type": "application/json" },
-    });
-
+  process.env.TALKFORM_DATA_ENCRYPTION_KEY = Buffer.alloc(32, 7).toString("base64");
+  delete process.env.DATABASE_URL;
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => { fetchCalls += 1; return new Response(); };
   try {
-    const response = await createRealtime(
-      jsonRequest(
-        `${origin}/api/realtime`,
-        { formId: "lead-generation" },
-        "talkform_owner=explicit-production-realtime",
-        origin,
-        "203.0.113.211",
-      ),
-    );
-    assert.equal(response.status, 200);
-    assert.equal(response.headers.get("cache-control"), "no-store");
+    const response = await createRealtime(jsonRequest(`${origin}/api/realtime`, { formId: "lead-generation" }));
+    assert.equal(response.status, 500);
+    assert.equal(fetchCalls, 0);
+    assert.doesNotMatch(await response.text(), /ek_|client.secret|OPENAI_API_KEY/i);
   } finally {
     globalThis.fetch = originalFetch;
     restoreEnv("NODE_ENV", oldNodeEnv);
     restoreEnv("TALKFORM_ENABLE_PUBLIC_REALTIME", oldOptIn);
-    restoreEnv("OPENAI_API_KEY", oldApiKey);
+    restoreEnv("DATABASE_URL", oldDatabaseUrl);
+    restoreEnv("TALKFORM_DATA_ENCRYPTION_KEY", oldEncryptionKey);
   }
 });
 
-test("Realtime issuance rate-limits repeated client-secret creation per browser", async () => {
-  const oldApiKey = process.env.OPENAI_API_KEY;
-  const oldLimit = process.env.TALKFORM_REALTIME_PER_MINUTE;
-  const originalFetch = globalThis.fetch;
-  process.env.OPENAI_API_KEY = "test-key";
-  process.env.TALKFORM_REALTIME_PER_MINUTE = "2";
-  globalThis.fetch = async () =>
-    new Response(JSON.stringify({ value: "ek_test", expires_at: 123 }), {
-      status: 200,
-      headers: { "content-type": "application/json" },
-    });
-
-  try {
-    const cookie = "talkform_owner=stable-browser-owner";
-    const first = await createRealtime(
-      jsonRequest(`${origin}/api/realtime`, { formId: "lead-generation" }, cookie),
-    );
-    const second = await createRealtime(
-      jsonRequest(`${origin}/api/realtime`, { formId: "lead-generation" }, cookie),
-    );
-    const limited = await createRealtime(
-      jsonRequest(`${origin}/api/realtime`, { formId: "lead-generation" }, cookie),
-    );
-
-    assert.equal(first.status, 200);
-    assert.equal(second.status, 200);
-    assert.equal(limited.status, 429);
-    assert.ok(Number(limited.headers.get("retry-after")) > 0);
-  } finally {
-    globalThis.fetch = originalFetch;
-    if (oldApiKey === undefined) delete process.env.OPENAI_API_KEY;
-    else process.env.OPENAI_API_KEY = oldApiKey;
-    if (oldLimit === undefined) delete process.env.TALKFORM_REALTIME_PER_MINUTE;
-    else process.env.TALKFORM_REALTIME_PER_MINUTE = oldLimit;
-  }
-});
-
-test("Realtime issuance rejects oversized configuration payloads before calling OpenAI", async () => {
-  const oldApiKey = process.env.OPENAI_API_KEY;
+test("Realtime lease rejects oversized configuration before durable allocation or OpenAI", async () => {
   const originalFetch = globalThis.fetch;
   let fetchCalls = 0;
-  process.env.OPENAI_API_KEY = "test-key";
-  globalThis.fetch = async () => {
-    fetchCalls += 1;
-    return new Response(JSON.stringify({ value: "ek_test" }));
-  };
-
+  globalThis.fetch = async () => { fetchCalls += 1; return new Response(); };
   try {
-    const response = await createRealtime(
-      jsonRequest(
-        `${origin}/api/realtime`,
-        { config: { padding: "x".repeat(70_000) } },
-        "talkform_owner=oversized-payload-browser",
-      ),
-    );
+    const response = await createRealtime(jsonRequest(`${origin}/api/realtime`, { config: { padding: "x".repeat(70_000) } }));
     assert.equal(response.status, 413);
     assert.equal(fetchCalls, 0);
   } finally {
     globalThis.fetch = originalFetch;
-    if (oldApiKey === undefined) delete process.env.OPENAI_API_KEY;
-    else process.env.OPENAI_API_KEY = oldApiKey;
-  }
-});
-
-test("Realtime rate limits cannot be bypassed by rotating browser cookies from one address", async () => {
-  const oldApiKey = process.env.OPENAI_API_KEY;
-  const oldLimit = process.env.TALKFORM_REALTIME_PER_MINUTE;
-  const originalFetch = globalThis.fetch;
-  process.env.OPENAI_API_KEY = "test-key";
-  process.env.TALKFORM_REALTIME_PER_MINUTE = "2";
-  globalThis.fetch = async () =>
-    new Response(JSON.stringify({ value: "ek_test" }), {
-      status: 200,
-      headers: { "content-type": "application/json" },
-    });
-
-  try {
-    const ip = "203.0.113.44";
-    const first = await createRealtime(
-      jsonRequest(`${origin}/api/realtime`, { formId: "lead-generation" }, "talkform_owner=rotating-browser-one", origin, ip),
-    );
-    const second = await createRealtime(
-      jsonRequest(`${origin}/api/realtime`, { formId: "lead-generation" }, "talkform_owner=rotating-browser-two", origin, ip),
-    );
-    const limited = await createRealtime(
-      jsonRequest(`${origin}/api/realtime`, { formId: "lead-generation" }, "talkform_owner=rotating-browser-three", origin, ip),
-    );
-
-    assert.equal(first.status, 200);
-    assert.equal(second.status, 200);
-    assert.equal(limited.status, 429);
-  } finally {
-    globalThis.fetch = originalFetch;
-    if (oldApiKey === undefined) delete process.env.OPENAI_API_KEY;
-    else process.env.OPENAI_API_KEY = oldApiKey;
-    if (oldLimit === undefined) delete process.env.TALKFORM_REALTIME_PER_MINUTE;
-    else process.env.TALKFORM_REALTIME_PER_MINUTE = oldLimit;
   }
 });
 

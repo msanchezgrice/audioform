@@ -3,47 +3,33 @@ import Link from "next/link";
 import { PageHero } from "../_components/content";
 import { createMetadata } from "@/lib/seo";
 import { pricingPlans } from "@/lib/pricing";
-import { CommercialLink } from "./commercial-link";
-import { CheckoutButton } from "./checkout-button";
 import styles from "../content.module.css";
 
-export const metadata: Metadata = createMetadata({ title: "Pricing", description: "Talkform pricing for browser evaluation, production voice interviews, agent handoffs, and team pilots.", path: "/pricing" });
+export const metadata: Metadata = createMetadata({ title: "Free pricing", description: "Talkform is free for bounded hosted text handoffs, with optional voice under shared limits.", path: "/pricing" });
 
 export default function PricingPage() {
-  const checkoutEnabled = process.env.NEXT_PUBLIC_TALKFORM_CHECKOUT_ENABLED === "true";
   return <main className={styles.page}>
-    <PageHero eyebrow="Pricing" title="Start free. Move to Pro when the workflow fits." description="Clear launch pricing for guided voice interviews and agent handoffs, with hard limits instead of surprise overages." />
+    <PageHero eyebrow="Pricing" title="Get started free" description="Collect human answers for your agent with bounded hosted text handoffs and optional voice." />
     <section className={styles.cardGrid} aria-label="Talkform plans">
       {pricingPlans.map((plan) => (
         <article className={styles.card} key={plan.slug}>
           <span className={styles.eyebrow}>{plan.name}</span>
-          <h2>{plan.monthlyPriceUsd === null ? "Let’s scope it" : plan.monthlyPriceUsd === 0 ? "$0" : `$${plan.monthlyPriceUsd}/month`}</h2>
-          {plan.annualPriceUsd ? <small>${plan.annualPriceUsd}/year — two months free</small> : null}
+          <h2>$0</h2>
+          <small>No card required</small>
           <p>{plan.summary}</p>
           <ul>{plan.features.map((feature) => <li key={feature}>{feature}</li>)}</ul>
           <p><small>{plan.limitPolicy}</small></p>
-          {plan.slug === "free" ? (
-            <Link className={styles.secondaryButton} href="/app" data-agent-action="try-free">Try the demo</Link>
-          ) : plan.slug === "pro" && checkoutEnabled ? (
-            <CheckoutButton className={styles.primaryButton} />
-          ) : (
-            <CommercialLink
-              className={styles.primaryButton}
-              plan={plan.slug}
-              href={plan.slug === "pro" ? "/pilot?source=pricing_pro" : "/pilot?source=pricing_team"}
-              data-agent-action="request-pilot"
-            >{plan.slug === "pro" ? "Request a guided pilot" : "Scope a team pilot"}</CommercialLink>
-          )}
+          <Link className={styles.primaryButton} href="/dashboard" data-agent-action="get-started-free">Get started free</Link>
         </article>
       ))}
     </section>
     <section className={styles.prose}>
-      <h2>Commercial availability</h2>
-      <p>Pro is the launch offer and target subscription price. Recurring checkout stays closed until Talkform&apos;s account-backed handoff, customer authentication, and subscription entitlement path are live. Today, you can request a measured guided pilot for one form and one workflow; no card is charged by submitting the request. An accepted pilot may use a separate one-time Stripe Checkout and does not start a Pro subscription.</p>
-      <h2>Why 100 minutes?</h2>
-      <p>Realtime voice has a variable provider cost, while ordinary form responses do not. The launch plan uses a visible hard limit so early customers can predict spend while Talkform measures actual interview length and model usage.</p>
+      <h2>What is included</h2>
+      <p>Each project can create up to 100 hosted text handoffs per day. Respondent links remain available for 7 days, and completed results remain available for 7 days. Voice is optional and uses shared limits; exact voice quotas will be published when they are set.</p>
+      <h2>Start with a project</h2>
+      <p>Use Talkform for agent intake, customer research, onboarding, or any workflow that needs a reviewed human answer. Account creation is for project ownership and integration access. No payment or business email is required.</p>
       <h2>Data boundary</h2>
-      <p>The public demo remains browser-local. A paid hosted workflow will store reviewed structured answers only for the stated result window—not raw microphone audio or an indefinite transcript archive. See <Link href="/privacy">privacy</Link> and <Link href="/security">security</Link>.</p>
+      <p>The public demo remains browser-local. Hosted workflows retain reviewed structured results only for the stated 7-day access window. See <Link href="/privacy">privacy</Link> and <Link href="/security">security</Link>.</p>
     </section>
   </main>;
 }

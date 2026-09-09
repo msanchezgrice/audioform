@@ -6,7 +6,7 @@ export function TalkformGoogleAnalytics({ measurementId }: { measurementId?: str
 
   return (
     <Script id="talkform-google-analytics" strategy="afterInteractive">
-      {`if (navigator.doNotTrack !== '1' && window.doNotTrack !== '1' && navigator.globalPrivacyControl !== true && window.globalPrivacyControl !== true) {
+      {`if ((window.__talkformAnalyticsBlocked === true || window.location.pathname === '/respond' || window.location.pathname.indexOf('/respond/') === 0) === false && navigator.doNotTrack !== '1' && window.doNotTrack !== '1' && navigator.globalPrivacyControl !== true && window.globalPrivacyControl !== true) {
 window.dataLayer = window.dataLayer || [];
 window.gtag = window.gtag || function gtag(){window.dataLayer.push(arguments);};
 window.gtag('js', new Date());
@@ -16,6 +16,15 @@ window.gtag('config', '${id}', {
   anonymize_ip: true,
   allow_google_signals: false,
   allow_ad_personalization_signals: false
+});
+var talkformOriginalGtag = window.gtag;
+window.addEventListener('talkform:route-change', function (event) {
+  var detail = event && event.detail;
+  if (detail && detail.respondent) {
+    window.gtag = function () {};
+  } else {
+    window.gtag = talkformOriginalGtag;
+  }
 });
 if (!document.querySelector('script[data-talkform-ga4="true"]')) {
   var gaScript = document.createElement('script');

@@ -9,7 +9,7 @@ const body = `# Talkform
 - [Getting started](https://talkform.ai/docs/getting-started): install, configure, and run your first interview
 - [Configuration](https://talkform.ai/docs/configuration): the AudioformConfig schema, fields, prompts, and validation
 - [React widget](https://talkform.ai/docs/react): embed Talkform in any React product
-- [HTTP API](https://talkform.ai/docs/http-api): bootstrap sessions and pull exports over HTTP
+- [HTTP API](https://talkform.ai/docs/http-api): create hosted respondent handoffs and retrieve reviewed results over HTTP
 - [CLI](https://talkform.ai/docs/cli): generate configs and export results from the terminal
 - [MCP server](https://talkform.ai/docs/mcp): expose schemas and templates to coding agents
 - [Agents](https://talkform.ai/docs/agents): how AI agents should integrate with Talkform
@@ -28,11 +28,13 @@ const body = `# Talkform
 
 ## Product
 
-- [Live demo](https://talkform.ai/app): try a guided voice or text interview in the browser
+- [Live demo](https://talkform.ai/app): try a guided voice or text interview in the browser; demo data stays browser-local until export
 - [Import a form](https://talkform.ai/import): turn a public Typeform, Google Forms, Jotform, or HubSpot form into an editable Talkform draft
 - [FAQ](https://talkform.ai/faq): plain answers on imports, voice and text input, data handling, and limitations
 - [Use cases](https://talkform.ai/use-cases): example deployments
-- [Pricing](https://talkform.ai/pricing): Free evaluation, $29/month Pro launch plan, and scoped team pilot
+- [Pricing](https://talkform.ai/pricing): one free plan with up to 100 hosted text handoffs per day per project, 7-day links, 7-day completed-result access, and optional voice under shared limits
+- [Dashboard](https://talkform.ai/dashboard): create and manage a free project
+- [Hosted handoff API](https://talkform.ai/docs/http-api): create project-scoped respondent links with POST /api/v1/handoffs, poll reviewed results, and delete handoffs
 
 ## Examples
 
@@ -44,6 +46,15 @@ const body = `# Talkform
 - [RSS feed](https://talkform.ai/feed.xml)
 - [Changelog](https://talkform.ai/changelog)
 - [Contact](https://talkform.ai/contact): support@talkform.ai
+
+## Hosted handoff contract
+
+- Authenticate machine requests with Authorization: Bearer project-key from /dashboard.
+- Create with talkform.create_handoff or POST /api/v1/handoffs using config and idempotencyKey.
+- Read status with talkform.get_handoff; retrieve reviewed structured values with talkform.get_result.
+- Poll results every 10 seconds or slower. Pending returns HTTP 409; expired returns HTTP 410.
+- Respondent links and completed-result access last 7 days. No webhook delivery is implemented.
+- Hosted results contain reviewed structured values and response mode; Talkform does not retain a transcript or generated summary.
 `;
 
 export async function GET() {

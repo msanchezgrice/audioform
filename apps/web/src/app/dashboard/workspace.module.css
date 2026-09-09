@@ -1,0 +1,27 @@
+.workspace { max-width: 1120px; margin: auto; padding: 64px 24px 100px; }
+.intro { max-width: 740px; margin-bottom: 36px; }
+.intro h1 { font-family: var(--font-display); font-size: clamp(36px, 6vw, 60px); line-height: 1.1; margin: 12px 0 20px; }
+.intro p, .muted { opacity: .72; line-height: 1.65; }
+.eyebrow { text-transform: uppercase; letter-spacing: .14em; font-size: 12px; font-weight: 700; }
+.grid { display: grid; grid-template-columns: 250px 1fr; gap: 24px; align-items: start; }
+.panel { border: 1px solid var(--border, #d6dce4); border-radius: 18px; padding: 24px; margin-bottom: 24px; overflow: hidden; }
+.panel h2 { font-size: 22px; margin: 0 0 16px; }
+.panel label { display: grid; gap: 8px; margin-bottom: 16px; font-size: 14px; font-weight: 600; }
+.panel input, .panel select, .panel textarea { width: 100%; padding: 12px; border: 1px solid #b8c2cb; border-radius: 8px; background: var(--surface, #fff); color: inherit; font: inherit; }
+.panel textarea, .code { font-family: ui-monospace, SFMono-Regular, monospace; font-size: 12px; }
+.panel button { cursor: pointer; border: 1px solid #9aa9b6; border-radius: 8px; padding: 10px 15px; background: transparent; color: inherit; font: inherit; }
+.panel button:disabled { opacity: .5; cursor: default; }
+.panel .primary { background: #123d47; color: #fff; border-color: #123d47; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 12px 0; flex-wrap: wrap; }
+.projects { display: grid; gap: 8px; margin-bottom: 24px; }
+.projects button { text-align: left; }
+.projects button[aria-pressed="true"] { background: #e2f0ed; color: #123d47; }
+.code { display: block; white-space: pre-wrap; overflow-wrap: anywhere; background: #eef3f4; color: #132d35; padding: 16px; border-radius: 8px; }
+.error { padding: 16px; border: 1px solid #b34343; border-radius: 8px; margin-bottom: 20px; }
+.success { background: #e2f0ed; color: #123d47; padding: 20px; border-radius: 10px; }
+.stats { display: flex; flex-wrap: wrap; gap: 28px; }
+.stats strong { display: block; font-size: 30px; }
+.invite { max-width: 1000px; margin: auto; padding: 40px 24px; }
+.consent { display: flex !important; align-items: start; gap: 12px !important; line-height: 1.6; }
+.consent input { width: auto; margin-top: 6px; }
+@media(max-width: 760px) { .grid { grid-template-columns: 1fr; } .workspace { padding-top: 36px; } }

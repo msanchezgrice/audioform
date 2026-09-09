@@ -527,27 +527,19 @@ export function ImportWorkbench({ vendorUrl = "" }: ImportWorkbenchProps) {
           <aside className={styles.commercialBand} aria-label="Use this converted form with Talkform">
             <div>
               <div className={styles.eyebrow}>Your converted draft is ready</div>
-              <h2>Run this with my team</h2>
+              <h2>Continue with a free project</h2>
               <p>
-                Use a measured guided pilot for one real workflow, or review the self-serve plan before deciding.
+                Keep the draft, share bounded text handoffs, and add optional voice from your Talkform dashboard.
               </p>
             </div>
             <div className={styles.commercialActions}>
               <Link
-                href="/pilot"
+                href="/dashboard"
                 className={styles.primaryAction}
-                onClick={() => emitTalkformEvent("conversion_clicked", { source: "import_success", destination: "/pilot", plan: "guided_pilot" })}
-                data-agent-action="request-pilot"
+                onClick={() => emitTalkformEvent("conversion_clicked", { source: "import_success", destination: "/dashboard", plan: "free" })}
+                data-agent-action="get-started-free"
               >
-                Run this with my team
-              </Link>
-              <Link
-                href="/pricing"
-                className={styles.secondaryAction}
-                onClick={() => emitTalkformEvent("conversion_clicked", { source: "import_success", destination: "/pricing", plan: "pro" })}
-                data-agent-action="view-pricing"
-              >
-                Start Pro
+                Get started free
               </Link>
             </div>
           </aside>

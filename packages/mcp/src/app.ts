@@ -103,14 +103,16 @@ const publicFieldSchema = publicFieldObjectSchema
     }
   });
 
-export const prepareFormInputSchema = z
+export const prepareFormToolInputSchema = z
   .object({
     title: z.string().trim().min(1).max(PREPARE_FORM_LIMITS.maxTitleChars),
     description: z.string().trim().min(1).max(PREPARE_FORM_LIMITS.maxDescriptionChars).optional(),
     instructions: z.string().trim().min(1).max(PREPARE_FORM_LIMITS.maxInstructionsChars).optional(),
     fields: z.array(publicFieldSchema).min(1).max(PREPARE_FORM_LIMITS.maxFields),
   })
-  .strict()
+  .strict();
+
+export const prepareFormInputSchema = prepareFormToolInputSchema
   .superRefine((input, ctx) => {
     const seen = new Set<string>();
     input.fields.forEach((field, index) => {
@@ -578,7 +580,7 @@ function registerPublicTools(server: McpServer) {
     {
       title: "Prepare a Talkform draft",
       description: "Turns structured questions into a validated conversational form preview without storing them.",
-      inputSchema: prepareFormInputSchema,
+      inputSchema: prepareFormToolInputSchema,
       outputSchema: preparedOutputSchema,
       annotations: readOnlyAnnotations,
       _meta: {
@@ -715,16 +717,57 @@ function registerLegacyStdioSurface(server: McpServer) {
   );
 }
 
-export function createTalkformMcpServer(options: { includeLegacyStdioSurface?: boolean } = {}) {
+export type HostedMcpServices = {
+  createHandoff: (input: { config: unknown; idempotencyKey: string }) => Promise<Record<string, unknown>>;
+  getHandoff: (id: string) => Promise<Record<string, unknown>>;
+  getResult: (id: string) => Promise<Record<string, unknown>>;
+  deleteHandoff: (id: string) => Promise<Record<string, unknown>>;
+};
+
+function registerHostedTools(server: McpServer, services: HostedMcpServices) {
+  const result = async (run: () => Promise<Record<string, unknown>>) => {
+    try {
+      const data = await run();
+      return { content: [{ type: "text" as const, text: JSON.stringify(data) }], structuredContent: data };
+    } catch (error) {
+      // Service adapters provide bounded public errors; never expose database/provider exceptions.
+      const safe = error && typeof error === "object" && "publicMessage" in error && typeof error.publicMessage === "string"
+        ? error.publicMessage.slice(0, 300) : "The request failed. Check your project key and try again.";
+      return { content: [{ type: "text" as const, text: safe }], isError: true };
+    }
+  };
+  server.registerTool("talkform.create_handoff", {
+    title: "Create a hosted interview",
+    description: "Stores a validated form and returns a private respondent link. Requires a project API key. Use the same idempotencyKey when retrying. Respondents explicitly submit reviewed answers.",
+    inputSchema: z.object({ config: audioformConfigSchema.innerType(), idempotencyKey: z.string().min(8).max(128) }).strict(),
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+  }, (input) => result(() => services.createHandoff(input)));
+  const idSchema = z.object({ id: z.string().uuid() }).strict();
+  server.registerTool("talkform.get_handoff", {
+    title: "Check interview status", description: "Checks a hosted handoff owned by your project. Requires a project API key.", inputSchema: idSchema,
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  }, ({ id }) => result(() => services.getHandoff(id)));
+  server.registerTool("talkform.get_result", {
+    title: "Retrieve reviewed answers", description: "Returns completed structured answers for your project. Pending results return an error; poll no more often than every 10 seconds. Results expire 7 days after submission. No transcript is returned.", inputSchema: idSchema,
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  }, ({ id }) => result(() => services.getResult(id)));
+  server.registerTool("talkform.delete_handoff", {
+    title: "Delete a hosted interview", description: "Permanently deletes stored configuration and answers. Requires confirmation from the user and a project API key.", inputSchema: idSchema,
+    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+  }, ({ id }) => result(() => services.deleteHandoff(id)));
+}
+
+export function createTalkformMcpServer(options: { includeLegacyStdioSurface?: boolean; hosted?: HostedMcpServices } = {}) {
   const server = new McpServer(
     { name: "talkform", version: TALKFORM_MCP_VERSION },
     {
       instructions:
-        "Use these tools to prepare and review conversational forms. They do not store form content or perform external actions.",
+        "Prepare tools create local previews. Hosted handoff tools require a project API key and store forms for invited respondents. Ask for confirmation before deleting a handoff. Never invent or submit a respondent's answers.",
     },
   );
   registerPublicTools(server);
   registerPublicResources(server);
+  if (options.hosted) registerHostedTools(server, options.hosted);
   if (options.includeLegacyStdioSurface) {
     registerLegacyStdioSurface(server);
   }

@@ -8,3 +8,5 @@ dist
 .env.*.local
 coverage
 .gstack/
+.env*
+!.env.example

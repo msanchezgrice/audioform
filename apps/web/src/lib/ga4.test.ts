@@ -22,4 +22,6 @@ test("Talkform's loader honors Do Not Track and disables Google advertising sign
   assert.match(source, /window\.globalPrivacyControl/);
   assert.match(source, /allow_google_signals:\s*false/);
   assert.match(source, /allow_ad_personalization_signals:\s*false/);
+  assert.match(source, /location\.pathname/);
+  assert.match(source, /respond/);
 });

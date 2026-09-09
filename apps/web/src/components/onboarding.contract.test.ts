@@ -84,9 +84,11 @@ test("public demo privacy copy matches the browser-to-OpenAI data path", () => {
     assert.match(content, /audio[^.]*OpenAI|OpenAI[^.]*audio/i);
     assert.match(content, /browser[^.]*until export|until[^.]*export/i);
   }
-  assert.match(widget, /short-lived realtime token/i);
+  assert.match(widget, /Talkform controls the call duration and records usage totals/i);
+  assert.match(widget, /Submit reviewed answers/);
+  assert.match(widget, /Only your reviewed structured answers are submitted to the inviting project/i);
   assert.match(privacy, /transcript[^.]*summary[^.]*structured answers[^.]*browser/i);
-  assert.match(faq, /short-lived realtime token/i);
+  assert.match(faq, /server creates a bounded realtime session/i);
 });
 
 test("switching templates remounts the interview instead of leaking prior answers", () => {

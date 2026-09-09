@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   analyticsEventFromCustomEvent,
   dispatchAnalyticsEvent,
+  filterRespondentAnalyticsEvent,
   searchAttributionFromUrl,
   telemetryAllowed,
 } from "./analytics-client";
@@ -95,6 +96,21 @@ test("Global Privacy Control disables both analytics providers", () => {
   assert.equal(telemetryAllowed(null, null, true), false);
   assert.equal(telemetryAllowed(null, null, false, true), false);
   assert.equal(telemetryAllowed(null, null, false, false), true);
+});
+
+test("PostHog before-send drops respondent events and strips bearer-bearing URL properties", () => {
+  const event = {
+    uuid: "00000000-0000-4000-8000-000000000001",
+    event: "$pageview" as const,
+    properties: {
+      "$current_url": "https://talkform.ai/respond/handoff-1#token=secret",
+      "$referrer": "https://talkform.ai/pricing?token=secret",
+      safe: "value",
+    },
+  };
+  assert.equal(filterRespondentAnalyticsEvent(event, "/respond/handoff-1", false), null);
+  assert.deepEqual(filterRespondentAnalyticsEvent(event, "/pricing", false)?.properties, { safe: "value" });
+  assert.equal(filterRespondentAnalyticsEvent(event, "/pricing", true), null);
 });
 
 test("search attribution records source and landing context without query text", () => {

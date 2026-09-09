@@ -6,5 +6,8 @@ export const config = {
   matcher: [
     "/api/billing/checkout",
     "/api/billing/portal",
+    "/dashboard(.*)",
+    "/api/v1/projects(.*)",
+    "/api/internal/operator(.*)",
   ],
 };

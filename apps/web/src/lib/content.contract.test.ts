@@ -247,9 +247,9 @@ test("legal and trust pages use honest support and policy language", () => {
 
   const pricing = readFileSync(path.join(appRoot, "pricing/page.tsx"), "utf8");
   const pricingCatalog = readFileSync(path.join(webRoot, "src/lib/pricing.ts"), "utf8");
-  assert.match(pricingCatalog, /monthlyPriceUsd:\s*29/);
-  assert.match(pricingCatalog, /includedVoiceMinutes:\s*100/);
-  assert.match(pricing, /no card is charged/i);
+  assert.match(pricingCatalog, /dailyHandoffs:\s*100/);
+  assert.match(pricingCatalog, /respondentLinkDays:\s*7/);
+  assert.match(pricing, /no card required/i);
 
   const cookies = readFileSync(path.join(appRoot, "cookies/page.tsx"), "utf8");
   assert.match(cookies, /talkform_owner/);
@@ -261,6 +261,5 @@ test("the homepage does not present unverified speed or conversion lifts as fact
   const homepage = readFileSync(path.join(appRoot, "page.tsx"), "utf8");
   assert.doesNotMatch(homepage, /Longer\s*[—-]|Shorter\s*[—-]/i);
   assert.doesNotMatch(homepage, /Completion[\s\S]{0,120}(?:Lower|Higher)/i);
-  assert.match(homepage, /controlled pilot/i);
-  assert.match(homepage, /A\/B test/i);
+  assert.match(homepage, /Measure what people complete/i);
 });
