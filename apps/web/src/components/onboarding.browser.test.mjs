@@ -182,3 +182,47 @@ test("mobile onboarding choices remain visible and app/embed pages do not overfl
     await browser.close();
   }
 });
+
+test("homepage hero stacks cleanly on mobile and stays balanced on desktop", browserTestOptions, async () => {
+  requireBrowser();
+  const browser = await chromium.launch({ executablePath, headless: true });
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+
+  try {
+    await page.goto(`${baseUrl}/`, { waitUntil: "domcontentloaded" });
+    const mobile = await page.evaluate(() => {
+      const hero = document.querySelector("main > section");
+      const article = hero?.querySelector("article");
+      const aside = hero?.querySelector("aside");
+      const heading = article?.querySelector("h1");
+      const rect = (element) => {
+        const value = element?.getBoundingClientRect();
+        return value ? { top: value.top, bottom: value.bottom, left: value.left, right: value.right, width: value.width, height: value.height } : null;
+      };
+      return { hero: rect(hero), article: rect(article), aside: rect(aside), heading: rect(heading), scrollWidth: document.documentElement.scrollWidth, viewportWidth: window.innerWidth };
+    });
+    assert.ok(mobile.hero && mobile.article && mobile.aside && mobile.heading, "homepage hero elements should render");
+    assert.ok(mobile.heading.width >= 250, `mobile heading should have useful width (width=${mobile.heading.width})`);
+    assert.ok(mobile.aside.top >= mobile.article.bottom - 1, "mobile setup panel should follow the headline instead of overlapping it");
+    assert.ok(mobile.aside.left >= mobile.article.left - 1 && mobile.aside.right <= mobile.article.right + 1, "mobile setup panel should align within the headline column");
+    assert.equal(mobile.scrollWidth <= mobile.viewportWidth, true, "homepage should not overflow horizontally on mobile");
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.reload({ waitUntil: "domcontentloaded" });
+    const desktop = await page.evaluate(() => {
+      const hero = document.querySelector("main > section");
+      const article = hero?.querySelector("article");
+      const aside = hero?.querySelector("aside");
+      const rect = (element) => {
+        const value = element?.getBoundingClientRect();
+        return value ? { top: value.top, bottom: value.bottom, left: value.left, right: value.right, width: value.width, height: value.height } : null;
+      };
+      return { hero: rect(hero), article: rect(article), aside: rect(aside), scrollWidth: document.documentElement.scrollWidth, viewportWidth: window.innerWidth };
+    });
+    assert.ok(desktop.hero && desktop.article && desktop.aside, "desktop hero elements should render");
+    assert.ok(desktop.aside.left > desktop.article.right, "desktop setup panel should sit beside the headline");
+    assert.equal(desktop.scrollWidth <= desktop.viewportWidth, true, "homepage should not overflow horizontally on desktop");
+  } finally {
+    await browser.close();
+  }
+});

@@ -864,6 +864,7 @@
 
 @media (max-width: 1180px) {
   .hero {
+    grid-template-columns: minmax(0, 1fr);
     padding: 4rem 0 3rem;
     text-align: left;
   }
