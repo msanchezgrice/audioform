@@ -19,9 +19,15 @@ The report also shows trusted REST/MCP/dashboard/respondent surfaces, completed 
 
 Hosted workflow metadata stays in the existing operational database. It is not exported to PostHog. Marketing analytics remain separate, and private respondent routes are excluded.
 
+## Operator email delivery
+
+Operator notifications use the existing shared Resend account with the verified Talkform sending domain. Production config uses the per-domain `RESEND_API_KEY`, `TALKFORM_OPERATOR_EMAIL` recipient, and required `TALKFORM_OPERATOR_EMAIL_FROM` (for example, `Talkform <alerts@talkform.ai>`). Keep these values in Vercel production secrets; do not copy credentials into local files or commits. The usage report shows configuration, pending/retrying/delivering counts, dead rows, and the last provider-accepted send. Provider acceptance does not prove inbox delivery.
+
+The protected dispatch cron runs every five minutes and sends up to five emails per run. Human and agent signups are grouped into 15-minute digests. It also collects first activation, returning integrations, 80%/100% AI budget exposure, and shared capacity alerts. Failed sends use the durable queue's six-attempt limit and stable Resend idempotency keys. Resend retains those keys for 24 hours; reconcile provider records before manually replaying old or stalled sends.
+
 ## Cost controls
 
-The default shared policy reserves up to $5/day and $50/month of AI exposure. Voice reserves $0.40 per attempt, allows one active call per actor/address, and has a server-controlled 180-second deadline. Import refinement reserves $0.01 and falls back to deterministic import when capacity is unavailable. Per actor/address daily exposure is limited to $0.80.
+The default shared policy reserves up to $10/day and $50/month of AI exposure. Voice reserves $0.40 per attempt, allows one active call per actor/address, and has a server-controlled 180-second deadline. Import refinement reserves $0.01 and falls back to deterministic import when capacity is unavailable. Per actor/address daily exposure is limited to $0.80.
 
 These are conservative admission limits using estimated provider usage, not guaranteed provider invoice caps. Unknown usage or termination retains exposure until reconciled. Text interviews do not need OpenAI and continue when AI capacity is unavailable.
 
