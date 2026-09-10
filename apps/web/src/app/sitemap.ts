@@ -7,7 +7,7 @@ import { absoluteUrl } from "@/lib/seo";
 
 const staticRoutes = [
   "", "/about", "/accessibility", "/blog", "/changelog", "/contact", "/cookies", "/docs",
-  "/embed", "/evidence/agent-readiness", "/faq", "/import", "/pilot", "/pricing", "/privacy", "/security", "/solutions", "/status",
+  "/embed", "/evidence/agent-readiness", "/faq", "/import", "/pricing", "/privacy", "/security", "/solutions", "/status",
   "/subprocessors", "/terms", "/use-cases",
 ];
 

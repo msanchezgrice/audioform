@@ -1,16 +1,16 @@
 {
   "name": "Talkform",
   "description": "Talkform lets agents collect reviewed human answers through project-scoped, expiring text handoff links with optional voice, then retrieve structured JSON.",
-  "url": "https://talkform.ai",
+  "url": "https://www.talkform.ai",
   "version": "1.0.0",
-  "agent_card": "https://talkform.ai/.well-known/agent-card.json",
+  "agent_card": "https://www.talkform.ai/.well-known/agent-card.json",
   "agent_card_status": "Informational discovery profile only; no A2A JSON-RPC endpoint is currently offered.",
-  "onboarding": "https://talkform.ai/agents.md",
-  "docs": "https://talkform.ai/docs",
-  "llms_txt": "https://talkform.ai/llms.txt",
+  "onboarding": "https://www.talkform.ai/agents.md",
+  "docs": "https://www.talkform.ai/docs",
+  "llms_txt": "https://www.talkform.ai/llms.txt",
   "schemas": [
-    "https://talkform.ai/schemas/audioform-config.json",
-    "https://talkform.ai/schemas/audioform-session-result.json"
+    "https://www.talkform.ai/schemas/audioform-config.json",
+    "https://www.talkform.ai/schemas/audioform-session-result.json"
   ],
   "contact": "support@talkform.ai",
   "hosted_handoff": {

@@ -1,11 +1,11 @@
 {
   "name": "Talkform",
   "description": "Talkform gives agents a project-scoped way to collect reviewed human answers through expiring text handoff links, with optional voice, and returns structured JSON.",
-  "url": "https://talkform.ai",
+  "url": "https://www.talkform.ai",
   "version": "1.0.0",
   "provider": {
     "organization": "Talkform",
-    "url": "https://talkform.ai"
+    "url": "https://www.talkform.ai"
   },
   "capabilities": {
     "streaming": false,
@@ -39,6 +39,6 @@
       "tags": ["handoff", "json", "agent", "project"]
     }
   ],
-  "documentationUrl": "https://talkform.ai/docs",
+  "documentationUrl": "https://www.talkform.ai/docs",
   "note": "Informational discovery profile; it is not an A2A JSON-RPC endpoint. Hosted handoffs use an Authorization Bearer project key, have 7-day links and 7-day completed-result access, and provide no webhook delivery."
 }

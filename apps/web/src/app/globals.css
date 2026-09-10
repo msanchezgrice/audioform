@@ -100,6 +100,16 @@ textarea:focus-visible {
   letter-spacing: -0.02em;
 }
 
+.workspaceShell { max-width: 1440px; padding: 0 32px 24px; }
+.workspaceShell .siteHeader { height: 64px; }
+.workspaceShell .siteNav > a:not([href="/docs"]) { display: none; }
+.workspaceShell .siteNav { align-items: center; }
+.workspaceShell .siteFooter { margin-top: 24px; padding-top: 20px; }
+.workspaceShell .footerGroups, .workspaceShell .footerBrand > strong,
+.workspaceShell .footerBrand > p, .workspaceShell .footerBrand > a[target] { display: none; }
+.workspaceShell .footerBrand > a { margin: 0; }
+@media (max-width: 760px) { .workspaceShell { padding: 0 16px 20px; } .workspaceShell .siteHeader { margin: 0 -16px; padding: 0 16px; } }
+
 .brandIcon {
   width: 28px;
   height: 28px;

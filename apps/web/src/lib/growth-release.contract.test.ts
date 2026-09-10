@@ -40,7 +40,7 @@ test("thin archives leave the sitemap and operational pages are noindex", () => 
   const billingSuccess = read("src/app/billing/success/page.tsx");
 
   assert.doesNotMatch(sitemap, /getAllTags|normalizeTag|\/feed\.xml/);
-  assert.match(sitemap, /"\/pilot"/);
+  assert.doesNotMatch(sitemap, /"\/pilot"/);
   assert.match(tagPage, /noIndex:\s*true/);
   assert.match(signIn, /noIndex:\s*true/);
   assert.match(signUp, /noIndex:\s*true/);

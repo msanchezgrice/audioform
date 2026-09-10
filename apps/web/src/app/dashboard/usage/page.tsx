@@ -2,6 +2,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getOperatorUsage, requireOperator } from "@/lib/platform/operator";
 import { PlatformError } from "@/lib/platform/types";
+import { currentUser } from "@clerk/nextjs/server";
+import { SwitchAccountButton } from "@/components/workspace-navigation";
+import accountStyles from "@/components/workspace-navigation.module.css";
 import styles from "../workspace.module.css";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Operator usage", robots: { index: false, follow: false } };
@@ -10,7 +13,9 @@ export default async function UsagePage() {
   let userId: string;
   try { userId = await requireOperator(); } catch (error) {
     if (error instanceof PlatformError && error.status === 401) redirect("/sign-in?redirect_url=/dashboard/usage");
-    return <main className={styles.workspace}><h1>Operator access required</h1><p>This report is restricted to the Talkform operator.</p><Link href="/dashboard">Back to your projects</Link></main>;
+    if (!(error instanceof PlatformError) || error.status !== 403) throw error;
+    const user = await currentUser();
+    return <main className={accountStyles.access}><h1>This is the owner’s usage report</h1><p>Your account can manage its own projects. Site-wide usage and cost information is available only to the Talkform owner.</p>{user?.primaryEmailAddress?.emailAddress && <p>Signed in as <span className={accountStyles.identity}>{user.primaryEmailAddress.emailAddress}</span></p>}<div className={accountStyles.actions}><Link href="/dashboard">Go to your projects</Link><SwitchAccountButton label="Switch account" /></div></main>;
   }
   const data = await getOperatorUsage(userId);
   return <main className={styles.workspace}><div className={styles.intro}><span className={styles.eyebrow}>Talkform operator</span><h1>Are agents coming back?</h1><p>Last 30 days, UTC. Activation means a project retrieved a submitted result. Repeat use means retrievals on at least two different days. Funnel and retention counts exclude internal and test projects; the project table shows all projects with their environment.</p><Link href="/dashboard">Your workspace</Link> · <a href="/dashboard/usage">Refresh</a></div>

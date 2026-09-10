@@ -4,6 +4,7 @@ import { Outfit, Fraunces } from "next/font/google";
 import { createMetadata, organizationJsonLd, websiteJsonLd } from "@/lib/seo";
 import { AuthProvider } from "@/components/auth-provider";
 import { TalkformGoogleAnalytics } from "@/components/talkform-google-analytics";
+import { NavigationAccount, SiteFrame } from "@/components/workspace-navigation";
 import "./globals.css";
 
 const bodyFont = Outfit({
@@ -40,7 +41,6 @@ const navItems = [
   { href: "/blog", label: "Blog" },
   { href: "/docs", label: "Docs" },
   { href: "/pricing", label: "Pricing" },
-  { href: "/sign-in", label: "Sign in" },
 ];
 
 const footerGroups = [
@@ -101,7 +101,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([organizationJsonLd, websiteJsonLd]).replace(/</g, "\\u003c") }} />
         <a className="skipLink" href="#main-content">Skip to main content</a>
-        <div className="siteShell">
+        <SiteFrame>
           <header className="siteHeader">
             <Link href="/" className="brandMark" data-testid="nav-brand">
               <svg className="brandIcon" viewBox="0 0 64 64" fill="none" aria-hidden="true">
@@ -119,7 +119,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   {item.label}
                 </Link>
               ))}
-              <Link href="/dashboard" prefetch={false} className="ctaNav" data-agent-action="get-started-free" data-testid="nav-cta-get-started-free">Get started free</Link>
+              <NavigationAccount enabled={Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim())} />
             </nav>
             <details className="mobileNav">
               <summary>Menu</summary>
@@ -129,7 +129,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     {item.label}
                   </Link>
                 ))}
-                <Link href="/dashboard" prefetch={false} className="mobileNavCta" data-agent-action="get-started-free">Get started free</Link>
+                <NavigationAccount enabled={Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim())} mobile />
               </nav>
             </details>
           </header>
@@ -152,7 +152,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               ))}
             </div>
           </footer>
-        </div>
+        </SiteFrame>
         </AuthProvider>
       </body>
     </html>
