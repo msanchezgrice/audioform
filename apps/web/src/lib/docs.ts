@@ -10,7 +10,7 @@ export const docsIndex = [
   {
     slug: "getting-started",
     title: "Getting Started",
-    description: "Install, configure env vars, and launch Talkform locally or on Vercel.",
+    description: "Choose the hosted API, MCP, Python, React, or local development path.",
     file: "getting-started.md",
   },
   {
@@ -28,8 +28,14 @@ export const docsIndex = [
   {
     slug: "http-api",
     title: "HTTP API",
-    description: "Session bootstrap, export routes, and validation endpoints.",
+    description: "Create durable hosted handoffs and retrieve reviewed structured results.",
     file: "http-api.md",
+  },
+  {
+    slug: "python-example",
+    title: "Python example",
+    description: "Run a no-dependency hosted handoff client with bounded polling and safe retries.",
+    file: "python-example.md",
   },
   {
     slug: "cli",
@@ -40,7 +46,7 @@ export const docsIndex = [
   {
     slug: "mcp",
     title: "MCP",
-    description: "Expose Talkform to AI agents through MCP tools and resources.",
+    description: "Use local config tools or authenticated hosted handoff tools through MCP.",
     file: "mcp.md",
   },
   {

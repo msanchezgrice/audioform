@@ -4,16 +4,17 @@ Talkform turns any form into a guided voice or text interview. It asks questions
 
 ## Quick orientation
 
-- Home: https://talkform.ai/
-- Live demo (voice or text interview): https://talkform.ai/app
-- Import a public form into an editable draft: https://talkform.ai/import
-- Create a free project for hosted handoffs: https://talkform.ai/dashboard
-- Docs: https://talkform.ai/docs (getting started, configuration, React, HTTP API, CLI, MCP)
-- FAQ: https://talkform.ai/faq
-- LLM site map: https://talkform.ai/llms.txt
-- Informational agent discovery profile (not an A2A endpoint): https://talkform.ai/.well-known/agent-card.json
-- Agent-readiness evidence and denominator: https://talkform.ai/evidence/agent-readiness
-- Agent manifest with guardrails: https://talkform.ai/.well-known/ai-agent.json
+- Home: https://www.talkform.ai/
+- Live demo (voice or text interview): https://www.talkform.ai/app
+- Import a public form into an editable draft: https://www.talkform.ai/import
+- Create a free project for hosted handoffs: https://www.talkform.ai/dashboard
+- Docs: https://www.talkform.ai/docs (getting started, configuration, React, HTTP API, Python example, CLI, MCP)
+- Python hosted handoff example: https://www.talkform.ai/docs/python-example
+- FAQ: https://www.talkform.ai/faq
+- LLM site map: https://www.talkform.ai/llms.txt
+- Informational agent discovery profile (not an A2A endpoint): https://www.talkform.ai/.well-known/agent-card.json
+- Agent-readiness evidence and denominator: https://www.talkform.ai/evidence/agent-readiness
+- Agent manifest with guardrails: https://www.talkform.ai/.well-known/ai-agent.json
 
 ## What agents can safely do
 
@@ -41,4 +42,4 @@ Talkform turns any form into a guided voice or text interview. It asks questions
 
 ## Contact
 
-support@talkform.ai — https://talkform.ai/contact
+support@talkform.ai — https://www.talkform.ai/contact
