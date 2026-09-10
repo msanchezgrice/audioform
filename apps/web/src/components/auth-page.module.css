@@ -1,0 +1,95 @@
+.page {
+  width: min(100% - 2rem, 960px);
+  margin: 0 auto;
+  padding: clamp(3rem, 8vw, 5rem) 0 3rem;
+}
+
+.intro {
+  max-width: 580px;
+  margin: 0 auto 2.5rem;
+  text-align: center;
+}
+
+.eyebrow {
+  display: inline-flex;
+  color: var(--accent-dark);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.intro h1 {
+  margin: 0.7rem 0 0.85rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+
+.intro p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.cardArea {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-width: 0;
+}
+
+.machineNote {
+  max-width: 400px;
+  margin: 1rem auto 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.machineNote a {
+  color: var(--accent-dark);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.fallback {
+  width: min(100%, 440px);
+  color: var(--ink);
+  line-height: 1.7;
+  text-align: center;
+}
+
+.fallback a {
+  color: var(--accent-dark);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.clerkRoot {
+  width: 100%;
+  max-width: 400px;
+  min-width: 0;
+}
+
+.clerkCardBox,
+.clerkCard {
+  width: 100%;
+  max-width: 400px;
+}
+
+@media (max-width: 480px) {
+  .page {
+    width: min(100% - 1.5rem, 400px);
+    padding-top: 2.5rem;
+  }
+
+  .intro {
+    margin-bottom: 2rem;
+  }
+}
