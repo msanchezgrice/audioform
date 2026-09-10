@@ -8,6 +8,25 @@
   "onboarding": "https://www.talkform.ai/agents.md",
   "docs": "https://www.talkform.ai/docs",
   "llms_txt": "https://www.talkform.ai/llms.txt",
+  "agent_registration": {
+    "http": "POST /api/v1/agents/register",
+    "mcp": "talkform.register_agent",
+    "input": {
+      "name": "optional string",
+      "environment": "optional production or test (default production)",
+      "idempotencyKey": "fresh UUIDv4 string"
+    },
+    "secret": "Returned once in the 201 response; never replayed on retry.",
+    "limits": {
+      "text_handoffs_per_day": 10,
+      "active_keys_per_project": 5,
+      "respondent_link_days": 7,
+      "completed_result_days": 7,
+      "voice_eligible": false,
+      "registrations_per_address_per_day": 3
+    },
+    "human_claim": "Requires the existing machine Bearer key and a signed-in Clerk owner; enables human-owned project limits and optional voice."
+  },
   "schemas": [
     "https://www.talkform.ai/schemas/audioform-config.json",
     "https://www.talkform.ai/schemas/audioform-session-result.json"
@@ -20,14 +39,16 @@
     "delete": "talkform.delete_handoff",
     "authentication": "Authorization: Bearer <project key from /dashboard>",
     "daily_text_limit": 100,
+    "machine_daily_text_limit": 10,
+    "shared_daily_capacity": 1000,
     "respondent_link_days": 7,
     "completed_result_days": 7,
     "retention": "7-day respondent links and 7-day completed-result access",
     "pending_result_status": 409,
     "expired_result_status": 410,
     "poll_interval_seconds": 10,
-    "webhooks": false,
-    "webhook_status": "No webhook delivery is implemented.",
+    "webhooks": true,
+    "webhook_status": "Configure PUT /api/v1/webhook with an HTTPS public port 443 URL. Completion events are signed, contain no answers, and retry up to seven total attempts.",
     "result_contents": "Reviewed structured values and response mode; no retained transcript or generated summary."
   },
   "guardrails": {

@@ -1,5 +1,6 @@
 import { createHmac } from "node:crypto";
 import { platformDatabase } from "../platform/database";
+import { recordCostAdmissionDenial } from "../operator-notifications/database";
 import { IMPORT_MODEL, REALTIME_MODEL, type ProviderUsage } from "./policy";
 
 export type CostFeature = "realtime" | "import_refinement";
@@ -142,10 +143,22 @@ export async function reserveCost(feature: CostFeature, identity: CostIdentity) 
         count(*) filter (where feature = 'realtime' and status in ${tx(ACTIVE_STATUSES)} and (actor_key = ${identity.actorKey} or address_key = ${identity.addressKey})) active
       from cost_reservations`;
     const daily = numberValue(totals.daily), monthly = numberValue(totals.monthly), actorDaily = numberValue(totals.actor_daily), active = numberValue(totals.active);
-    if (daily + reserved > policy.dailyLimitMicrousd) return { ok: false as const, reason: "global_daily" as const, policy };
-    if (monthly + reserved > policy.monthlyLimitMicrousd) return { ok: false as const, reason: "global_monthly" as const, policy };
-    if (actorDaily + reserved > policy.actorDailyLimitMicrousd) return { ok: false as const, reason: "actor_daily" as const, policy };
-    if (feature === "realtime" && active >= policy.actorMaxActiveRealtime) return { ok: false as const, reason: "concurrency" as const, policy };
+    if (daily + reserved > policy.dailyLimitMicrousd) {
+      await recordCostAdmissionDenial({ feature, reason: "global_daily" }, tx);
+      return { ok: false as const, reason: "global_daily" as const, policy };
+    }
+    if (monthly + reserved > policy.monthlyLimitMicrousd) {
+      await recordCostAdmissionDenial({ feature, reason: "global_monthly" }, tx);
+      return { ok: false as const, reason: "global_monthly" as const, policy };
+    }
+    if (actorDaily + reserved > policy.actorDailyLimitMicrousd) {
+      await recordCostAdmissionDenial({ feature, reason: "actor_daily" }, tx);
+      return { ok: false as const, reason: "actor_daily" as const, policy };
+    }
+    if (feature === "realtime" && active >= policy.actorMaxActiveRealtime) {
+      await recordCostAdmissionDenial({ feature, reason: "concurrency" }, tx);
+      return { ok: false as const, reason: "concurrency" as const, policy };
+    }
     const [row] = await tx<ReservationRow[]>`
       insert into cost_reservations (feature, actor_key, address_key, scope_kind, scope_id, model, reserved_microusd, expires_at)
       values (${feature}, ${identity.actorKey}, ${identity.addressKey}, ${identity.scopeKind}, ${identity.scopeId}, ${model}, ${reserved}, now() + ${feature === "realtime" ? "2 minutes" : "5 minutes"}::interval)

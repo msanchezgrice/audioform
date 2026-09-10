@@ -13,7 +13,7 @@ export function SiteFrame({ children }: { children: React.ReactNode }) {
 }
 
 function AnonymousNavigation({ mobile }: { mobile: boolean }) {
-  return <><Link href="/sign-in" prefetch={false} data-testid={mobile ? undefined : "nav-link-sign-in"}>Sign in</Link><Link href="/dashboard" prefetch={false} className={mobile ? "mobileNavCta" : "ctaNav"} data-agent-action="get-started-free" data-testid={mobile ? undefined : "nav-cta-get-started-free"}>Get started free</Link></>;
+  return <><Link href="/sign-in" prefetch={false} data-testid={mobile ? undefined : "nav-link-sign-in"}>Sign in</Link><Link href="/docs/getting-started" prefetch={false} className={mobile ? "mobileNavCta" : "ctaNav"} data-agent-action="get-started-free" data-testid={mobile ? undefined : "nav-cta-get-started-free"}>Agent quickstart</Link><Link href="/dashboard" prefetch={false} className={mobile ? "mobileNavSecondary" : "navSecondary"} data-agent-action="open-human-workspace">Open dashboard</Link></>;
 }
 
 function AuthenticatedNavigation({ mobile }: { mobile: boolean }) {

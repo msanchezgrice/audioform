@@ -141,16 +141,25 @@ test("hosted tools expose the full contract and return semantic service failures
   const calls: unknown[] = [];
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   const server = createTalkformMcpServer({ hosted: {
+    registerAgent: async (input) => ({ registration: { id: "d3d31521-0ae8-4f3f-bbc1-0422a3df2599" }, input, secret: "tfk_secret_shown_once" }),
     createHandoff: async (input) => { calls.push(input); return { id: "2d8b1a0a-5615-4bb5-a34e-12814cb144d8", respondentUrl: "https://www.talkform.ai/respond/example#token=example" }; },
     getHandoff: async (id) => ({ id, status: "pending" }),
     getResult: async () => { throw { publicMessage: "result_pending: No reviewed answers yet." }; },
     deleteHandoff: async (id) => ({ id, deleted: true }),
+    configureWebhook: async (url) => ({ webhook: { id: "56e22358-7c2c-4598-bf47-c75f057b5a6c", url }, secret: "tfwh_shown_once" }),
+    getWebhook: async () => ({ webhook: null, deliveries: [] }),
+    deleteWebhook: async () => ({ disabled: true }),
   } });
   const client = new Client({ name: "hosted-tests", version: "1" });
   t.after(async () => { await client.close(); await server.close(); });
   await server.connect(serverTransport);
   await client.connect(clientTransport);
   const { tools } = await client.listTools();
+  const register = tools.find((tool) => tool.name === "talkform.register_agent");
+  assert.deepEqual(register?.inputSchema.required, ["idempotencyKey"]);
+  const registered = await client.callTool({ name: "talkform.register_agent", arguments: { name: "Research agent", environment: "test", idempotencyKey: "59a39e19-d625-4d38-923b-b0fb92f1cb4e" } });
+  assert.equal(registered.isError, undefined);
+  assert.match(JSON.stringify(registered.structuredContent), /tfk_secret_shown_once/);
   const create = tools.find((tool) => tool.name === "talkform.create_handoff");
   assert.deepEqual(create?.inputSchema.required, ["config", "idempotencyKey"]);
   const configSchema = (create?.inputSchema.properties as Record<string, { required?: string[] }>).config;
@@ -164,6 +173,12 @@ test("hosted tools expose the full contract and return semantic service failures
   const invalid = await client.callTool({ name: "talkform.create_handoff", arguments: {} });
   assert.equal(invalid.isError, true);
   assert.equal(calls.length, 1);
+  const configured = await client.callTool({ name: "talkform.configure_webhook", arguments: { url: "https://example.com/talkform" } });
+  assert.match(JSON.stringify(configured.structuredContent), /tfwh_shown_once/);
+  const webhook = await client.callTool({ name: "talkform.get_webhook", arguments: {} });
+  assert.equal(webhook.isError, undefined);
+  const disabled = await client.callTool({ name: "talkform.delete_webhook", arguments: {} });
+  assert.match(JSON.stringify(disabled.structuredContent), /disabled/);
 });
 
 test("the draft widget resource uses the MCP Apps MIME type and a zero-egress CSP", async (t) => {

@@ -5,6 +5,7 @@ export type PricingPlan = {
   monthlyPriceUsd: number | null;
   annualPriceUsd: number | null;
   dailyHandoffs: number;
+  agentDailyHandoffs: number;
   respondentLinkDays: number;
   completedResultAccessDays: number;
   voiceAvailability: string;
@@ -20,16 +21,19 @@ export const pricingPlans: PricingPlan[] = [
     monthlyPriceUsd: 0,
     annualPriceUsd: 0,
     dailyHandoffs: 100,
+    agentDailyHandoffs: 10,
     respondentLinkDays: 7,
     completedResultAccessDays: 7,
-    voiceAvailability: "Optional under shared limits",
+    voiceAvailability: "Optional after human claim; capped by shared limits",
     features: [
-      "Up to 100 hosted text handoffs per day per project",
+      "Core text handoffs are free",
+      "Agent workspaces start with up to 10 text handoffs per day",
+      "Human-owned projects can create up to 100 text handoffs per day",
       "Respondent links stay open for 7 days",
       "Completed results stay available for 7 days",
-      "Optional voice under shared limits",
+      "Optional voice is capped under shared limits",
       "Browser demo, public-form importer, and local JSON export",
     ],
-    limitPolicy: "Usage is bounded per project and may be temporarily limited. No production SLA is promised.",
+    limitPolicy: "Paid voice requires an optional verified human claim. New handoff creation observes shared fair-use capacity of 1,000 per UTC day and remains bounded per project. Usage may be temporarily limited; no production SLA is promised.",
   },
 ];

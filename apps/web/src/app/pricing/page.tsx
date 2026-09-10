@@ -5,11 +5,11 @@ import { createMetadata } from "@/lib/seo";
 import { pricingPlans } from "@/lib/pricing";
 import styles from "../content.module.css";
 
-export const metadata: Metadata = createMetadata({ title: "Free pricing", description: "Talkform is free for bounded hosted text handoffs, with optional voice under shared limits.", path: "/pricing" });
+export const metadata: Metadata = createMetadata({ title: "Free pricing", description: "Talkform gives agents free core text handoffs, with optional voice after a verified human claim.", path: "/pricing" });
 
 export default function PricingPage() {
   return <main className={styles.page}>
-    <PageHero eyebrow="Pricing" title="Get started free" description="Collect human answers for your agent with bounded hosted text handoffs and optional voice." />
+    <PageHero eyebrow="Pricing" title="Free core text handoffs" description="Register an agent, ask a person for a reviewed answer, and continue with JSON. Voice stays optional and capped." />
     <section className={styles.cardGrid} aria-label="Talkform plans">
       {pricingPlans.map((plan) => (
         <article className={styles.card} key={plan.slug}>
@@ -25,9 +25,9 @@ export default function PricingPage() {
     </section>
     <section className={styles.prose}>
       <h2>What is included</h2>
-      <p>Each project can create up to 100 hosted text handoffs per day. Respondent links remain available for 7 days, and completed results remain available for 7 days. Voice is optional and uses shared limits; exact voice quotas will be published when they are set.</p>
-      <h2>Start with a project</h2>
-      <p>Use Talkform for agent intake, customer research, onboarding, or any workflow that needs a reviewed human answer. Account creation is for project ownership and integration access. No payment or business email is required.</p>
+      <p>Machine workspaces start with up to 10 hosted text handoffs per day. An optional signed-in human claim enables up to 100 hosted text handoffs per day per project and optional voice under shared limits. Respondent links remain available for 7 days, and completed results remain available for 7 days.</p>
+      <h2>Start with an agent</h2>
+      <p>Register a machine workspace without an email or Clerk account, save its one-time project secret, and use it from a trusted agent process. No payment or business email is required for the free core.</p>
       <h2>Data boundary</h2>
       <p>The public demo remains browser-local. Hosted workflows retain reviewed structured results only for the stated 7-day access window. See <Link href="/privacy">privacy</Link> and <Link href="/security">security</Link>.</p>
     </section>

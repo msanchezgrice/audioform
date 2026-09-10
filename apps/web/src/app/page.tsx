@@ -1,62 +1,34 @@
 import Link from "next/link";
-import { audioformSessionResultJsonSchema } from "@talkform/core";
 import { JsonLd } from "./_components/content";
 import { LiveDemoShowcase } from "@/components/live-demo-showcase";
 import { MarketingVideo } from "@/components/marketing-video";
 import styles from "./site.module.css";
 
 const homeFaqs = [
-  { question: "What does Talkform do today?", answer: "Talkform can turn supported fields from a public form URL into an editable draft, run a guided browser voice or text interview, and export structured JSON." },
-  { question: "Is microphone access required?", answer: "No. Typing is available without a realtime audio connection and stays in your browser until export. A text-only deployment never requests microphone permission." },
+  { question: "What does Talkform do today?", answer: "Talkform gives AI agents a hosted handoff: register a workspace, ask a person to answer a focused text form, and retrieve reviewed JSON. Human-owned workspaces can optionally use capped voice; the public importer and demo remain available." },
+  { question: "Is microphone access required?", answer: "No. In the public demo, typing is available without a realtime audio connection and stays in your browser until export. A text-only hosted handoff never requests microphone permission." },
   { question: "Which form providers can Talkform import?", answer: "The importer recognizes common patterns from Typeform, Google Forms, Jotform, and HubSpot public forms. Complex logic, uploads, payments, widgets, restricted forms, and provider automation may require manual work." },
-  { question: "How much does Talkform cost?", answer: "Talkform is free for up to 100 hosted text handoffs per day per project. Respondent links and completed results are available for 7 days; voice is optional under shared limits." },
+  { question: "How much does Talkform cost?", answer: "Core text handoffs are free. Machine workspaces start with 10 per day; an optional human claim enables up to 100 per day per project. Capped voice is available only after that claim. Links and completed results are available for 7 days." },
 ];
-
-const sampleResult = {
-  schemaVersion: "1.0",
-  formId: "customer-intake",
-  sessionId: "session_3e2z1f0c",
-  status: "completed",
-  completion: {
-    required: 5,
-    captured: 5,
-    percent: 100,
-    missingFieldIds: [],
-  },
-  currentPrompt: null,
-  fields: {
-    fullName: "Avery Stone",
-    role: "Product Lead",
-    goal: ["upskill_current_job", "ship_ai_projects"],
-    aiComfort: 4,
-    teamContext: "Leading a small product team at a B2B SaaS startup.",
-  },
-  transcript: [
-    { speaker: "assistant", text: "What should I call you?", timestamp: 1 },
-    { speaker: "user", text: "Avery Stone.", timestamp: 2 },
-  ],
-  summary: "Avery leads product at a SaaS startup and wants to ship AI projects for the current role.",
-  metadata: {
-    model: "gpt-realtime-2.1",
-    voice: "marin",
-    startedAt: "2026-03-10T12:00:00.000Z",
-  },
-};
 
 export default function HomePage() {
   return (
     <main className={styles.page}>
       <section className={styles.hero}>
         <article className={styles.heroCard}>
-          <div className={styles.eyebrow}>Audio-first forms</div>
-          <h1>Turn any form into a live <em>audio interview</em></h1>
+          <div className={styles.heroKicker}>Human input for AI agents</div>
+          <h1>Your agent asks. A human answers. Get reviewed JSON.</h1>
           <p className={styles.lede}>
-            Talkform asks questions aloud, fills structured fields from the conversation,
-            and exports clean JSON for your apps, workflows, and agents.
+            Give an agent a dependable handoff when the next step needs a person. Talkform
+            hosts a focused form, guides the response by text, and returns
+            structured answers after the person reviews them.
           </p>
           <div className={styles.heroActions}>
-            <Link href="/dashboard" className={styles.primaryAction} data-agent-action="get-started-free" data-testid="cta-get-started-free">
+            <Link href="/docs/getting-started" className={styles.primaryAction} data-agent-action="get-started-free" data-testid="cta-get-started-free">
               Get started free
+            </Link>
+            <Link href="/dashboard" className={styles.secondaryAction} data-agent-action="open-human-workspace">
+              Open dashboard
             </Link>
             <Link href="/app" className={styles.secondaryAction} data-agent-action="try-demo" data-testid="cta-try-demo">
               Try the demo
@@ -70,16 +42,36 @@ export default function HomePage() {
           </div>
         </article>
 
-        <div className={styles.heroAside}>
-          <div className={styles.ctaCard}>
-            <strong>Import existing forms</strong>
-            <p>Paste a public URL from Typeform, Google Forms, Jotform, or HubSpot, then review an editable draft before testing the interview.</p>
+        <aside className={styles.setupPanel} aria-labelledby="setup-heading">
+          <div className={styles.setupHeader}>
+            <span className={styles.setupKicker}>The handoff loop</span>
+            <h2 id="setup-heading">From a request to a result</h2>
           </div>
-          <div className={styles.surface}>
-            <strong>Developer-first integrations</strong>
-            <p>MCP tools, a CLI, JSON schemas, and docs that explain exactly how to configure and consume Talkform.</p>
+          <ol className={styles.setupSteps}>
+            <li>
+              <span className={styles.setupMarker}>01</span>
+              <div><strong>Register an agent</strong><p>Give your agent a place to keep its forms and handoffs.</p></div>
+            </li>
+            <li>
+              <span className={styles.setupMarker}>02</span>
+              <div><strong>Create a handoff</strong><p>Describe the fields your agent needs a person to answer.</p></div>
+            </li>
+            <li>
+              <span className={styles.setupMarker}>03</span>
+              <div><strong>Share one private link</strong><p>The respondent answers, reviews the fields, and submits.</p></div>
+            </li>
+            <li>
+              <span className={styles.setupMarker}>04</span>
+              <div><strong>Receive reviewed JSON</strong><p>Receive a completion event or poll, then retrieve the reviewed result.</p></div>
+            </li>
+          </ol>
+          <p className={styles.setupNote}>Free text forms. Optional voice is available in verified workspaces and remains capped under shared limits.</p>
+          <div className={styles.agentInstructions}>
+            <span>For agents</span>
+            <code>https://www.talkform.ai/agents.md</code>
+            <Link href="/agents.md">Open agent instructions <span aria-hidden="true">→</span></Link>
           </div>
-        </div>
+        </aside>
       </section>
 
       <section className={styles.section}>
@@ -162,27 +154,27 @@ export default function HomePage() {
       <section className={styles.section}>
         <div className={styles.sectionHeaderRow}>
           <div>
-            <h2 className={styles.sectionTitle}>How it <em>works</em></h2>
+            <h2 className={styles.sectionTitle}>How a handoff works</h2>
             <p className={styles.sectionIntro}>
-              You keep the schema. Talkform owns the interview, extraction, and export.
+              Your agent keeps the workflow. Talkform handles the focused questions, review, and structured result.
             </p>
           </div>
         </div>
         <div className={styles.threeUp}>
           <article className={styles.stepCard}>
             <span className={styles.stepNumber}>1</span>
-            <h3>Define the fields</h3>
-            <p>Describe variables, prompt copy, options, and validation in your config.</p>
+            <h3>Register and describe</h3>
+            <p>Give your agent a workspace, then describe the fields a person needs to answer.</p>
           </article>
           <article className={styles.stepCard}>
             <span className={styles.stepNumber}>2</span>
-            <h3>Run the interview</h3>
-            <p>Talkform asks one question at a time over live audio and writes the form.</p>
+            <h3>Share one link</h3>
+            <p>Send a private link. The respondent answers by text, reviews each field, and submits.</p>
           </article>
           <article className={styles.stepCard}>
             <span className={styles.stepNumber}>3</span>
-            <h3>Export the result</h3>
-            <p>Download JSON locally, or use a configured HTTP API and CLI deployment.</p>
+            <h3>Continue with JSON</h3>
+            <p>Poll or receive a signed completion event, then fetch the reviewed structured result.</p>
           </article>
         </div>
       </section>
@@ -192,7 +184,7 @@ export default function HomePage() {
           <div>
             <h2 className={styles.sectionTitle}>The <em>surface</em></h2>
             <p className={styles.sectionIntro}>
-              Transcript on the left, live question flow in the middle, captured answers on the right.
+            A focused question flow in the middle, with the reviewed fields your agent receives on the right.
             </p>
           </div>
         </div>
@@ -242,54 +234,57 @@ export default function HomePage() {
           <article className={styles.integrationCard}>
             <div className={styles.eyebrow}>R</div>
             <h3>React</h3>
-            <p>Embed the widget in any React product.</p>
+            <p>Embed a focused text or voice handoff in your product.</p>
           </article>
           <article className={styles.integrationCard}>
             <div className={styles.eyebrow}>API</div>
             <h3>HTTP API</h3>
-            <p>Bootstrap sessions and pull exports.</p>
+            <p>Register an agent, create links, and retrieve reviewed JSON.</p>
           </article>
           <article className={styles.integrationCard}>
             <div className={styles.eyebrow}>CLI</div>
             <h3>CLI</h3>
-            <p>Generate configs and export results.</p>
+            <p>Run a complete handoff workflow from a trusted worker.</p>
           </article>
           <article className={styles.integrationCard}>
             <div className={styles.eyebrow}>MCP</div>
             <h3>MCP</h3>
-            <p>Expose schemas and templates to coding agents.</p>
+            <p>Register an agent or create handoffs from an MCP client.</p>
           </article>
         </div>
         <article className={styles.outputCard}>
-          <h3>Hosted API boundary</h3>
+          <h3>Built for a bounded handoff</h3>
           <p>
-            Hosted text handoffs are bounded per project, with 7-day respondent links and 7-day completed-result access.
-            Voice is optional under shared limits. The public demo remains browser-local, and availability can vary while the hosted workflow matures.
+            Machine workspaces start with 10 hosted text handoffs per day. An optional human claim enables up to 100 text handoffs per day per project and capped voice under shared limits.
+            Respondent links and completed results remain available for 7 days. Configure signed completion events or poll from your worker.
           </p>
-          <p className={styles.sectionIntro}>
-            Legacy process-local session routes are disabled in hosted production by default. Enabling those reference routes requires a durable session store, a distributed rate limit, and server authentication.
-          </p>
+          <p className={styles.sectionIntro}>The free core is text-first, with no production SLA promise.</p>
         </article>
       </section>
 
       <section className={styles.section}>
         <div className={styles.sectionHeaderRow}>
           <div>
-            <h2 className={styles.sectionTitle}>Canonical <em>result</em></h2>
+            <h2 className={styles.sectionTitle}>One result contract</h2>
             <p className={styles.sectionIntro}>
-              One stable schema so downstream systems can adapt it into plans, CRM records, or onboarding flows.
+              A reviewed response arrives as structured JSON that your agent can validate and route.
             </p>
           </div>
         </div>
         <article className={styles.outputCard}>
           <h3>AudioformSessionResult</h3>
-          <p>One schema across the UI, HTTP API, CLI, and MCP resources.</p>
-          <pre className={styles.jsonBlock}>{JSON.stringify(sampleResult, null, 2)}</pre>
+          <p>One result shape across the HTTP API, CLI, and MCP tools: reviewed fields, completion status, and response mode.</p>
+          <div className={styles.resultRows}>
+            <div><span>Status</span><strong>completed</strong></div>
+            <div><span>Fields</span><strong>reviewed structured values</strong></div>
+            <div><span>Transcript</span><strong>not retained by hosted handoffs</strong></div>
+            <div><span>Summary</span><strong>empty for hosted handoffs</strong></div>
+          </div>
         </article>
         <article className={styles.outputCard}>
-          <h3>Schema availability</h3>
-          <p>Published at <code>/schemas/audioform-session-result.json</code></p>
-          <pre className={styles.jsonBlock}>{JSON.stringify(audioformSessionResultJsonSchema, null, 2)}</pre>
+          <h3>Read the schema</h3>
+          <p>Use the published schema when you validate or map the result in your own system.</p>
+          <p><Link href="/schemas/audioform-session-result.json" className={styles.docLink}>Open AudioformSessionResult schema</Link></p>
         </article>
       </section>
 
@@ -298,16 +293,13 @@ export default function HomePage() {
         <div className={styles.sectionHeaderRow}>
           <div>
             <h2 className={styles.sectionTitle} id="home-faq-heading">Quick <em>answers</em></h2>
-            <p className={styles.sectionIntro}>
-              The questions people ask first. The full list lives on the <Link href="/faq">FAQ page</Link>.
-            </p>
+          <p className={styles.sectionIntro}>Start with the <Link href="/faq">FAQ</Link> for agent registration, handoffs, voice, and data boundaries.</p>
           </div>
         </div>
         <p className={styles.answerBlock}>
-          Talkform converts online forms into guided voice interviews. You import a public form or define its
-          fields, Talkform asks each question aloud in the browser, writes the answers into structured fields,
-          and exports the results as clean JSON. It imports Typeform, Google Forms, Jotform, and HubSpot forms,
-          and the browser demo is free to try.
+          The public demo keeps transcript, summary, and answers in the browser until export. Hosted handoffs
+          store reviewed structured fields for the published access window, then return JSON to the owning project.
+          A respondent always reviews and explicitly submits before a hosted result is available.
         </p>
         <div className={styles.faqList}>
           {homeFaqs.map((faq) => (

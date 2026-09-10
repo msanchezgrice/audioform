@@ -1,9 +1,10 @@
 import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
 import { getCompletion, type AudioformConfig, type AudioformFieldMap } from "@talkform/core";
+import { recordPlatformCapacityDenial } from "../operator-notifications/database";
 import { createRespondentToken, decryptPlatformData, encryptPlatformData, hashSecret, validateAudioformConfig, validateRespondentSubmission } from "./auth";
 import { platformDatabase } from "./database";
 import { normalizedPlatformEventContext } from "./events";
-import { PLATFORM_LIMITS, PlatformError, type AuthenticatedProjectKey, type CreatedPlatformHandoff, type HostedAudioformSessionResult, type HostedHandoffStatus, type PlatformEventContext, type ProjectEnvironment, type RespondentHandoff } from "./types";
+import { PLATFORM_LIMITS, PlatformError, type AuthenticatedProjectKey, type CreatedPlatformHandoff, type HostedAudioformSessionResult, type HostedHandoffStatus, type PlatformEventContext, type ProjectEnvironment, type ProjectOwnerKind, type RespondentHandoff } from "./types";
 
 type HandoffRow = {
   id: string; project_id: string; created_by_key_id: string | null; idempotency_key: string;
@@ -57,7 +58,9 @@ export async function createHandoffForProject(
   const dedupeKey = idempotencyKey(input.idempotencyKey);
   const event = normalizedPlatformEventContext(eventContext);
   const sql = platformDatabase();
-  const outcome = await sql.begin(async (tx) => {
+  let outcome;
+  try {
+    outcome = await sql.begin(async (tx) => {
     await tx`select pg_advisory_xact_lock(hashtext(${`tf-handoff:${actor.projectId}:${dedupeKey}`}))`;
     const [existing] = await tx<HandoffRow[]>`select * from tf_handoffs where project_id=${actor.projectId} and idempotency_key=${dedupeKey}`;
     if (existing) {
@@ -72,12 +75,30 @@ export async function createHandoffForProject(
       const token = decryptPlatformData<string>(existing.respondent_token_ciphertext, TOKEN_AAD(existing.id));
       return { value: createdResponse(existing, input.baseUrl, token) };
     }
+    const [globalUsage] = await tx<{ handoffs_created: number }[]>`
+      insert into tf_global_daily_usage(usage_date,handoffs_created)
+      values ((now() at time zone 'utc')::date,1)
+      on conflict(usage_date) do update
+        set handoffs_created=tf_global_daily_usage.handoffs_created+1
+      where tf_global_daily_usage.handoffs_created < ${PLATFORM_LIMITS.globalHandoffsPerDay}
+      returning handoffs_created
+    `;
+    if (!globalUsage) {
+      const now = new Date();
+      const reset = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
+      throw new PlatformError("shared_capacity_reached", 429, "Hosted text handoff capacity is full for this UTC day.", {
+        retryAfterSeconds: Math.max(1, Math.ceil((reset.getTime() - now.getTime()) / 1_000)),
+        resetsAt: reset.toISOString(),
+      });
+    }
+    const [project] = await tx<{ daily_handoff_limit: number }[]>`select daily_handoff_limit from tf_projects where id=${actor.projectId} for share`;
+    if (!project) throw new PlatformError("not_found", 404, "Project not found.");
     const [usage] = await tx<{ handoffs_created: number }[]>`
       insert into tf_project_daily_usage (project_id, usage_date, handoffs_created)
       values (${actor.projectId}, (now() at time zone 'utc')::date, 1)
       on conflict (project_id, usage_date) do update
         set handoffs_created = tf_project_daily_usage.handoffs_created + 1
-      where tf_project_daily_usage.handoffs_created < ${PLATFORM_LIMITS.handoffsPerProjectPerDay}
+      where tf_project_daily_usage.handoffs_created < ${project.daily_handoff_limit}
       returning handoffs_created
     `;
     if (!usage) throw new PlatformError("daily_quota_exceeded", 429, "Daily handoff quota exceeded.");
@@ -92,7 +113,13 @@ export async function createHandoffForProject(
     `;
     await tx`insert into tf_events (event_key, event_name, project_id, key_id, handoff_id, environment, surface, client_sdk_name, client_sdk_version) values (${`handoff.created:${id}`}, 'handoff.created', ${actor.projectId}, ${actor.keyId}, ${id}, ${actor.environment}, ${event.surface}, ${event.client?.name ?? null}, ${event.client?.version ?? null}) on conflict (event_key) do nothing`;
     return { value: createdResponse(row, input.baseUrl, generated.token) };
-  });
+    });
+  } catch (error) {
+    if (error instanceof PlatformError && error.code === "shared_capacity_reached") {
+      await recordPlatformCapacityDenial({ kind: "handoffs", reason: "global" }).catch(() => undefined);
+    }
+    throw error;
+  }
   if ("error" in outcome) throw outcome.error;
   return outcome.value;
 }
@@ -159,8 +186,8 @@ export async function deleteHandoff(key: AuthenticatedProjectKey, id: string, ev
 }
 
 export async function authenticateRespondentHandoff(handoffId: string, token: string) {
-  const [record] = await platformDatabase()<(HandoffRow & { environment: ProjectEnvironment })[]>`
-    select h.*, p.environment from tf_handoffs h join tf_projects p on p.id=h.project_id where h.id=${handoffId}
+  const [record] = await platformDatabase()<(HandoffRow & { environment: ProjectEnvironment; owner_kind: ProjectOwnerKind })[]>`
+    select h.*, p.environment, p.owner_kind from tf_handoffs h join tf_projects p on p.id=h.project_id where h.id=${handoffId}
   `;
   if (!record || !record.respondent_token_hash) throw new PlatformError("invalid_respondent_token", 401, "Invalid respondent token.");
   const digest = hashSecret(token); const stored = Buffer.from(record.respondent_token_hash);
@@ -168,7 +195,7 @@ export async function authenticateRespondentHandoff(handoffId: string, token: st
   const row = await expireIfNeeded(record);
   if (row.status === "expired") throw new PlatformError("expired", 410, "Handoff has expired.");
   if (row.status === "deleted") throw new PlatformError("not_found", 404, "Handoff not found.");
-  return { scopeKind: "handoff" as const, scopeId: handoffId, actorKey: `respondent:${createHash("sha256").update(token).digest("base64url")}`, projectId: row.project_id, environment: record.environment, row };
+  return { scopeKind: "handoff" as const, scopeId: handoffId, actorKey: `respondent:${createHash("sha256").update(token).digest("base64url")}`, projectId: row.project_id, environment: record.environment, voiceEligible: record.owner_kind === "human", row };
 }
 
 export async function getRespondentHandoff(id: string, token: string, eventContext?: PlatformEventContext): Promise<RespondentHandoff> {
@@ -200,7 +227,7 @@ export async function submitRespondentHandoff(id: string, token: string, input: 
   const event = normalizedPlatformEventContext(eventContext);
   const sql = platformDatabase();
   const outcome = await sql.begin(async (tx) => {
-    const [row] = await tx<(HandoffRow & { environment: ProjectEnvironment })[]>`select h.*,p.environment from tf_handoffs h join tf_projects p on p.id=h.project_id where h.id=${id} for update of h`;
+    const [row] = await tx<(HandoffRow & { environment: ProjectEnvironment; owner_kind: ProjectOwnerKind })[]>`select h.*,p.environment,p.owner_kind from tf_handoffs h join tf_projects p on p.id=h.project_id where h.id=${id} for update of h`;
     if (!row || !row.respondent_token_hash) throw new PlatformError("invalid_respondent_token", 401, "Invalid respondent token.");
     const digest = hashSecret(token); const stored = Buffer.from(row.respondent_token_hash);
     if (stored.length !== digest.length || !timingSafeEqual(stored, digest)) throw new PlatformError("invalid_respondent_token", 401, "Invalid respondent token.");
@@ -212,6 +239,9 @@ export async function submitRespondentHandoff(id: string, token: string, input: 
     if (!row.config_ciphertext) throw new PlatformError("gone", 410, "Handoff content is no longer available.");
     const config = decryptPlatformData<AudioformConfig>(row.config_ciphertext, CONFIG_AAD(id));
     const submission = validateRespondentSubmission(config, input);
+    if (submission.mode === "voice" && row.owner_kind !== "human") {
+      throw new PlatformError("voice_not_available", 403, "Voice is available after this agent workspace is claimed by a verified account.");
+    }
     const fingerprint = createHash("sha256").update(JSON.stringify(submission)).digest();
     if (row.status === "completed") {
       if (!row.result_expires_at || new Date(row.result_expires_at).getTime() <= Date.now()) {

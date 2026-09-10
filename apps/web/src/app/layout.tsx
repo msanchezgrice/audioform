@@ -19,13 +19,13 @@ const displayFont = Fraunces({
 
 export const metadata: Metadata = {
   ...createMetadata({
-    title: "Talkform | Turn a form into a guided voice interview",
-    description: "Import a public form, run a guided browser voice or text interview, review structured answers, and export clean JSON.",
+    title: "Talkform | Human answers for AI agents",
+    description: "Register an agent, send a focused human handoff, and receive reviewed structured JSON through text or optional voice.",
     path: "/",
   }),
   metadataBase: new URL("https://www.talkform.ai"),
   title: {
-    default: "Talkform | Turn a form into a guided voice interview",
+    default: "Talkform | Human answers for AI agents",
     template: "%s | Talkform",
   },
   icons: {
@@ -137,7 +137,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <footer className="siteFooter">
             <div className="footerBrand">
               <strong>Talkform</strong>
-              <p>Guided browser voice interviews with reviewable structured answers.</p>
+              <p>Human answers for AI agents, returned as reviewed structured JSON.</p>
               <a href="mailto:support@talkform.ai">support@talkform.ai</a>
               <a href="https://twelve.tools" target="_blank">
                 <img src="https://twelve.tools/badge1-light.svg" alt="Featured on Twelve Tools" width="148" height="40" />

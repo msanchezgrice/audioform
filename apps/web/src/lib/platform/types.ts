@@ -2,16 +2,18 @@ import type { AudioformConfig, AudioformFieldMap, AudioformSessionResult } from 
 
 export const PLATFORM_LIMITS = {
   projectsPerAccount: 5, activeKeysPerProject: 5, handoffsPerProjectPerDay: 100,
+  machineHandoffsPerDay: 10, globalHandoffsPerDay: 1_000, agentRegistrationsPerAddressPerDay: 3, agentRegistrationsGlobalPerDay: 100,
   configBytes: 64 * 1024, configFields: 50, inviteDays: 7, resultDays: 7,
 } as const;
 export type ProjectEnvironment = "production" | "test";
+export type ProjectOwnerKind = "human" | "machine";
 export type RespondentMode = "voice" | "text";
 export type HostedHandoffStatus = "pending" | "completed" | "expired" | "deleted";
-export type ApiKeyScope = "handoffs:read" | "handoffs:write" | "handoffs:delete";
-export type PlatformProject = { id: string; name: string; environment: ProjectEnvironment; dailyHandoffLimit: number; createdAt: string; updatedAt: string };
+export type ApiKeyScope = "handoffs:read" | "handoffs:write" | "handoffs:delete" | "project:manage";
+export type PlatformProject = { id: string; name: string; environment: ProjectEnvironment; ownerKind: ProjectOwnerKind; dailyHandoffLimit: number; voiceEligible: boolean; createdAt: string; updatedAt: string; claimedAt: string | null };
 export type PlatformApiKey = { id: string; projectId: string; name: string; prefix: string; scopes: ApiKeyScope[]; createdAt: string; lastUsedAt: string | null; revokedAt: string | null };
 export type CreatedPlatformApiKey = PlatformApiKey & { secret: string };
-export type AuthenticatedProjectKey = { keyId: string; projectId: string; environment: ProjectEnvironment; scopes: ApiKeyScope[] };
+export type AuthenticatedProjectKey = { keyId: string; projectId: string; environment: ProjectEnvironment; ownerKind: ProjectOwnerKind; dailyHandoffLimit: number; voiceEligible: boolean; scopes: ApiKeyScope[] };
 export type PlatformHandoff = { id: string; projectId: string; status: HostedHandoffStatus; createdAt: string; expiresAt: string; completedAt: string | null; resultExpiresAt: string | null };
 export type CreatedPlatformHandoff = PlatformHandoff & { respondentUrl: string };
 export type RespondentHandoff = { id: string; config: AudioformConfig; status: HostedHandoffStatus; expiresAt: string };
@@ -23,6 +25,12 @@ export type PlatformEventSurface = "rest" | "mcp" | "dashboard" | "respondent" |
 export type PlatformClientMetadata = { name: string | null; version: string | null; selfReported: true };
 export type PlatformEventContext = { surface: PlatformEventSurface; client?: PlatformClientMetadata | null };
 export type PlatformEvent = { id: string; eventKey: string; eventName: PlatformEventName; projectId: string; keyId: string | null; handoffId: string | null; environment: ProjectEnvironment; surface: PlatformEventSurface; client: PlatformClientMetadata | null; createdAt: string };
+export type AgentRegistration = { id: string; projectId: string; ownerKind: "machine"; verifiedHuman: false; createdAt: string };
+export type AgentRegistrationResult = {
+  registration: AgentRegistration; project: PlatformProject; key: PlatformApiKey; secret: string;
+  limits: { textHandoffsPerDay: number; sharedTextHandoffsPerDay: number; activeKeysPerProject: number; inviteDays: number; resultDays: number; voiceEligible: false };
+  urls: { handoffs: string; mcp: string; claim: string; keys: string };
+};
 export class PlatformError extends Error {
-  constructor(public readonly code: string, public readonly status: number, message: string) { super(message); this.name = "PlatformError"; }
+  constructor(public readonly code: string, public readonly status: number, message: string, public readonly details?: Record<string, string | number | boolean | null>) { super(message); this.name = "PlatformError"; }
 }

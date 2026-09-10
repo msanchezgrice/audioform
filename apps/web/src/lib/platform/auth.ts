@@ -1,8 +1,8 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes, timingSafeEqual } from "node:crypto";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { audioformConfigSchema, normalizeFieldValue, type AudioformConfig, type AudioformField, type AudioformFieldMap } from "@talkform/core";
 import { platformDatabase } from "./database";
-import { PLATFORM_LIMITS, PlatformError, type ApiKeyScope, type AuthenticatedProjectKey, type RespondentSubmission } from "./types";
+import { PLATFORM_LIMITS, PlatformError, type ApiKeyScope, type AuthenticatedProjectKey, type ProjectOwnerKind, type RespondentSubmission } from "./types";
 
 const API_KEY_PATTERN = /^(tfk_[A-Za-z0-9_-]{12}_)[A-Za-z0-9_-]{43}$/;
 const SAFE_FIELD_ID = /^(?!__proto__$|constructor$|prototype$)[A-Za-z][A-Za-z0-9_.-]{0,127}$/;
@@ -45,6 +45,15 @@ export function createRespondentToken() { const token = randomBytes(32).toString
 export async function requireClerkUserId() {
   const { userId } = await auth();
   if (!userId) throw new PlatformError("unauthorized", 401, "Sign in to continue.");
+  return userId;
+}
+
+export async function requireVerifiedClerkUserId() {
+  const userId = await requireClerkUserId();
+  const user = await currentUser();
+  if (!user || user.id !== userId || !user.emailAddresses.some((email) => email.verification?.status === "verified")) {
+    throw new PlatformError("verified_account_required", 403, "Claiming an agent workspace requires a verified account email.");
+  }
   return userId;
 }
 
@@ -123,8 +132,8 @@ export async function authenticateProjectKey(request: Request, requiredScope: Ap
   const parsed = candidate ? API_KEY_PATTERN.exec(candidate) : null;
   if (!candidate || !parsed) throw new PlatformError("invalid_api_key", 401, "Invalid API key.");
   const sql = platformDatabase();
-  const [record] = await sql<{ key_id: string; project_id: string; environment: "production" | "test"; secret_hash: Uint8Array; scopes: ApiKeyScope[] }[]>`
-    select k.id as key_id, k.project_id, p.environment, k.secret_hash, k.scopes
+  const [record] = await sql<{ key_id: string; project_id: string; environment: "production" | "test"; owner_kind: ProjectOwnerKind; daily_handoff_limit: number; secret_hash: Uint8Array; scopes: ApiKeyScope[] }[]>`
+    select k.id as key_id, k.project_id, p.environment, p.owner_kind, p.daily_handoff_limit, k.secret_hash, k.scopes
     from tf_api_keys k join tf_projects p on p.id = k.project_id
     where k.key_prefix = ${parsed[1]} and k.revoked_at is null limit 1
   `;
@@ -133,7 +142,7 @@ export async function authenticateProjectKey(request: Request, requiredScope: Ap
   if (!record || stored.length !== digest.length || !timingSafeEqual(stored, digest)) throw new PlatformError("invalid_api_key", 401, "Invalid API key.");
   if (!record.scopes.includes(requiredScope)) throw new PlatformError("insufficient_scope", 403, "API key scope denied.");
   await sql`update tf_api_keys set last_used_at = now() where id = ${record.key_id}`;
-  return { keyId: record.key_id, projectId: record.project_id, environment: record.environment, scopes: record.scopes };
+  return { keyId: record.key_id, projectId: record.project_id, environment: record.environment, ownerKind: record.owner_kind, dailyHandoffLimit: record.daily_handoff_limit, voiceEligible: record.owner_kind === "human", scopes: record.scopes };
 }
 
 export function respondentToken(request: Request) {

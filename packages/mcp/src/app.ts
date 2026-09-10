@@ -718,10 +718,14 @@ function registerLegacyStdioSurface(server: McpServer) {
 }
 
 export type HostedMcpServices = {
+  registerAgent: (input: { name?: string; environment?: "production" | "test"; idempotencyKey: string }) => Promise<Record<string, unknown>>;
   createHandoff: (input: { config: unknown; idempotencyKey: string }) => Promise<Record<string, unknown>>;
   getHandoff: (id: string) => Promise<Record<string, unknown>>;
   getResult: (id: string) => Promise<Record<string, unknown>>;
   deleteHandoff: (id: string) => Promise<Record<string, unknown>>;
+  configureWebhook: (url: string) => Promise<Record<string, unknown>>;
+  getWebhook: () => Promise<Record<string, unknown>>;
+  deleteWebhook: () => Promise<Record<string, unknown>>;
 };
 
 function registerHostedTools(server: McpServer, services: HostedMcpServices) {
@@ -736,6 +740,16 @@ function registerHostedTools(server: McpServer, services: HostedMcpServices) {
       return { content: [{ type: "text" as const, text: safe }], isError: true };
     }
   };
+  server.registerTool("talkform.register_agent", {
+    title: "Create a private agent workspace",
+    description: "Creates a persistent machine-owned project and returns its API key secret once. No email, sign-in, or human identity is created. Use a fresh UUIDv4 idempotencyKey and save the returned secret; retries never reveal it again. Machine projects receive 10 hosted text handoffs per day and no hosted voice until claimed by a signed-in owner.",
+    inputSchema: z.object({
+      name: z.string().trim().min(1).max(80).optional(),
+      environment: z.enum(["production", "test"]).default("production"),
+      idempotencyKey: z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i),
+    }).strict(),
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+  }, (input) => result(() => services.registerAgent(input)));
   server.registerTool("talkform.create_handoff", {
     title: "Create a hosted interview",
     description: "Stores a validated form and returns a private respondent link. Requires a project API key. Use the same idempotencyKey when retrying. Respondents explicitly submit reviewed answers.",
@@ -755,6 +769,24 @@ function registerHostedTools(server: McpServer, services: HostedMcpServices) {
     title: "Delete a hosted interview", description: "Permanently deletes stored configuration and answers. Requires confirmation from the user and a project API key.", inputSchema: idSchema,
     annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
   }, ({ id }) => result(() => services.deleteHandoff(id)));
+  server.registerTool("talkform.configure_webhook", {
+    title: "Configure a completion webhook",
+    description: "Configures one HTTPS endpoint for completed handoffs in this project. Replaces any active endpoint and returns the signing secret once. Requires a project API key.",
+    inputSchema: z.object({ url: z.string().url().max(2_048) }).strict(),
+    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true },
+  }, ({ url }) => result(() => services.configureWebhook(url)));
+  server.registerTool("talkform.get_webhook", {
+    title: "Get completion webhook",
+    description: "Returns active webhook metadata and recent delivery metadata for this project. Signing secrets are never returned. Requires a project API key.",
+    inputSchema: z.object({}).strict(),
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  }, () => result(() => services.getWebhook()));
+  server.registerTool("talkform.delete_webhook", {
+    title: "Disable completion webhook",
+    description: "Disables this project's active webhook and cancels pending deliveries. Requires a project API key.",
+    inputSchema: z.object({}).strict(),
+    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+  }, () => result(() => services.deleteWebhook()));
 }
 
 export function createTalkformMcpServer(options: { includeLegacyStdioSurface?: boolean; hosted?: HostedMcpServices } = {}) {
@@ -762,7 +794,7 @@ export function createTalkformMcpServer(options: { includeLegacyStdioSurface?: b
     { name: "talkform", version: TALKFORM_MCP_VERSION },
     {
       instructions:
-        "Prepare tools create local previews. Hosted handoff tools require a project API key and store forms for invited respondents. Ask for confirmation before deleting a handoff. Never invent or submit a respondent's answers.",
+        "Prepare tools create local previews. The hosted register_agent tool creates a private machine workspace without human sign-in and returns its key once. Other hosted handoff tools require that project key and store forms for invited respondents. Ask for confirmation before deleting a handoff. Never invent or submit a respondent's answers.",
     },
   );
   registerPublicTools(server);
