@@ -9,6 +9,8 @@ import {
   validateRespondentSubmission,
 } from "./auth";
 import { platformClientMetadata, platformEventContext } from "./events";
+import { validateAgentRegistrationInput } from "./registration";
+import { platformRequestAddressKey } from "../../app/api/v1/_lib/http";
 
 const config = {
   id: "lead-intake",
@@ -97,4 +99,40 @@ test("event context trusts the server surface and bounds self-reported SDK label
     "x-talkform-sdk": "bad sdk name",
     "x-talkform-sdk-version": "x".repeat(33),
   } })), null);
+});
+
+test("agent registration accepts only a UUIDv4 idempotency key and no identity claims", () => {
+  assert.deepEqual(validateAgentRegistrationInput({ idempotencyKey: "59a39e19-d625-4d38-923b-b0fb92f1cb4e" }), {
+    name: "Agent workspace",
+    environment: "production",
+    idempotencyKey: "59a39e19-d625-4d38-923b-b0fb92f1cb4e",
+  });
+  assert.deepEqual(validateAgentRegistrationInput({ name: "  Research agent  ", environment: "test" }, "7C91FB9C-EA54-49E0-BA2E-F53C4BE96087"), {
+    name: "Research agent",
+    environment: "test",
+    idempotencyKey: "7c91fb9c-ea54-49e0-ba2e-f53c4be96087",
+  });
+  assert.throws(() => validateAgentRegistrationInput({ email: "agent@example.com", idempotencyKey: "59a39e19-d625-4d38-923b-b0fb92f1cb4e" }), /only name, environment, and idempotencyKey/);
+  assert.throws(() => validateAgentRegistrationInput({ environment: "preview", idempotencyKey: "59a39e19-d625-4d38-923b-b0fb92f1cb4e" }), /production or test/);
+  assert.throws(() => validateAgentRegistrationInput({ idempotencyKey: "not-random" }), /UUIDv4/);
+  assert.throws(() => validateAgentRegistrationInput({ idempotencyKey: "59a39e19-d625-1d38-923b-b0fb92f1cb4e" }), /UUIDv4/);
+});
+
+test("registration address identity is stable, purpose-bound, and fails closed", () => {
+  const originalVercel = process.env.VERCEL;
+  const originalPepper = process.env.TALKFORM_RATE_LIMIT_PEPPER;
+  delete process.env.VERCEL;
+  process.env.TALKFORM_RATE_LIMIT_PEPPER = "registration-test-pepper-value-at-least-32-bytes";
+  try {
+    const first = platformRequestAddressKey(new Request("https://talkform.test", { headers: { "x-real-ip": "192.0.2.10" } }), "agent-registration");
+    const repeated = platformRequestAddressKey(new Request("https://talkform.test", { headers: { "x-real-ip": "192.0.2.10" } }), "agent-registration");
+    const otherPurpose = platformRequestAddressKey(new Request("https://talkform.test", { headers: { "x-real-ip": "192.0.2.10" } }), "other");
+    assert.equal(first, repeated);
+    assert.notEqual(first, otherPurpose);
+    assert.match(first, /^[A-Za-z0-9_-]{43}$/);
+    assert.throws(() => platformRequestAddressKey(new Request("https://talkform.test")), /stable request identity/);
+  } finally {
+    if (originalVercel === undefined) delete process.env.VERCEL; else process.env.VERCEL = originalVercel;
+    if (originalPepper === undefined) delete process.env.TALKFORM_RATE_LIMIT_PEPPER; else process.env.TALKFORM_RATE_LIMIT_PEPPER = originalPepper;
+  }
 });

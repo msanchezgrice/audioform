@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./workspace.module.css";
 
@@ -12,10 +13,16 @@ const example = { id: "project-brief", title: "Tell us about your project", fiel
 const statLabels: Record<string, string> = { createdToday: "Created today", pending: "Awaiting response", completed: "Submitted", expired: "Expired", deleted: "Deleted" };
 const statusLabels: Record<string, string> = { created: "Link created", open: "Awaiting response", pending: "Awaiting response", submitted: "Submitted", completed: "Submitted", deleted: "Deleted", expired: "Expired" };
 
+class ApiError extends Error {
+  constructor(message: string, readonly status: number, readonly code?: string) {
+    super(message);
+  }
+}
+
 async function api(path: string, init?: RequestInit) {
-  const response = await fetch(path, { ...init, headers: { "Content-Type": "application/json", ...init?.headers }, cache: "no-store" });
+  const response = await fetch(path, { ...init, credentials: "same-origin", headers: { "Content-Type": "application/json", ...init?.headers }, cache: "no-store" });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(typeof data.error === "string" ? data.error : data.error?.message || "The request failed. Please try again.");
+  if (!response.ok) throw new ApiError(typeof data.error === "string" ? data.error : data.error?.message || "The request failed. Please try again.", response.status, data.error?.code);
   return data;
 }
 
@@ -24,12 +31,15 @@ function formatStatus(status: string) {
 }
 
 export function ProjectDashboard() {
+  const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [selected, setSelected] = useState("");
   const [detail, setDetail] = useState<Detail | null>(null);
   const [name, setName] = useState("");
   const [environment, setEnvironment] = useState("production");
   const [secret, setSecret] = useState("");
+  const [claimKey, setClaimKey] = useState("");
+  const [claimMessage, setClaimMessage] = useState("");
   const [draft, setDraft] = useState(JSON.stringify(example, null, 2));
   const [invite, setInvite] = useState("");
   const [error, setError] = useState("");
@@ -64,6 +74,40 @@ export function ProjectDashboard() {
     try { await action(); } catch (e) { setError(e instanceof Error ? e.message : "Something went wrong."); } finally { setBusy(false); }
   }
 
+  async function claimAgentWorkspace() {
+    setError("");
+    setClaimMessage("");
+    const projectKey = claimKey.trim();
+    if (!projectKey) {
+      setError("Enter the existing machine project key to connect its workspace.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const data = await api("/api/v1/agents/claim", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${projectKey}` },
+        body: "{}",
+      });
+      setClaimKey("");
+      setClaimMessage("Agent workspace connected. Voice is now available within the workspace limits.");
+      await refresh();
+      if (data.project?.id) setSelected(data.project.id);
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 401) {
+        router.push("/sign-in?redirect_url=/dashboard");
+        return;
+      }
+      if (e instanceof ApiError && e.status === 403 && e.code === "verified_account_required") {
+        setError("Verify your account email in Clerk before connecting an agent workspace.");
+        return;
+      }
+      setError(e instanceof Error ? e.message : "Unable to connect this agent workspace.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <main className={styles.workspace}>
       <header className={styles.workspaceHeader}>
@@ -81,6 +125,15 @@ export function ProjectDashboard() {
             <label>Environment<select value={environment} onChange={(e) => setEnvironment(e.target.value)}><option value="production">Production</option><option value="test">Test</option></select></label>
             <button className={styles.primary} disabled={busy || projects.length >= 5} data-testid="create-project">Create project</button>
           </form>
+          <details className={styles.claimWorkspace}>
+            <summary>Connect an agent workspace</summary>
+            <p>Already have a machine project key? Connect that workspace to this verified account to manage it here.</p>
+            <form onSubmit={(event) => { event.preventDefault(); void claimAgentWorkspace(); }}>
+              <label className="ph-no-capture">Machine project key<input className="ph-no-capture" type="password" name="agent-project-key" autoComplete="new-password" value={claimKey} onChange={(event) => setClaimKey(event.target.value)} placeholder="tfk_…" spellCheck={false} /></label>
+              <button className={styles.primary} type="submit" disabled={busy}>Connect workspace</button>
+            </form>
+            {claimMessage && <p className={styles.claimMessage} role="status">{claimMessage}</p>}
+          </details>
           <p className={styles.railNote}>100 hosted text handoffs per day per project. Voice uses shared limits.</p>
         </aside>
         <div className={styles.contentColumn}>

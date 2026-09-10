@@ -35,3 +35,43 @@ jobs:
       - run: pnpm test:e2e
         env:
           PLAYWRIGHT_CHROMIUM_EXECUTABLE: /usr/bin/google-chrome
+
+  database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        suite: [platform, cost, webhook, notifications]
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: talkform_test
+          POSTGRES_PASSWORD: local_ci_only
+          POSTGRES_DB: talkform_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U talkform_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://talkform_test:local_ci_only@127.0.0.1:5432/talkform_test
+      TALKFORM_PLATFORM_TEST_DATABASE_URL: postgresql://talkform_test:local_ci_only@127.0.0.1:5432/talkform_test
+      TALKFORM_COST_TEST_DATABASE_URL: postgresql://talkform_test:local_ci_only@127.0.0.1:5432/talkform_test
+      TALKFORM_WEBHOOK_TEST_DATABASE_URL: postgresql://talkform_test:local_ci_only@127.0.0.1:5432/talkform_test
+      TALKFORM_NOTIFICATIONS_TEST_DATABASE_URL: postgresql://talkform_test:local_ci_only@127.0.0.1:5432/talkform_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @talkform/core build
+      - run: node --import tsx apps/web/scripts/migrate-billing.ts
+      - run: pnpm test:${{ matrix.suite }}-db

@@ -38,6 +38,12 @@ export const docsIndex = [
     file: "python-example.md",
   },
   {
+    slug: "python-webhook-receiver",
+    title: "Python webhook receiver",
+    description: "Verify signed completion events, deduplicate deliveries, and fetch reviewed JSON.",
+    file: "python-webhook-receiver.md",
+  },
+  {
     slug: "cli",
     title: "CLI",
     description: "Scaffold configs, validate them, and export sessions from the command line.",

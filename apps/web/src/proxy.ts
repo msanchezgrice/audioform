@@ -8,6 +8,7 @@ export const config = {
     "/api/billing/portal",
     "/dashboard(.*)",
     "/api/v1/projects(.*)",
+    "/api/v1/agents/claim(.*)",
     "/api/internal/operator(.*)",
   ],
 };

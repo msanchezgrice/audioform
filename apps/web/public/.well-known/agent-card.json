@@ -37,8 +37,14 @@
       "name": "Create a hosted handoff",
       "description": "With a project Bearer key, create an idempotent handoff, send a respondent a 7-day link, poll for a reviewed result, or delete the handoff.",
       "tags": ["handoff", "json", "agent", "project"]
+    },
+    {
+      "id": "register-agent",
+      "name": "Register an agent workspace",
+      "description": "Register a machine workspace without an email or Clerk account and receive a one-time project key secret.",
+      "tags": ["registration", "agent", "api-key"]
     }
   ],
   "documentationUrl": "https://www.talkform.ai/docs",
-  "note": "Informational discovery profile; it is not an A2A JSON-RPC endpoint. Hosted handoffs use an Authorization Bearer project key, have 7-day links and 7-day completed-result access, and provide no webhook delivery."
+  "note": "Informational discovery profile; it is not an A2A JSON-RPC endpoint. Agents can register a machine workspace with POST /api/v1/agents/register or talkform.register_agent, then use its Authorization Bearer project key. The one-time secret is never replayed. Hosted handoffs have 7-day links and 7-day completed-result access; signed completion webhooks are available through the HTTP API."
 }

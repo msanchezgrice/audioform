@@ -2,17 +2,18 @@ import { NextResponse } from "next/server";
 
 const body = `# Talkform
 
-> Talkform turns any form into a live audio interview. It asks questions aloud in the browser (or accepts typed answers), captures structured values into the form's fields, and exports clean JSON for apps, workflows, and agents. It ships as a React widget, an HTTP API, a CLI, and an MCP server.
+> Talkform gives AI agents a human handoff: an agent registers a workspace, asks a person to answer a focused form, and receives reviewed structured JSON. Text is the dependable default; optional voice is available only in a verified human workspace. It ships as a React widget, an HTTP API, a CLI, and an MCP server.
 
 ## Docs
 
-- [Getting started](https://www.talkform.ai/docs/getting-started): create a free hosted project, send a respondent link, and retrieve reviewed JSON
+- [Getting started](https://www.talkform.ai/docs/getting-started): register an agent workspace, send a respondent link, and retrieve reviewed JSON
 - [Configuration](https://www.talkform.ai/docs/configuration): the AudioformConfig schema, fields, prompts, and validation
 - [React widget](https://www.talkform.ai/docs/react): embed Talkform in any React product
 - [HTTP API](https://www.talkform.ai/docs/http-api): create hosted respondent handoffs and retrieve reviewed results over HTTP
-- [Python example](https://www.talkform.ai/docs/python-example): create a hosted handoff, send its respondent URL, and poll the reviewed JSON result
+- [Python example](https://www.talkform.ai/docs/python-example): register an agent, create a hosted handoff, send its respondent URL, and poll the reviewed JSON result
+- [Python webhook receiver](https://www.talkform.ai/docs/python-webhook-receiver): verify signed completion events and fetch reviewed JSON
 - [CLI](https://www.talkform.ai/docs/cli): generate configs and export results from the terminal
-- [MCP server](https://www.talkform.ai/docs/mcp): use local schemas and templates or authenticated hosted handoff tools
+- [MCP server](https://www.talkform.ai/docs/mcp): register an agent, use local schemas and templates, or call authenticated hosted handoff tools
 - [Agents](https://www.talkform.ai/docs/agents): how AI agents should integrate with Talkform
 - [Agent-readiness evidence](https://www.talkform.ai/evidence/agent-readiness): dated route denominator, method, and limitations
 
@@ -33,8 +34,8 @@ const body = `# Talkform
 - [Import a form](https://www.talkform.ai/import): turn a public Typeform, Google Forms, Jotform, or HubSpot form into an editable Talkform draft
 - [FAQ](https://www.talkform.ai/faq): plain answers on imports, voice and text input, data handling, and limitations
 - [Use cases](https://www.talkform.ai/use-cases): example deployments
-- [Pricing](https://www.talkform.ai/pricing): one free plan with up to 100 hosted text handoffs per day per project, 7-day links, 7-day completed-result access, and optional voice under shared limits
-- [Dashboard](https://www.talkform.ai/dashboard): create and manage a free project
+- [Pricing](https://www.talkform.ai/pricing): free core text handoffs, 10/day machine workspaces, 100/day human-owned projects, 7-day links/results, and capped optional voice
+- [Dashboard](https://www.talkform.ai/dashboard): claim and manage a human-owned project
 - [Hosted handoff API](https://www.talkform.ai/docs/http-api): create project-scoped respondent links with POST /api/v1/handoffs, poll reviewed results, and delete handoffs
 
 ## Examples
@@ -48,13 +49,15 @@ const body = `# Talkform
 - [Changelog](https://www.talkform.ai/changelog)
 - [Contact](https://www.talkform.ai/contact): support@talkform.ai
 
-## Hosted handoff contract
+## Agent registration and hosted handoff contract
 
-- Authenticate machine requests with Authorization: Bearer project-key from /dashboard.
+- Register without an email or Clerk account with POST /api/v1/agents/register or talkform.register_agent using an optional name, optional production/test environment, and a fresh UUIDv4 idempotencyKey.
+- The 201 response returns registration, project, key, a one-time secret, limits, and URLs. Machine workspaces start at 10 text handoffs per day and voiceEligible false; save the secret immediately.
+- Authenticate machine requests with Authorization: Bearer project-key from registration or /dashboard.
 - Create with talkform.create_handoff or POST /api/v1/handoffs using config and idempotencyKey.
 - Read status with talkform.get_handoff; retrieve reviewed structured values with talkform.get_result.
 - Poll results every 10 seconds or slower. Pending returns HTTP 409; expired returns HTTP 410.
-- Respondent links and completed-result access last 7 days. No webhook delivery is implemented.
+- Respondent links and completed-result access last 7 days. Configure signed handoff.completed webhooks with PUT /api/v1/webhook, or poll when no webhook is configured.
 - Hosted results contain reviewed structured values and response mode; Talkform does not retain a transcript or generated summary.
 `;
 

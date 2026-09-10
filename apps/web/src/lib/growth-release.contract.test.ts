@@ -125,6 +125,7 @@ test("machine-readable manifests describe hosted handoff discovery without A2A c
     assert.match(source, /hosted handoff/i);
     assert.match(source, /7-day/i);
     assert.match(source, /Bearer/i);
-    assert.match(source, /no webhook/i);
+    assert.match(source, /webhook/i);
+    assert.match(source, /register_agent|agents\/register/i);
   }
 });

@@ -27,6 +27,15 @@
 .projects small { color: #718087; font-size: 11px; text-transform: capitalize; }
 .createProject { padding-top: 18px; border-top: 1px solid #e4e9ec; }
 .createProject h3 { margin: 0 0 14px; font-size: 14px; }
+.claimWorkspace { margin-top: 18px; padding-top: 16px; border-top: 1px solid #e4e9ec; }
+.claimWorkspace summary { color: #176b68; font-size: 13px; font-weight: 700; cursor: pointer; }
+.claimWorkspace > p { margin: 12px 0; color: #68777e; font-size: 12px; line-height: 1.55; }
+.claimWorkspace form { display: grid; gap: 10px; }
+.claimWorkspace label { display: grid; gap: 6px; color: #40515a; font-size: 12px; font-weight: 700; }
+.claimWorkspace input { width: 100%; box-sizing: border-box; padding: 10px 11px; border: 1px solid #c5d0d6; border-radius: 7px; background: #fcfdfd; color: inherit; font: inherit; }
+.claimWorkspace input:focus { outline: 3px solid rgba(32, 126, 120, .2); border-color: #267f7a; }
+.claimWorkspace .primary { width: 100%; }
+.claimMessage { margin: 12px 0 0; color: #176b68; font-size: 12px; line-height: 1.5; }
 .workspace .panel label, .createProject label { display: grid; gap: 6px; margin-bottom: 14px; color: #40515a; font-size: 12px; font-weight: 700; }
 .workspace .panel input, .workspace .panel select, .workspace .panel textarea, .createProject input, .createProject select { width: 100%; box-sizing: border-box; padding: 10px 11px; border: 1px solid #c5d0d6; border-radius: 7px; background: #fcfdfd; color: inherit; font: inherit; }
 .workspace .panel input:focus, .workspace .panel select:focus, .workspace .panel textarea:focus, .createProject input:focus, .createProject select:focus { outline: 3px solid rgba(32, 126, 120, .2); border-color: #267f7a; }

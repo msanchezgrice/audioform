@@ -49,6 +49,21 @@ class FixtureHandler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:
         payload = self._record()
         assert payload
+        if self.path == "/api/v1/agents/register":
+            self._json(201, {
+                "registration": {
+                    "id": "33333333-3333-4333-8333-333333333333",
+                    "ownerKind": "machine",
+                    "verifiedHuman": False,
+                    "createdAt": "2026-09-10T00:00:00.000Z",
+                },
+                "project": {"id": "22222222-2222-4222-8222-222222222222"},
+                "key": {"id": "44444444-4444-4444-8444-444444444444", "prefix": "tfk_fixture_"},
+                "secret": "tfk_fixture_registration_secret",
+                "limits": {"textHandoffsPerDay": 10, "activeKeysPerProject": 5, "inviteDays": 7, "resultDays": 7, "voiceEligible": False},
+                "urls": {"handoffs": "https://www.talkform.ai/api/v1/handoffs", "mcp": "https://www.talkform.ai/api/mcp", "claim": "https://www.talkform.ai/dashboard/claim", "keys": "https://www.talkform.ai/dashboard/keys"},
+            })
+            return
         self._json(201, {
             "id": "11111111-1111-4111-8111-111111111111",
             "respondentUrl": "https://www.talkform.ai/respond/11111111-1111-4111-8111-111111111111#token=private-respondent-token",
@@ -139,6 +154,23 @@ class HostedHandoffExampleTests(unittest.TestCase):
             self.assertEqual(created["json"]["idempotencyKey"], json.loads(state.read_text())["idempotencyKey"])
             self.assertEqual({key.lower(): value for key, value in created["headers"].items()}["idempotency-key"], created["json"]["idempotencyKey"])
             self.assertEqual(created["json"]["config"], MODULE.CONFIG)
+
+    def test_register_prints_one_time_secret_without_sending_bearer_auth(self) -> None:
+        completed = subprocess.run([
+            sys.executable, str(SCRIPT),
+            "--register", "--agent-name", "fixture-agent",
+            "--registration-idempotency-key", "8d7e6f5a-4b3c-42d1-9e8f-7a6b5c4d3e2f",
+            "--base-url", f"http://127.0.0.1:{self.server.server_port}", "--allow-localhost",
+        ], text=True, capture_output=True, timeout=10, check=False)
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertIn('"ownerKind": "machine"', completed.stdout)
+        self.assertIn('"secret": "tfk_fixture_registration_secret"', completed.stdout)
+        self.assertIn("Save the returned secret", completed.stderr)
+        self.assertEqual(len(FixtureHandler.requests), 1)
+        request = FixtureHandler.requests[0]
+        self.assertEqual(request["path"], "/api/v1/agents/register")
+        self.assertNotIn("authorization", {key.lower() for key in request["headers"]})
+        self.assertEqual(request["json"]["idempotencyKey"], "8d7e6f5a-4b3c-42d1-9e8f-7a6b5c4d3e2f")
 
     def test_polling_retries_409_at_ten_second_intervals_and_stops(self) -> None:
         class Clock:

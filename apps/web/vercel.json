@@ -5,6 +5,10 @@
   "installCommand": "pnpm install --frozen-lockfile",
   "crons": [
     {
+      "path": "/api/internal/dispatch",
+      "schedule": "*/5 * * * *"
+    },
+    {
       "path": "/api/internal/maintenance",
       "schedule": "17 4 * * *"
     },

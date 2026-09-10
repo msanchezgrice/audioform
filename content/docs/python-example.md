@@ -10,17 +10,25 @@ Create a hosted interview and retrieve reviewed structured values with one Pytho
 From a terminal:
 
 ```bash
-curl --fail --location --proto '=https' --tlsv1.2 \
+curl --fail --proto '=https' --tlsv1.2 \
   --output talkform_handoff.py \
   https://raw.githubusercontent.com/msanchezgrice/audioform/main/examples/hosted-handoff/talkform_handoff.py
 ```
 
-Read the file before running it. Create a project and API key in the [Talkform dashboard](/dashboard), then provide that key only through `TAPK`:
+Read the file before running it. Register a machine workspace without a human account, save the one-time secret, and provide that key only through `TAPK`:
+
+```bash
+python3 talkform_handoff.py --register --agent-name research-agent > registration.json
+```
+
+For a human-owned project, create a project and API key in the [Talkform dashboard](/dashboard). In either case, provide the saved project key only through `TAPK`:
 
 ```bash
 export TAPK='tfk_...'
 python3 talkform_handoff.py --wait-seconds 300 > result.json
 ```
+
+Machine workspaces start with 10 text handoffs per day and are not voice eligible. An optional signed-in human claim enables the human-owned project limit and optional voice under shared limits.
 
 Progress and the private respondent link are flushed to stderr, so they remain visible while stdout is redirected. A successful stdout stream contains only the formatted JSON result. The API key is never printed or written to disk.
 
@@ -58,3 +66,5 @@ The example treats these responses explicitly:
 - `429 Too Many Requests`: the example honors `Retry-After` when it fits within the remaining wait; otherwise it exits and reports the delay.
 
 Each HTTP request has a timeout capped by the overall polling deadline. Redirects are refused so the Authorization header cannot be forwarded to another origin. The production destination is fixed to `https://www.talkform.ai`; localhost overrides exist only for the checked-in fixture tests.
+
+For push delivery instead of polling, use the [Python webhook receiver](/docs/python-webhook-receiver). It verifies the signed completion event and fetches the reviewed result with the project key.

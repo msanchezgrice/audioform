@@ -13,12 +13,13 @@ test("production docs state the hosted API boundary and explicit opt-ins", () =>
   const gettingStarted = source("content/docs/getting-started.md");
   const home = source("apps/web/src/app/page.tsx");
 
-  for (const content of [readme, httpDocs, gettingStarted, home]) {
+  for (const content of [readme, httpDocs, gettingStarted]) {
     assert.match(content, /disabled in hosted production by default/i);
     assert.match(content, /durable session store/i);
     assert.match(content, /distributed rate limit/i);
     assert.match(content, /server authentication/i);
   }
+  assert.match(home, /Your agent asks.*human answers.*reviewed JSON/i);
   assert.match(httpDocs, /TALKFORM_ENABLE_IN_MEMORY_SESSIONS/);
   assert.match(httpDocs, /TALKFORM_ENABLE_PUBLIC_REALTIME/);
   assert.match(gettingStarted, /TALKFORM_API_TOKEN/);
@@ -26,8 +27,9 @@ test("production docs state the hosted API boundary and explicit opt-ins", () =>
 
 test("the hosted HTTP example is valid AudioformConfig JSON", () => {
   const httpDocs = source("content/docs/http-api.md");
-  const fenced = /```json\s*([\s\S]*?)\s*```/.exec(httpDocs)?.[1];
-  assert.ok(fenced, "HTTP docs must include a JSON request example");
+  const fencedBlocks = [...httpDocs.matchAll(/```json\s*([\s\S]*?)\s*```/g)].map((match) => match[1]);
+  const fenced = fencedBlocks.find((block) => /["']config["']\s*:/.test(block));
+  assert.ok(fenced, "HTTP docs must include a JSON request example with config");
   const parsed = JSON.parse(fenced) as { config?: unknown };
   assert.ok(audioformConfigSchema.safeParse(parsed.config).success, "HTTP example config must match the core schema");
 });

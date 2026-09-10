@@ -12,8 +12,8 @@ export function platformErrorResponse(error: unknown) {
   if (error instanceof PlatformError) {
     const headers: Record<string, string> = { ...NO_STORE_HEADERS };
     if (error.status === 401) headers["www-authenticate"] = "Bearer";
-    if (error.status === 429) headers["retry-after"] = "60";
-    return Response.json({ error: { code: error.code, message: error.message } }, { status: error.status, headers });
+    if (error.status === 429) headers["retry-after"] = String(error.details?.retryAfterSeconds ?? 60);
+    return Response.json({ error: { ...error.details, code: error.code, message: error.message } }, { status: error.status, headers });
   }
   console.error("Talkform platform API error", { requestId: randomUUID(), errorType: error instanceof Error ? error.name : "unknown" });
   return Response.json({ error: { code: "internal_error", message: "Unable to complete the request." } }, { status: 500, headers: NO_STORE_HEADERS });
@@ -24,11 +24,22 @@ function address(request: Request) {
   return request.headers.get("cf-connecting-ip") || request.headers.get("x-real-ip") || "unknown";
 }
 
+function platformRateLimitPepper() {
+  const pepper = process.env.TALKFORM_RATE_LIMIT_PEPPER?.trim() || process.env.TALKFORM_DATA_ENCRYPTION_KEY?.trim();
+  if (!pepper || pepper.length < 32) throw new Error("Platform rate-limit pepper is unavailable.");
+  return pepper;
+}
+
+export function platformRequestAddressKey(request: Request, purpose = "registration") {
+  const candidate = address(request).trim().slice(0, 256);
+  if (!candidate || candidate === "unknown") throw new PlatformError("network_identity_unavailable", 503, "A stable request identity is unavailable.");
+  return createHmac("sha256", platformRateLimitPepper()).update(`network:${purpose}:${candidate}`).digest("base64url");
+}
+
 export async function consumePlatformRateLimit(request: Request, identity: string, limit = 120) {
   const now = new Date();
   now.setUTCSeconds(0, 0);
-  const pepper = process.env.TALKFORM_RATE_LIMIT_PEPPER?.trim() || process.env.TALKFORM_DATA_ENCRYPTION_KEY?.trim();
-  if (!pepper || pepper.length < 32) throw new Error("Platform rate-limit pepper is unavailable.");
+  const pepper = platformRateLimitPepper();
   const digest = (value: string) => createHmac("sha256", pepper).update(value).digest("base64url");
   const buckets = [{ key: digest(`principal:${identity}`), limit }, { key: digest(`network:${address(request)}`), limit: Math.max(limit * 4, 240) }];
   const sql = platformDatabase();
