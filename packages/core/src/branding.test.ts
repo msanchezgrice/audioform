@@ -139,7 +139,7 @@ test("share copy stays generic without a sender and names voice only when voice 
   });
   assert.match(titled.shareText, /Please complete this short interview: User feedback/);
   assert.equal(resolveEffectiveInterviewMode({ requested: "text", voiceEligible: true }), "text");
-  assert.equal(resolveEffectiveInterviewMode({ voiceEligible: true }), "text");
+  assert.equal(resolveEffectiveInterviewMode({ voiceEligible: true }), "voice");
 });
 
 test("getCurrentPrompt no longer shows a label copied into visualTitle", () => {

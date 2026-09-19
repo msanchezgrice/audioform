@@ -5,6 +5,7 @@ import { createRespondentToken, decryptPlatformData, encryptPlatformData, hashSe
 import { platformDatabase } from "./database";
 import { normalizedPlatformEventContext } from "./events";
 import { PLATFORM_LIMITS, PlatformError, type AuthenticatedProjectKey, type CreatedPlatformHandoff, type HostedAudioformSessionResult, type HostedHandoffStatus, type PlatformEventContext, type ProjectEnvironment, type ProjectOwnerKind, type RespondentHandoff } from "./types";
+import { isWorkspaceVoiceEligible } from "./voice";
 
 type HandoffRow = {
   id: string; project_id: string; created_by_key_id: string | null; idempotency_key: string;
@@ -216,7 +217,7 @@ export async function authenticateRespondentHandoff(handoffId: string, token: st
   const row = await expireIfNeeded(record);
   if (row.status === "expired") throw new PlatformError("expired", 410, "Handoff has expired.");
   if (row.status === "deleted") throw new PlatformError("not_found", 404, "Handoff not found.");
-  return { scopeKind: "handoff" as const, scopeId: handoffId, actorKey: `respondent:${createHash("sha256").update(token).digest("base64url")}`, projectId: row.project_id, environment: record.environment, voiceEligible: record.owner_kind === "human", row };
+  return { scopeKind: "handoff" as const, scopeId: handoffId, actorKey: `respondent:${createHash("sha256").update(token).digest("base64url")}`, projectId: row.project_id, environment: record.environment, voiceEligible: isWorkspaceVoiceEligible(), row };
 }
 
 export async function getRespondentHandoff(id: string, token: string, eventContext?: PlatformEventContext): Promise<RespondentHandoff> {
@@ -260,9 +261,6 @@ export async function submitRespondentHandoff(id: string, token: string, input: 
     if (!row.config_ciphertext) throw new PlatformError("gone", 410, "Handoff content is no longer available.");
     const config = decryptPlatformData<AudioformConfig>(row.config_ciphertext, CONFIG_AAD(id));
     const submission = validateRespondentSubmission(config, input);
-    if (submission.mode === "voice" && row.owner_kind !== "human") {
-      throw new PlatformError("voice_not_available", 403, "Voice is available after this agent workspace is claimed by a verified account.");
-    }
     const fingerprint = createHash("sha256").update(JSON.stringify(submission)).digest();
     if (row.status === "completed") {
       if (!row.result_expires_at || new Date(row.result_expires_at).getTime() <= Date.now()) {

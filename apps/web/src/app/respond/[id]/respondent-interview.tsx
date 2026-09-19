@@ -9,6 +9,7 @@ import {
   resolveInterviewBranding,
   resolveInterviewTheme,
   type AudioformConfig,
+  type AudioformFieldValue,
 } from "@talkform/core";
 import styles from "./respond.module.css";
 
@@ -171,6 +172,22 @@ export function RespondentInterview({ id, voiceEnabled }: { id: string; voiceEna
           <AudioformWidget
             config={config}
             voiceEnabled={voiceAvailable}
+            parseReply={async ({ field, reply }) => {
+              const response = await fetch(`/api/v1/respond/${id}/parse`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "X-Talkform-Respondent-Token": respondentToken,
+                },
+                body: JSON.stringify({ fieldId: field.id, reply }),
+              });
+              const data = await response.json() as { ok?: boolean; value?: unknown; error?: string | { message?: string } };
+              if (!response.ok || data.ok !== true) {
+                const message = typeof data.error === "string" ? data.error : data.error?.message;
+                return { ok: false, error: message || "We could not understand that. Try again in your own words." };
+              }
+              return { ok: true, value: data.value as AudioformFieldValue };
+            }}
             realtimeHeaders={{ "X-Talkform-Respondent-Token": respondentToken, "X-Talkform-Handoff-Id": id }}
             onComplete={async (result, context) => {
               const response = await fetch(`/api/v1/respond/${id}`, {

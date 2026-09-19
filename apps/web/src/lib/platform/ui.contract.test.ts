@@ -47,9 +47,12 @@ test("respondent page applies product theme vars and is honest about text-only v
   assert.match(respondent, /--respond-surface/);
   assert.match(respondent, /--respond-panel/);
   assert.match(respondent, /resolveEffectiveInterviewMode/);
+  const page = read("src/app/respond/[id]/page.tsx");
+  assert.match(page, /publicRealtimeIssuanceEnabled/);
   assert.match(respondent, /referrerPolicy="no-referrer"/);
   assert.match(respondent, /This is a written interview/);
   assert.match(respondent, /You can speak or type/);
+  assert.match(respondent, /\/api\/v1\/respond\/\$\{id\}\/parse/);
   assert.match(respondent, /applyFavicon/);
   assert.match(css, /--respond-surface/);
   assert.match(css, /--respond-accent/);

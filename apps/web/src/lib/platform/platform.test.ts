@@ -168,6 +168,17 @@ test("handoff create response builds claimUrl and a text-only note for machine v
   assert.match(source, /Share the text interview, or claim first for voice/);
   assert.match(source, /buildHandoffShareCopy/);
   assert.match(source, /resolveEffectiveInterviewMode/);
+  assert.match(source, /isWorkspaceVoiceEligible\(\)/);
+  assert.doesNotMatch(source, /submission\.mode === "voice" && row\.owner_kind !== "human"/);
+});
+
+test("machine workspaces are voice eligible under shared realtime caps", async () => {
+  const { isWorkspaceVoiceEligible } = await import("./voice");
+  assert.equal(isWorkspaceVoiceEligible(), true);
+  const auth = readFileSync(path.resolve(process.cwd(), "apps/web/src/lib/platform/auth.ts"), "utf8");
+  const registration = readFileSync(path.resolve(process.cwd(), "apps/web/src/lib/platform/registration.ts"), "utf8");
+  assert.match(auth, /voiceEligible: isWorkspaceVoiceEligible\(\)/);
+  assert.match(registration, /voiceEligible: isWorkspaceVoiceEligible\(\)/);
 });
 
 test("public handoff create payload includes shareText and claimUrl only when voice is unavailable", () => {

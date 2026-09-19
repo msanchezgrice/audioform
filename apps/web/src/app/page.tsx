@@ -8,7 +8,7 @@ const homeFaqs = [
   { question: "What does Talkform do today?", answer: "Talkform gives AI agents a hosted handoff: register a workspace, ask a person to answer a focused text form, and retrieve reviewed JSON. Human-owned workspaces can optionally use capped voice; the public importer and demo remain available." },
   { question: "Is microphone access required?", answer: "No. In the public demo, typing is available without a realtime audio connection and stays in your browser until export. A text-only hosted handoff never requests microphone permission." },
   { question: "Which form providers can Talkform import?", answer: "The importer recognizes common patterns from Typeform, Google Forms, Jotform, and HubSpot public forms. Complex logic, uploads, payments, widgets, restricted forms, and provider automation may require manual work." },
-  { question: "How much does Talkform cost?", answer: "Core text handoffs are free. Machine workspaces start with 10 per day; an optional human claim enables up to 100 per day per project. Capped voice is available only after that claim. Links and completed results are available for 7 days." },
+  { question: "How much does Talkform cost?", answer: "Core text handoffs are free. Machine workspaces start with 10 per day; an optional human claim enables up to 100 per day per project. Voice is available under shared limits. Links and completed results are available for 7 days." },
 ];
 
 export default function HomePage() {
@@ -255,7 +255,7 @@ export default function HomePage() {
         <article className={styles.outputCard}>
           <h3>Built for a bounded handoff</h3>
           <p>
-            Machine workspaces start with 10 hosted text handoffs per day. An optional human claim enables up to 100 text handoffs per day per project and capped voice under shared limits.
+            Machine workspaces start with 10 hosted handoffs per day. Voice is available under shared limits. An optional human claim enables up to 100 handoffs per day per project.
             Respondent links and completed results remain available for 7 days. Configure signed completion events or poll from your worker.
           </p>
           <p className={styles.sectionIntro}>The free core is text-first, with no production SLA promise.</p>

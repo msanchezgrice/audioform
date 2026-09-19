@@ -1,12 +1,13 @@
 import { createApiKeySecret } from "./auth";
 import { platformDatabase } from "./database";
 import { PLATFORM_LIMITS, PlatformError, type CreatedPlatformApiKey, type PlatformApiKey, type PlatformHandoff, type PlatformProject, type ProjectDashboard, type ProjectEnvironment, type ProjectOwnerKind } from "./types";
+import { isWorkspaceVoiceEligible } from "./voice";
 
 type ProjectRow = { id: string; name: string; environment: ProjectEnvironment; owner_kind: ProjectOwnerKind; daily_handoff_limit: number; created_at: Date | string; updated_at: Date | string; claimed_at: Date | string | null };
 type KeyRow = { id: string; project_id: string; name: string; key_prefix: string; scopes: PlatformApiKey["scopes"]; created_at: Date | string; last_used_at: Date | string | null; revoked_at: Date | string | null };
 type HandoffRow = { id: string; project_id: string; status: PlatformHandoff["status"]; created_at: Date | string; invite_expires_at: Date | string; completed_at: Date | string | null; result_expires_at: Date | string | null };
 const iso = (value: Date | string) => new Date(value).toISOString();
-export const projectFromRow = (row: ProjectRow): PlatformProject => ({ id: row.id, name: row.name, environment: row.environment, ownerKind: row.owner_kind, dailyHandoffLimit: row.daily_handoff_limit, voiceEligible: row.owner_kind === "human", createdAt: iso(row.created_at), updatedAt: iso(row.updated_at), claimedAt: row.claimed_at ? iso(row.claimed_at) : null });
+export const projectFromRow = (row: ProjectRow): PlatformProject => ({ id: row.id, name: row.name, environment: row.environment, ownerKind: row.owner_kind, dailyHandoffLimit: row.daily_handoff_limit, voiceEligible: isWorkspaceVoiceEligible(), createdAt: iso(row.created_at), updatedAt: iso(row.updated_at), claimedAt: row.claimed_at ? iso(row.claimed_at) : null });
 const keyFromRow = (row: KeyRow): PlatformApiKey => ({ id: row.id, projectId: row.project_id, name: row.name, prefix: row.key_prefix, scopes: row.scopes, createdAt: iso(row.created_at), lastUsedAt: row.last_used_at ? iso(row.last_used_at) : null, revokedAt: row.revoked_at ? iso(row.revoked_at) : null });
 const handoffFromRow = (row: HandoffRow): PlatformHandoff => ({ id: row.id, projectId: row.project_id, status: row.status, createdAt: iso(row.created_at), expiresAt: iso(row.invite_expires_at), completedAt: row.completed_at ? iso(row.completed_at) : null, resultExpiresAt: row.result_expires_at ? iso(row.result_expires_at) : null });
 

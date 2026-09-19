@@ -210,6 +210,24 @@ test("coerceTypedAnswer supports a local text-only interview without Realtime", 
     value: "technical",
   });
   assert.match(coerceTypedAnswer(TEST_CONFIG.fields[1], "something else").error ?? "", /Billing.*Technical/i);
+  assert.deepEqual(
+    coerceTypedAnswer(
+      {
+        id: "follow_up",
+        label: "Follow-up",
+        type: "single_select",
+        required: true,
+        promptTitle: "Follow-up",
+        promptDetail: "Ask yes or no",
+        options: [
+          { value: "yes", label: "Yes" },
+          { value: "no", label: "No" },
+        ],
+      },
+      "yeah",
+    ),
+    { ok: true, value: "yes" },
+  );
 });
 
 test("coerceTypedAnswer validates email-like, URL, numeric, and multi-select fields", async () => {

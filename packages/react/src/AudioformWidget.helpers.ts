@@ -5,6 +5,7 @@ import {
   getMissingFieldIds,
   getRespondentQuestion,
   getRespondentQuestionDetail,
+  interpretFieldReply,
   sessionResultToMarkdown,
   type AudioformConfig,
   type AudioformField,
@@ -139,7 +140,9 @@ function getFallbackVisualDetail(field: AudioformField) {
   }
 
   if (field.type === "single_select") {
-    return startsWithYesNoOptions(field) ? "Just say yes or no." : "Say the option that fits best.";
+    return startsWithYesNoOptions(field)
+      ? "Answer in your own words. We'll map it to yes or no."
+      : "Say the option that fits best, in your own words.";
   }
 
   if (field.type === "multi_select") {
@@ -171,81 +174,8 @@ function getFieldVisualDetail(field: AudioformField) {
   return getRespondentQuestionDetail(field) || getFallbackVisualDetail(field);
 }
 
-function isEmailField(field: AudioformField) {
-  return /email/i.test(`${field.id} ${field.label}`);
-}
-
-function matchOption(field: AudioformField, answer: string) {
-  const normalized = answer.trim().toLowerCase();
-  return field.options?.find(
-    (option) =>
-      option.value.toLowerCase() === normalized ||
-      option.label.toLowerCase() === normalized,
-  );
-}
-
 export function coerceTypedAnswer(field: AudioformField, answer: string): TypedAnswerResult {
-  const trimmed = answer.trim();
-  if (!trimmed) {
-    return { ok: false, error: `${field.label} cannot be empty.` };
-  }
-
-  if (field.type === "text" || field.type === "long_text" || field.type === "file_ref") {
-    if (isEmailField(field) && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-      return { ok: false, error: "Enter a valid email address." };
-    }
-    return { ok: true, value: trimmed };
-  }
-
-  if (field.type === "url") {
-    try {
-      const url = new URL(trimmed);
-      if (url.protocol === "http:" || url.protocol === "https:") {
-        return { ok: true, value: trimmed };
-      }
-    } catch {
-      // Fall through to the user-facing validation message.
-    }
-    return { ok: false, error: "Enter a complete URL beginning with http:// or https://." };
-  }
-
-  if (field.type === "single_select") {
-    const option = matchOption(field, trimmed);
-    if (option) return { ok: true, value: option.value };
-    return {
-      ok: false,
-      error: `Choose one of: ${(field.options ?? []).map((entry) => entry.label).join(", ")}.`,
-    };
-  }
-
-  if (field.type === "multi_select") {
-    const answers = trimmed.split(/,|\band\b/i).map((entry) => entry.trim()).filter(Boolean);
-    const options = answers.map((entry) => matchOption(field, entry));
-    if (!options.length || options.some((option) => !option)) {
-      return {
-        ok: false,
-        error: `Choose one or more of: ${(field.options ?? []).map((entry) => entry.label).join(", ")}.`,
-      };
-    }
-    return { ok: true, value: Array.from(new Set(options.map((option) => option!.value))) };
-  }
-
-  if (field.type === "number" || field.type === "rating") {
-    const value = Number(trimmed);
-    if (!Number.isFinite(value)) {
-      return { ok: false, error: `Enter a number for ${field.label}.` };
-    }
-    const rounded = Math.round(value);
-    if (typeof field.validation?.min === "number" && rounded < field.validation.min) {
-      return { ok: false, error: `Enter ${field.validation.min} or higher.` };
-    }
-    if (typeof field.validation?.max === "number" && rounded > field.validation.max) {
-      return { ok: false, error: `Enter ${field.validation.max} or lower.` };
-    }
-    return { ok: true, value: rounded };
-  }
-
-  return { ok: false, error: `We could not capture ${field.label}.` };
+  return interpretFieldReply(field, answer);
 }
 
 export function getTranscriptResponses(transcript: TranscriptEntry[]) {

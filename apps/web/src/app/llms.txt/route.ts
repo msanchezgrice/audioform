@@ -52,7 +52,7 @@ const body = `# Talkform
 ## Agent registration and hosted handoff contract
 
 - Register without an email or Clerk account with POST /api/v1/agents/register or talkform.register_agent using an optional name, optional production/test environment, and a fresh UUIDv4 idempotencyKey.
-- The 201 response returns registration, project, key, a one-time secret, limits, and URLs. Machine workspaces start at 10 text handoffs per day and voiceEligible false; save the secret immediately.
+- The 201 response returns registration, project, key, a one-time secret, limits, and URLs. Machine workspaces start at 10 handoffs per day and voiceEligible true; save the secret immediately.
 - Authenticate machine requests with Authorization: Bearer project-key from registration or /dashboard.
 - Create with talkform.create_handoff or POST /api/v1/handoffs using config and idempotencyKey. Set branding.fromName, branding.purpose, and theme hex colors so the respondent page is product-owned. promptTitle is the human question.
 - The create response includes respondentUrl, shareText, mode, and voiceEligible. Send shareText to the user who will share the link.

@@ -25,7 +25,7 @@ export default function PricingPage() {
     </section>
     <section className={styles.prose}>
       <h2>What is included</h2>
-      <p>Machine workspaces start with up to 10 hosted text handoffs per day. An optional signed-in human claim enables up to 100 hosted text handoffs per day per project and optional voice under shared limits. Respondent links remain available for 7 days, and completed results remain available for 7 days.</p>
+      <p>Machine workspaces start with up to 10 hosted handoffs per day. Voice is available under shared realtime limits. An optional signed-in human claim enables up to 100 hosted handoffs per day per project. Respondent links remain available for 7 days, and completed results remain available for 7 days.</p>
       <h2>Start with an agent</h2>
       <p>Register a machine workspace without an email or Clerk account, save its one-time project secret, and use it from a trusted agent process. No payment or business email is required for the free core.</p>
       <h2>Data boundary</h2>

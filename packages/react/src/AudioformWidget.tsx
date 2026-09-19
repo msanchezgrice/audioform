@@ -72,6 +72,7 @@ export type AudioformWidgetProps = {
   vendorUrl?: string;
   consumerMode?: boolean;
   voiceEnabled?: boolean;
+  parseReply?: (input: { field: AudioformField; reply: string }) => Promise<{ ok: true; value: AudioformFieldValue } | { ok: false; error: string }>;
   onChange?: (result: AudioformSessionResult, context: { mode: "voice" | "text" }) => void;
   onComplete?: (result: AudioformSessionResult, context: { mode: "voice" | "text" }) => void | Promise<void>;
   realtimeHeaders?: Record<string, string>;
@@ -154,6 +155,7 @@ export function AudioformWidget({
   vendorUrl = "",
   consumerMode = false,
   voiceEnabled = true,
+  parseReply,
   onChange,
   onComplete,
   realtimeHeaders,
@@ -176,6 +178,7 @@ export function AudioformWidget({
   const [summary, setSummary] = useState("");
   const [transcript, setTranscript] = useState<TranscriptEntry[]>([]);
   const [draftReply, setDraftReply] = useState("");
+  const [parsingReply, setParsingReply] = useState(false);
   const [waitingForAssistant, setWaitingForAssistant] = useState(false);
   const [completedPrompts, setCompletedPrompts] = useState<CompletedPrompt[]>([]);
   const [lastStructuredUpdate, setLastStructuredUpdate] = useState<StructuredUpdate | null>(null);
@@ -199,6 +202,7 @@ export function AudioformWidget({
   const previousMissingFieldsRef = useRef<string[]>([]);
   const pendingInputSourceRef = useRef<SyncSource | null>(null);
   const interviewModeRef = useRef<InterviewMode>(interviewMode);
+  const parseReplyRef = useRef(parseReply);
   const firstAnswerTrackedRef = useRef(false);
   const completionTrackedRef = useRef(false);
 
@@ -263,6 +267,10 @@ export function AudioformWidget({
   useEffect(() => {
     interviewModeRef.current = interviewMode;
   }, [interviewMode]);
+
+  useEffect(() => {
+    parseReplyRef.current = parseReply;
+  }, [parseReply]);
 
   useEffect(() => {
     const previousMissing = previousMissingFieldsRef.current;
@@ -727,9 +735,9 @@ export function AudioformWidget({
     updateField(field, next);
   }
 
-  function sendTypedReply() {
+  async function sendTypedReply() {
     const message = draftReply.trim();
-    if (!message) return;
+    if (!message || parsingReply) return;
 
     if (interviewMode === "text") {
       const field = config.fields.find((entry) => entry.id === activeMissingFieldId);
@@ -737,7 +745,18 @@ export function AudioformWidget({
         setStatusMessage("All required answers are captured. Review or export them below.");
         return;
       }
-      const parsed = coerceTypedAnswer(field, message);
+      let parsed = coerceTypedAnswer(field, message);
+      if (!parsed.ok && parseReplyRef.current) {
+        setParsingReply(true);
+        setStatusMessage("Understanding your answer...");
+        try {
+          parsed = await parseReplyRef.current({ field, reply: message });
+        } catch {
+          // Keep the local interpretation error when the model path fails.
+        } finally {
+          setParsingReply(false);
+        }
+      }
       if (!parsed.ok) {
         setError(parsed.error);
         setStatusMessage(parsed.error);
@@ -1101,13 +1120,13 @@ export function AudioformWidget({
                   value={draftReply}
                   onChange={(event) => setDraftReply(event.target.value)}
                   placeholder={interviewMode === "text" ? "Type your answer..." : "Type instead of speaking..."}
-                  disabled={isConnecting}
+                  disabled={isConnecting || parsingReply}
                 />
                 <button
                   type="submit"
                   className={styles.sendButton}
                   aria-label="Send answer"
-                  disabled={isConnecting || !draftReply.trim()}
+                  disabled={isConnecting || parsingReply || !draftReply.trim()}
                   data-agent-action="send-answer"
                   data-testid="send-answer-button"
                 >

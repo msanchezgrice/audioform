@@ -55,7 +55,7 @@ export type PlatformEvent = { id: string; eventKey: string; eventName: PlatformE
 export type AgentRegistration = { id: string; projectId: string; ownerKind: "machine"; verifiedHuman: false; createdAt: string };
 export type AgentRegistrationResult = {
   registration: AgentRegistration; project: PlatformProject; key: PlatformApiKey; secret: string;
-  limits: { textHandoffsPerDay: number; sharedTextHandoffsPerDay: number; activeKeysPerProject: number; inviteDays: number; resultDays: number; voiceEligible: false };
+  limits: { textHandoffsPerDay: number; sharedTextHandoffsPerDay: number; activeKeysPerProject: number; inviteDays: number; resultDays: number; voiceEligible: boolean };
   urls: { handoffs: string; mcp: string; claim: string; keys: string };
 };
 export class PlatformError extends Error {

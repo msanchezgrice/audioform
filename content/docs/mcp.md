@@ -14,7 +14,7 @@ An agent can register a machine workspace anonymously with `talkform.register_ag
 }
 ```
 
-The response contains `registration`, `project`, `key`, `secret`, `limits`, and `urls`. It marks the registration as `ownerKind: machine`, `verifiedHuman: false`, and `voiceEligible: false`; the initial text limit is 10 handoffs per day. Save the one-time `secret` in the MCP client's server-side secret configuration. No email address or Clerk user is created. Reusing the same idempotency key, even after a network change, returns `409 registration_exists` without replaying the secret; use a fresh key only for a new registration, within the limit of 3 registrations per address per day.
+The response contains `registration`, `project`, `key`, `secret`, `limits`, and `urls`. It marks the registration as `ownerKind: machine`, `verifiedHuman: false`, and `voiceEligible: true`; the initial limit is 10 handoffs per day. Save the one-time `secret` in the MCP client's server-side secret configuration. No email address or Clerk user is created. Reusing the same idempotency key, even after a network change, returns `409 registration_exists` without replaying the secret; use a fresh key only for a new registration, within the limit of 3 registrations per address per day.
 
 An optional signed-in human can claim the machine workspace with its project key. Claiming enables the human-owned project limit and optional voice; it does not expose or rotate the machine secret.
 
@@ -67,7 +67,7 @@ talkform.create_handoff
 }
 ```
 
-The result contains `id`, `respondentUrl`, `status`, `expiresAt`, `title`, `purpose`, `fromName`, `shareText`, `mode`, and `voiceEligible`. `claimUrl` is included when `voiceEligible` is false; `note` is added only when voice was requested but unavailable. Paste `shareText` to the user who will send the link. An agent must not invent answers or submit on the person's behalf. If `voiceEligible` is false, the interview is text-only until a signed-in owner claims the project.
+The result contains `id`, `respondentUrl`, `status`, `expiresAt`, `title`, `purpose`, `fromName`, `shareText`, `mode`, and `voiceEligible`. Paste `shareText` to the user who will send the link. An agent must not invent answers or submit on the person's behalf. Omitted `mode` is voice. Set `mode: "text"` only for a written interview.
 
 2. After the person opens the link, answers, reviews, and explicitly submits, check status using the returned ID:
 
@@ -94,7 +94,7 @@ talkform.delete_handoff
 
 Deletion is permanent. The tool returns `{ "id": "...", "deleted": true }` and is stable when the authorized project repeats it.
 
-Poll `talkform.get_result` no more often than every 10 seconds. A pending or expired handoff produces a corresponding MCP tool error; the underlying REST result endpoint returns `409 Conflict` or `410 Gone`. Links and completed-result access last 7 days. Machine workspaces start at 10 hosted text handoffs per day; human-owned projects can reach 100 per day per project after claim. New handoff creation also observes shared fair-use capacity of 1,000 per UTC day. Voice is optional under shared limits.
+Poll `talkform.get_result` no more often than every 10 seconds. A pending or expired handoff produces a corresponding MCP tool error; the underlying REST result endpoint returns `409 Conflict` or `410 Gone`. Links and completed-result access last 7 days. Machine workspaces start at 10 hosted handoffs per day; human-owned projects can reach 100 per day per project after claim. New handoff creation also observes shared fair-use capacity of 1,000 per UTC day. Voice is available under shared limits.
 
 Results contain the reviewed structured fields and response mode. Talkform does not retain or return a hosted transcript or generated summary. A successful `get_result` means the authenticated project received the response from Talkform; it does not prove downstream processing.
 

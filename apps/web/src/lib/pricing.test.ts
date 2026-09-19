@@ -11,7 +11,7 @@ test("pricing exposes one free plan with bounded hosted handoffs and retention",
   assert.equal(free.agentDailyHandoffs, 10);
   assert.equal(free.respondentLinkDays, 7);
   assert.equal(free.completedResultAccessDays, 7);
-  assert.equal(free.voiceAvailability, "Optional after human claim; capped by shared limits");
+  assert.equal(free.voiceAvailability, "Available on agent and human workspaces; capped by shared limits");
   assert.match(free.limitPolicy, /project/i);
   assert.match(free.limitPolicy, /no production SLA/i);
 });

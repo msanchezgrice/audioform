@@ -10,7 +10,7 @@ const widgetSource = readFileSync(new URL("./AudioformWidget.tsx", import.meta.u
 test("the answer control is disabled until a non-whitespace answer is present", () => {
   assert.match(
     widgetSource,
-    /aria-label="Send answer"\s+disabled=\{isConnecting \|\| !draftReply\.trim\(\)\}/,
+    /aria-label="Send answer"\s+disabled=\{isConnecting \|\| parsingReply \|\| !draftReply\.trim\(\)\}/,
   );
-  assert.match(widgetSource, /const message = draftReply\.trim\(\);\s+if \(!message\) return;/);
+  assert.match(widgetSource, /const message = draftReply\.trim\(\);\s+if \(!message \|\| parsingReply\) return;/);
 });
