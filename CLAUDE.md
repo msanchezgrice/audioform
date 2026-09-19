@@ -20,3 +20,9 @@ Key routing rules:
 - Save progress → invoke /context-save
 - Resume context → invoke /context-restore
 - Author a backlog-ready spec/issue → invoke /spec
+
+## Testing
+
+Run `pnpm test` from the repo root. It builds `@talkform/core` and `@talkform/mcp`, then runs the workspace `tsx --test` suite listed in `package.json`. Also use `pnpm typecheck` before shipping.
+
+When writing new functions, add a corresponding test. When fixing a bug, add a regression test. Never commit code that makes existing tests fail.
