@@ -904,7 +904,9 @@ export function AudioformWidget({
                   {config.fields.length === 1 ? "One question" : `${config.fields.length} questions`}
                 </h2>
                 <p className={styles.promptHint}>
-                  {config.description || "Answer one question at a time. You can correct anything before you finish."}
+                  {hostedReview
+                    ? (config.description || "Answer one question at a time. You can correct anything before you finish.")
+                    : "Answer one question at a time. You can correct anything before you finish."}
                 </p>
                 {onComplete ? (
                   <p className={styles.dataNotice}>
