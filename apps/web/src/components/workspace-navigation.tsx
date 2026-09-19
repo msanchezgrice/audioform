@@ -9,7 +9,8 @@ import styles from "./workspace-navigation.module.css";
 export function SiteFrame({ children }: { children: React.ReactNode }) {
   const path = usePathname();
   const workspace = path === "/dashboard" || path?.startsWith("/dashboard/");
-  return <div className={`siteShell${workspace ? " workspaceShell" : ""}`}>{children}</div>;
+  const respondent = path === "/respond" || Boolean(path?.startsWith("/respond/"));
+  return <div className={`siteShell${workspace ? " workspaceShell" : ""}${respondent ? " respondentShell" : ""}`}>{children}</div>;
 }
 
 function AnonymousNavigation({ mobile }: { mobile: boolean }) {

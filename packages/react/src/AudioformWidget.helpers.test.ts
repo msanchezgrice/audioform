@@ -110,6 +110,27 @@ test("getPendingPromptQueue keeps required questions in order and removes comple
   );
 });
 
+test("getPendingPromptQueue prefers promptTitle when visualTitle only copies the field label", () => {
+  const labeled = {
+    ...TEST_CONFIG,
+    fields: [
+      {
+        ...TEST_CONFIG.fields[0],
+        label: "What they liked",
+        promptTitle: "What did you like most?",
+        visualTitle: "What they liked",
+      },
+      TEST_CONFIG.fields[1],
+      TEST_CONFIG.fields[2],
+    ],
+  } as AudioformConfig;
+
+  assert.equal(
+    getPendingPromptQueue(labeled, createEmptyValues(labeled))[0]?.title,
+    "What did you like most?",
+  );
+});
+
 test("getVisualPromptState prefers the actual host question when available", () => {
   const state = getVisualPromptState(
     TEST_CONFIG,

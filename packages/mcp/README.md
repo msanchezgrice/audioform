@@ -31,7 +31,7 @@ Alternatively, create a free project and project key in `https://www.talkform.ai
 
 Hosted tools:
 
-- `talkform.create_handoff` — accepts `{config, idempotencyKey}` and returns a 7-day respondent URL.
+- `talkform.create_handoff` — accepts `{config, idempotencyKey}` and returns a 7-day respondent URL plus `shareText`, `fromName`, `purpose`, `mode`, and `voiceEligible`. Pass `config.branding` and hex `config.theme` so the hosted page is product-owned.
 - `talkform.get_handoff` — reads pending or completed status for `{id}`.
 - `talkform.get_result` — returns reviewed structured values for `{id}`.
 - `talkform.delete_handoff` — deletes the project-owned handoff for `{id}`.

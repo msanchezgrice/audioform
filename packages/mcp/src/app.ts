@@ -5,7 +5,11 @@ import {
   audioformConfigSchema,
   audioformSessionResultJsonSchema,
   getAudioformTemplate,
+  HEX_COLOR_PATTERN,
+  isHttpsUrl,
   listAudioformTemplates,
+  NEUTRAL_INTERVIEW_THEME,
+  SAFE_FONT_FAMILY_PATTERN,
   type AudioformConfig,
 } from "@talkform/core";
 import { readTemplateResource, readTemplatesResource } from "./resources";
@@ -103,11 +107,41 @@ const publicFieldSchema = publicFieldObjectSchema
     }
   });
 
+const hexColor = z.string().regex(HEX_COLOR_PATTERN);
+const httpsAssetUrl = z.string().url().max(2_048).refine(isHttpsUrl, "Must be an https URL.");
+
+const publicThemeSchema = z
+  .object({
+    accent: hexColor.optional(),
+    surface: hexColor.optional(),
+    panel: hexColor.optional(),
+  })
+  .strict()
+  .optional();
+
+const publicBrandingSchema = z
+  .object({
+    fromName: z.string().trim().min(1).max(80).optional(),
+    purpose: z.string().trim().min(1).max(200).optional(),
+    logoUrl: httpsAssetUrl.optional(),
+    wordmark: z.string().trim().min(1).max(80).optional(),
+    faviconUrl: httpsAssetUrl.optional(),
+    fontFamily: z.string().trim().min(1).max(80).regex(SAFE_FONT_FAMILY_PATTERN).optional(),
+    showPoweredBy: z.boolean().optional(),
+  })
+  .strict()
+  .optional();
+
 export const prepareFormToolInputSchema = z
   .object({
     title: z.string().trim().min(1).max(PREPARE_FORM_LIMITS.maxTitleChars),
     description: z.string().trim().min(1).max(PREPARE_FORM_LIMITS.maxDescriptionChars).optional(),
     instructions: z.string().trim().min(1).max(PREPARE_FORM_LIMITS.maxInstructionsChars).optional(),
+    fromName: z.string().trim().min(1).max(80).optional(),
+    purpose: z.string().trim().min(1).max(200).optional(),
+    mode: z.enum(["text", "voice"]).optional(),
+    branding: publicBrandingSchema,
+    theme: publicThemeSchema,
     fields: z.array(publicFieldSchema).min(1).max(PREPARE_FORM_LIMITS.maxFields),
   })
   .strict();
@@ -152,6 +186,18 @@ const preparedDraftSchema = z
       surface: z.string(),
       panel: z.string(),
     }),
+    branding: z
+      .object({
+        fromName: z.string().optional(),
+        purpose: z.string().optional(),
+        logoUrl: z.string().optional(),
+        wordmark: z.string().optional(),
+        faviconUrl: z.string().optional(),
+        fontFamily: z.string().optional(),
+        showPoweredBy: z.boolean().optional(),
+      })
+      .optional(),
+    mode: z.enum(["text", "voice"]).optional(),
     output: z.object({
       formats: z.tuple([z.literal("json"), z.literal("markdown")]),
     }),
@@ -175,6 +221,8 @@ const preparedOutputSchema = z
       .object({
         title: z.string(),
         description: z.string(),
+        fromName: z.string().optional(),
+        purpose: z.string().optional(),
         fieldCount: z.number().int().min(1).max(PREPARE_FORM_LIMITS.maxFields),
         requiredCount: z.number().int().min(0).max(PREPARE_FORM_LIMITS.maxFields),
         fields: z.array(previewFieldSchema).max(PREPARE_FORM_LIMITS.maxFields),
@@ -199,21 +247,27 @@ function slugify(value: string) {
 
 export function prepareTalkformDraft(input: PrepareFormInput): PreparedTalkformDraft {
   const parsed = prepareFormInputSchema.parse(input);
+  const branding = {
+    ...(parsed.branding ?? {}),
+    ...(parsed.fromName ? { fromName: parsed.fromName } : {}),
+    ...(parsed.purpose ? { purpose: parsed.purpose } : {}),
+  };
   const draft: AudioformConfig = {
     id: slugify(parsed.title),
     title: parsed.title,
     ...(parsed.description ? { description: parsed.description } : {}),
     ...(parsed.instructions ? { instructions: parsed.instructions } : {}),
+    ...(parsed.mode ? { mode: parsed.mode } : {}),
     fields: parsed.fields.map((field) => ({
       ...field,
-      visualTitle: field.label,
+      visualTitle: field.promptTitle,
       visualDetail: field.promptDetail,
     })),
     theme: {
-      accent: "#d05a36",
-      surface: "#f7f4ee",
-      panel: "#ffffff",
+      ...NEUTRAL_INTERVIEW_THEME,
+      ...parsed.theme,
     },
+    ...(Object.keys(branding).length ? { branding } : {}),
     output: {
       formats: ["json", "markdown"],
     },
@@ -225,8 +279,11 @@ export function prepareTalkformDraft(input: PrepareFormInput): PreparedTalkformD
     preview: {
       title: validatedDraft.title,
       description:
-        validatedDraft.description
+        validatedDraft.branding?.purpose
+        ?? validatedDraft.description
         ?? "A guided conversation that captures richer context in a structured result.",
+      ...(validatedDraft.branding?.fromName ? { fromName: validatedDraft.branding.fromName } : {}),
+      ...(validatedDraft.branding?.purpose ? { purpose: validatedDraft.branding.purpose } : {}),
       fieldCount: validatedDraft.fields.length,
       requiredCount: validatedDraft.fields.filter((field) => field.required).length,
       fields: validatedDraft.fields.map((field) => ({
@@ -291,10 +348,10 @@ export const TALKFORM_WIDGET_HTML = String.raw`<!doctype html>
       --ink: #2c2825;
       --muted: #7a7268;
       --line: rgba(44, 40, 37, .12);
-      --brand: #d05a36;
-      --brand-soft: rgba(208, 90, 54, .10);
+      --brand: #1c1917;
+      --brand-soft: rgba(28, 25, 23, .08);
       --paper: #ffffff;
-      --wash: #f7f4ee;
+      --wash: #f3efe8;
     }
     * { box-sizing: border-box; }
     body {
@@ -310,10 +367,10 @@ export const TALKFORM_WIDGET_HTML = String.raw`<!doctype html>
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      color: var(--brand);
+      color: var(--muted);
       font-size: 12px;
-      font-weight: 760;
-      letter-spacing: .08em;
+      font-weight: 650;
+      letter-spacing: .06em;
       text-transform: uppercase;
     }
     .mark {
@@ -431,7 +488,7 @@ export const TALKFORM_WIDGET_HTML = String.raw`<!doctype html>
 </head>
 <body>
   <main class="shell" aria-live="polite" aria-busy="true">
-    <div class="eyebrow"><span class="mark" aria-hidden="true"></span>Talkform draft</div>
+    <div class="eyebrow"><span class="mark" aria-hidden="true"></span><span id="from">Interview draft</span></div>
     <h1 id="title">Preparing your conversation…</h1>
     <p id="description" class="description">Structuring the questions so the result stays easy to review.</p>
     <div id="stats" class="stats" hidden></div>
@@ -439,6 +496,7 @@ export const TALKFORM_WIDGET_HTML = String.raw`<!doctype html>
   </main>
   <script>
     const shell = document.querySelector(".shell");
+    const from = document.getElementById("from");
     const title = document.getElementById("title");
     const description = document.getElementById("description");
     const stats = document.getElementById("stats");
@@ -458,8 +516,9 @@ export const TALKFORM_WIDGET_HTML = String.raw`<!doctype html>
       const preview = payload && payload.preview;
       if (!preview || !Array.isArray(preview.fields)) return;
 
+      from.textContent = preview.fromName || "Interview draft";
       title.textContent = preview.title || "Untitled conversation";
-      description.textContent = preview.description || "A structured conversational form.";
+      description.textContent = preview.purpose || preview.description || "A structured conversational form.";
       stats.replaceChildren();
       fields.replaceChildren();
 
@@ -579,7 +638,7 @@ function registerPublicTools(server: McpServer) {
     "talkform.prepare_form",
     {
       title: "Prepare a Talkform draft",
-      description: "Turns structured questions into a validated conversational form preview without storing them.",
+      description: "Turns interview questions into a validated, shareable form draft. Write promptTitle as the question a person will hear or read. Include fromName and purpose (or branding) so the hosted page is about the product, not Talkform. Optional theme colors should be hex values. This does not store or publish the form.",
       inputSchema: prepareFormToolInputSchema,
       outputSchema: preparedOutputSchema,
       annotations: readOnlyAnnotations,
@@ -752,7 +811,7 @@ function registerHostedTools(server: McpServer, services: HostedMcpServices) {
   }, (input) => result(() => services.registerAgent(input)));
   server.registerTool("talkform.create_handoff", {
     title: "Create a hosted interview",
-    description: "Stores a validated form and returns a private respondent link. Requires a project API key. Use the same idempotencyKey when retrying. Respondents explicitly submit reviewed answers.",
+    description: "Stores a validated interview and returns a private respondent link plus shareText. Put the human questions in config.fields[].promptTitle, and set config.branding.fromName, branding.purpose, optional branding.logoUrl, and theme hex colors so the page looks like the product. Machine workspaces create text interviews. voiceEligible is always a boolean; claimUrl is present only when voiceEligible is false; note is added only when voice was requested but unavailable. Requires a project API key. Reuse the same idempotencyKey when retrying. Never invent answers.",
     inputSchema: z.object({ config: audioformConfigSchema.innerType(), idempotencyKey: z.string().min(8).max(128) }).strict(),
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
   }, (input) => result(() => services.createHandoff(input)));
@@ -794,7 +853,7 @@ export function createTalkformMcpServer(options: { includeLegacyStdioSurface?: b
     { name: "talkform", version: TALKFORM_MCP_VERSION },
     {
       instructions:
-        "Prepare tools create local previews. The hosted register_agent tool creates a private machine workspace without human sign-in and returns its key once. Other hosted handoff tools require that project key and store forms for invited respondents. Ask for confirmation before deleting a handoff. Never invent or submit a respondent's answers.",
+        "Talkform lets an agent create a voice or text interview on a brand's behalf, then share a private respondent link. When preparing a form, write promptTitle as the human question, include branding.fromName and branding.purpose so the page says who it is from and why, and pass theme colors if the brand has them. Hosted machine workspaces are text-only until a signed-in owner claims the project for voice. create_handoff returns shareText — send that to the user. Never invent or submit a respondent's answers.",
     },
   );
   registerPublicTools(server);

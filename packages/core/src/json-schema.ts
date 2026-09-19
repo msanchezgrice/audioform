@@ -10,12 +10,27 @@ export const audioformConfigJsonSchema = {
     instructions: { type: "string" },
     theme: {
       type: "object",
+      additionalProperties: false,
       properties: {
-        accent: { type: "string" },
-        surface: { type: "string" },
-        panel: { type: "string" },
+        accent: { type: "string", pattern: "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$" },
+        surface: { type: "string", pattern: "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$" },
+        panel: { type: "string", pattern: "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$" },
       },
     },
+    branding: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        fromName: { type: "string", maxLength: 80 },
+        purpose: { type: "string", maxLength: 200 },
+        logoUrl: { type: "string", format: "uri", pattern: "^https:" },
+        wordmark: { type: "string", maxLength: 80 },
+        faviconUrl: { type: "string", format: "uri", pattern: "^https:" },
+        fontFamily: { type: "string", maxLength: 80, pattern: "^[A-Za-z][A-Za-z0-9 \\-']*(?:,\\s*(?:[A-Za-z][A-Za-z0-9 \\-']*|serif|sans-serif|monospace|system-ui))*$" },
+        showPoweredBy: { type: "boolean" },
+      },
+    },
+    mode: { type: "string", enum: ["text", "voice"] },
     realtime: {
       type: "object",
       properties: {

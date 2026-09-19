@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { HEX_COLOR_PATTERN, SAFE_FONT_FAMILY_PATTERN, isHttpsUrl } from "./branding";
 
 export const audioformFieldOptionSchema = z.object({
   value: z.string().min(1),
@@ -44,11 +45,24 @@ export const audioformConfigSchema = z
     fields: z.array(audioformFieldSchema).min(1),
     theme: z
       .object({
-        accent: z.string().optional(),
-        surface: z.string().optional(),
-        panel: z.string().optional(),
+        accent: z.string().regex(HEX_COLOR_PATTERN, "Theme colors must be hex values such as #1c1917.").optional(),
+        surface: z.string().regex(HEX_COLOR_PATTERN, "Theme colors must be hex values such as #f3efe8.").optional(),
+        panel: z.string().regex(HEX_COLOR_PATTERN, "Theme colors must be hex values such as #ffffff.").optional(),
       })
       .optional(),
+    branding: z
+      .object({
+        fromName: z.string().trim().min(1).max(80).optional(),
+        purpose: z.string().trim().min(1).max(200).optional(),
+        logoUrl: z.string().url().max(2_048).refine(isHttpsUrl, "logoUrl must be an https URL.").optional(),
+        wordmark: z.string().trim().min(1).max(80).optional(),
+        faviconUrl: z.string().url().max(2_048).refine(isHttpsUrl, "faviconUrl must be an https URL.").optional(),
+        fontFamily: z.string().trim().min(1).max(80).regex(SAFE_FONT_FAMILY_PATTERN).optional(),
+        showPoweredBy: z.boolean().optional(),
+      })
+      .strict()
+      .optional(),
+    mode: z.enum(["text", "voice"]).optional(),
     realtime: z
       .object({
         model: z.string().optional(),

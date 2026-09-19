@@ -40,6 +40,18 @@ export type AudioformTheme = {
   panel?: string;
 };
 
+export type AudioformInterviewMode = "text" | "voice";
+
+export type AudioformBranding = {
+  fromName?: string;
+  purpose?: string;
+  logoUrl?: string;
+  wordmark?: string;
+  faviconUrl?: string;
+  fontFamily?: string;
+  showPoweredBy?: boolean;
+};
+
 export type AudioformConfig = {
   id: string;
   title: string;
@@ -47,6 +59,8 @@ export type AudioformConfig = {
   instructions?: string;
   fields: AudioformField[];
   theme?: AudioformTheme;
+  branding?: AudioformBranding;
+  mode?: AudioformInterviewMode;
   realtime?: {
     model?: string;
     voice?: string;

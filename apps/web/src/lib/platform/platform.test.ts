@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { createEmptyValues } from "@talkform/core";
 import {
   decryptPlatformData,
@@ -11,6 +13,7 @@ import {
 import { platformClientMetadata, platformEventContext } from "./events";
 import { validateAgentRegistrationInput } from "./registration";
 import { platformRequestAddressKey } from "../../app/api/v1/_lib/http";
+import { publicCreatedHandoff, type CreatedPlatformHandoff } from "./types";
 
 const config = {
   id: "lead-intake",
@@ -48,6 +51,24 @@ test("secret hashes are deterministic without retaining the secret", () => {
   assert.equal(first.equals(hashSecret("tfk_test_secret")), true);
   assert.equal(first.equals(hashSecret("tfk_other_secret")), false);
   assert.equal(first.toString("utf8").includes("tfk_test_secret"), false);
+});
+
+test("hosted config validation accepts product branding and rejects unsafe assets", () => {
+  const branded = {
+    ...config,
+    mode: "text" as const,
+    branding: {
+      fromName: "My Forever Songs",
+      purpose: "2 min feedback",
+      logoUrl: "https://cdn.example.com/logo.png",
+    },
+    theme: { accent: "#111111", surface: "#f3efe8", panel: "#ffffff" },
+  };
+  assert.deepEqual(validateAudioformConfig(branded), branded);
+  assert.throws(() => validateAudioformConfig({
+    ...config,
+    branding: { logoUrl: "http://insecure.example/logo.png" },
+  }), /Invalid Talkform config/);
 });
 
 test("hosted config validation enforces field and byte limits", () => {
@@ -116,6 +137,57 @@ test("agent registration accepts only a UUIDv4 idempotency key and no identity c
   assert.throws(() => validateAgentRegistrationInput({ environment: "preview", idempotencyKey: "59a39e19-d625-4d38-923b-b0fb92f1cb4e" }), /production or test/);
   assert.throws(() => validateAgentRegistrationInput({ idempotencyKey: "not-random" }), /UUIDv4/);
   assert.throws(() => validateAgentRegistrationInput({ idempotencyKey: "59a39e19-d625-1d38-923b-b0fb92f1cb4e" }), /UUIDv4/);
+});
+
+function createdHandoff(overrides: Partial<CreatedPlatformHandoff> = {}): CreatedPlatformHandoff {
+  return {
+    id: "11111111-1111-4111-8111-111111111111",
+    projectId: "22222222-2222-4222-8222-222222222222",
+    status: "pending",
+    createdAt: "2026-09-19T00:00:00.000Z",
+    expiresAt: "2026-09-26T00:00:00.000Z",
+    completedAt: null,
+    resultExpiresAt: null,
+    respondentUrl: "https://www.talkform.ai/respond/abc#token=secret",
+    title: "User feedback",
+    purpose: "2 min feedback",
+    fromName: "My Forever Songs",
+    shareText: "My Forever Songs asked for a short interview: 2 min feedback\nhttps://www.talkform.ai/respond/abc#token=secret",
+    mode: "text",
+    voiceEligible: false,
+    claimUrl: "https://www.talkform.ai/dashboard",
+    note: "This workspace is text-only until a signed-in owner claims it at claimUrl. Share the text interview, or claim first for voice.",
+    ...overrides,
+  };
+}
+
+test("handoff create response builds claimUrl and a text-only note for machine voice requests", () => {
+  const source = readFileSync(path.resolve(process.cwd(), "apps/web/src/lib/platform/handoffs.ts"), "utf8");
+  assert.match(source, /!extras\.voiceEligible \? \{ claimUrl: `\$\{origin\}\/dashboard` \}/);
+  assert.match(source, /requested === "voice" && !extras\.voiceEligible/);
+  assert.match(source, /Share the text interview, or claim first for voice/);
+  assert.match(source, /buildHandoffShareCopy/);
+  assert.match(source, /resolveEffectiveInterviewMode/);
+});
+
+test("public handoff create payload includes shareText and claimUrl only when voice is unavailable", () => {
+  const machine = publicCreatedHandoff(createdHandoff());
+  assert.equal(machine.shareText.includes("My Forever Songs asked for a short interview"), true);
+  assert.equal(machine.mode, "text");
+  assert.equal(machine.voiceEligible, false);
+  assert.equal(machine.claimUrl, "https://www.talkform.ai/dashboard");
+  assert.match(machine.note ?? "", /claimUrl/);
+  assert.equal("projectId" in machine, false);
+
+  const human = publicCreatedHandoff(createdHandoff({
+    voiceEligible: true,
+    mode: "voice",
+    claimUrl: undefined,
+    note: undefined,
+  }));
+  assert.equal(human.voiceEligible, true);
+  assert.equal("claimUrl" in human, false);
+  assert.equal("note" in human, false);
 });
 
 test("registration address identity is stable, purpose-bound, and fails closed", () => {

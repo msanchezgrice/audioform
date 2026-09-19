@@ -15,7 +15,34 @@ export type PlatformApiKey = { id: string; projectId: string; name: string; pref
 export type CreatedPlatformApiKey = PlatformApiKey & { secret: string };
 export type AuthenticatedProjectKey = { keyId: string; projectId: string; environment: ProjectEnvironment; ownerKind: ProjectOwnerKind; dailyHandoffLimit: number; voiceEligible: boolean; scopes: ApiKeyScope[] };
 export type PlatformHandoff = { id: string; projectId: string; status: HostedHandoffStatus; createdAt: string; expiresAt: string; completedAt: string | null; resultExpiresAt: string | null };
-export type CreatedPlatformHandoff = PlatformHandoff & { respondentUrl: string };
+export type CreatedPlatformHandoff = PlatformHandoff & {
+  respondentUrl: string;
+  title: string;
+  purpose: string | null;
+  fromName: string | null;
+  shareText: string;
+  mode: RespondentMode;
+  voiceEligible: boolean;
+  claimUrl?: string;
+  note?: string;
+};
+
+export function publicCreatedHandoff(created: CreatedPlatformHandoff) {
+  return {
+    id: created.id,
+    respondentUrl: created.respondentUrl,
+    status: created.status,
+    expiresAt: created.expiresAt,
+    title: created.title,
+    purpose: created.purpose,
+    fromName: created.fromName,
+    shareText: created.shareText,
+    mode: created.mode,
+    voiceEligible: created.voiceEligible,
+    ...(created.claimUrl ? { claimUrl: created.claimUrl } : {}),
+    ...(created.note ? { note: created.note } : {}),
+  };
+}
 export type RespondentHandoff = { id: string; config: AudioformConfig; status: HostedHandoffStatus; expiresAt: string };
 export type RespondentSubmission = { values: AudioformFieldMap; mode: RespondentMode };
 export type HostedAudioformSessionResult = Omit<AudioformSessionResult, "metadata"> & { metadata: AudioformSessionResult["metadata"] & { mode: RespondentMode } };

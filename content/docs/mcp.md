@@ -30,7 +30,7 @@ Keep the Bearer value in the MCP client's server-side secret configuration. Do n
 
 The project key scopes every handoff read, write, and delete. Dashboard-created keys currently carry all three handoff scopes; per-key scope selection is not exposed in the dashboard. Respondents do not need an account. The hosted project tools are:
 
-- `talkform.create_handoff` with `{ "config": <AudioformConfig>, "idempotencyKey": "..." }`
+- `talkform.create_handoff` with `{ "config": <AudioformConfig>, "idempotencyKey": "..." }`. Put the human question in each field's `promptTitle`. Set `config.branding.fromName`, `branding.purpose`, optional `branding.logoUrl`, and hex `theme` colors so the respondent page is about the product, not Talkform.
 - `talkform.get_handoff` with `{ "id": "..." }`
 - `talkform.get_result` with `{ "id": "..." }`
 - `talkform.delete_handoff` with `{ "id": "..." }`
@@ -47,6 +47,11 @@ talkform.create_handoff
   "config": {
     "id": "mcp-product-feedback",
     "title": "Product feedback",
+    "branding": {
+      "fromName": "My Forever Songs",
+      "purpose": "2 min product feedback"
+    },
+    "mode": "text",
     "fields": [
       {
         "id": "desiredOutcome",
@@ -62,7 +67,7 @@ talkform.create_handoff
 }
 ```
 
-The result contains `id`, `respondentUrl`, `status`, and `expiresAt`. Send the full private URL only to the intended person. An agent must not invent answers or submit on the person's behalf.
+The result contains `id`, `respondentUrl`, `status`, `expiresAt`, `title`, `purpose`, `fromName`, `shareText`, `mode`, and `voiceEligible`. `claimUrl` is included when `voiceEligible` is false; `note` is added only when voice was requested but unavailable. Paste `shareText` to the user who will send the link. An agent must not invent answers or submit on the person's behalf. If `voiceEligible` is false, the interview is text-only until a signed-in owner claims the project.
 
 2. After the person opens the link, answers, reviews, and explicitly submits, check status using the returned ID:
 
