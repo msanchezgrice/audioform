@@ -49,6 +49,8 @@ test("theme colors must be hex and fall back to the neutral interview theme", ()
     accent: "#112233",
   });
   assert.deepEqual(resolveInterviewTheme({ accent: "red" }), NEUTRAL_INTERVIEW_THEME);
+  assert.deepEqual(resolveInterviewTheme({ accent: "#ffffff", surface: "#000000", panel: "#111111" }), NEUTRAL_INTERVIEW_THEME);
+  assert.equal(resolveInterviewTheme({ accent: "#1c1917" }).accent, "#1c1917");
 });
 
 test("branding rejects non-https identity assets", () => {
