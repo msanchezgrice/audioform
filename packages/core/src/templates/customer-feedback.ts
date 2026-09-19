@@ -99,7 +99,7 @@ export const CUSTOMER_FEEDBACK_TEMPLATE: AudioformConfig = {
       promptTitle: "Confirm whether follow-up is needed",
       promptDetail: "Ask if they want someone from the team to reach back out.",
       visualTitle: "Would you like a follow-up?",
-      visualDetail: "Just say yes or no.",
+      visualDetail: "Answer in your own words. We'll map it to yes or no.",
       options: [
         { value: "yes", label: "Yes" },
         { value: "no", label: "No" },

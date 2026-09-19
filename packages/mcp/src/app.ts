@@ -801,7 +801,7 @@ function registerHostedTools(server: McpServer, services: HostedMcpServices) {
   };
   server.registerTool("talkform.register_agent", {
     title: "Create a private agent workspace",
-    description: "Creates a persistent machine-owned project and returns its API key secret once. No email, sign-in, or human identity is created. Use a fresh UUIDv4 idempotencyKey and save the returned secret; retries never reveal it again. Machine projects receive 10 hosted text handoffs per day and no hosted voice until claimed by a signed-in owner.",
+    description: "Creates a persistent machine-owned project and returns its API key secret once. No email, sign-in, or human identity is created. Use a fresh UUIDv4 idempotencyKey and save the returned secret; retries never reveal it again. Machine projects receive 10 hosted handoffs per day. Voice is available under shared realtime limits.",
     inputSchema: z.object({
       name: z.string().trim().min(1).max(80).optional(),
       environment: z.enum(["production", "test"]).default("production"),
@@ -811,7 +811,7 @@ function registerHostedTools(server: McpServer, services: HostedMcpServices) {
   }, (input) => result(() => services.registerAgent(input)));
   server.registerTool("talkform.create_handoff", {
     title: "Create a hosted interview",
-    description: "Stores a validated interview and returns a private respondent link plus shareText. Put the human questions in config.fields[].promptTitle, and set config.branding.fromName, branding.purpose, optional branding.logoUrl, and theme hex colors so the page looks like the product. Machine workspaces create text interviews. voiceEligible is always a boolean; claimUrl is present only when voiceEligible is false; note is added only when voice was requested but unavailable. Requires a project API key. Reuse the same idempotencyKey when retrying. Never invent answers.",
+    description: "Stores a validated interview and returns a private respondent link plus shareText. Put the human questions in config.fields[].promptTitle, and set config.branding.fromName, branding.purpose, optional branding.logoUrl, and theme hex colors so the page looks like the product. Omitted mode creates a voice interview. voiceEligible is true. Set config.mode to text only when you want a written interview. Requires a project API key. Reuse the same idempotencyKey when retrying. Never invent answers.",
     inputSchema: z.object({ config: audioformConfigSchema.innerType(), idempotencyKey: z.string().min(8).max(128) }).strict(),
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
   }, (input) => result(() => services.createHandoff(input)));
@@ -853,7 +853,7 @@ export function createTalkformMcpServer(options: { includeLegacyStdioSurface?: b
     { name: "talkform", version: TALKFORM_MCP_VERSION },
     {
       instructions:
-        "Talkform lets an agent create a voice or text interview on a brand's behalf, then share a private respondent link. When preparing a form, write promptTitle as the human question, include branding.fromName and branding.purpose so the page says who it is from and why, and pass theme colors if the brand has them. Hosted machine workspaces are text-only until a signed-in owner claims the project for voice. create_handoff returns shareText — send that to the user. Never invent or submit a respondent's answers.",
+        "Talkform lets an agent create a voice or text interview on a brand's behalf, then share a private respondent link. When preparing a form, write promptTitle as the human question, include branding.fromName and branding.purpose so the page says who it is from and why, and pass theme colors if the brand has them. Hosted interviews can use voice under shared limits. create_handoff returns shareText — send that to the user. Never invent or submit a respondent's answers.",
     },
   );
   registerPublicTools(server);

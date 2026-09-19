@@ -3,6 +3,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { audioformConfigSchema, normalizeFieldValue, type AudioformConfig, type AudioformField, type AudioformFieldMap } from "@talkform/core";
 import { platformDatabase } from "./database";
 import { PLATFORM_LIMITS, PlatformError, type ApiKeyScope, type AuthenticatedProjectKey, type ProjectOwnerKind, type RespondentSubmission } from "./types";
+import { isWorkspaceVoiceEligible } from "./voice";
 
 const API_KEY_PATTERN = /^(tfk_[A-Za-z0-9_-]{12}_)[A-Za-z0-9_-]{43}$/;
 const SAFE_FIELD_ID = /^(?!__proto__$|constructor$|prototype$)[A-Za-z][A-Za-z0-9_.-]{0,127}$/;
@@ -142,7 +143,7 @@ export async function authenticateProjectKey(request: Request, requiredScope: Ap
   if (!record || stored.length !== digest.length || !timingSafeEqual(stored, digest)) throw new PlatformError("invalid_api_key", 401, "Invalid API key.");
   if (!record.scopes.includes(requiredScope)) throw new PlatformError("insufficient_scope", 403, "API key scope denied.");
   await sql`update tf_api_keys set last_used_at = now() where id = ${record.key_id}`;
-  return { keyId: record.key_id, projectId: record.project_id, environment: record.environment, ownerKind: record.owner_kind, dailyHandoffLimit: record.daily_handoff_limit, voiceEligible: record.owner_kind === "human", scopes: record.scopes };
+  return { keyId: record.key_id, projectId: record.project_id, environment: record.environment, ownerKind: record.owner_kind, dailyHandoffLimit: record.daily_handoff_limit, voiceEligible: isWorkspaceVoiceEligible(), scopes: record.scopes };
 }
 
 export function respondentToken(request: Request) {

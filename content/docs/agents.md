@@ -18,7 +18,7 @@ The [hosted MCP walkthrough](/docs/mcp) shows the exact tool calls. The [Python 
 
 ## Product boundary
 
-Machine workspaces start with 10 text handoffs per day, 5 active keys per project, seven-day respondent links, and seven-day completed-result access. New handoff creation also observes shared fair-use capacity of 1,000 per UTC day. An optional signed-in human claim makes the workspace eligible for the human-owned project limit of 100 text handoffs per day and optional voice under shared limits. Use the Bearer project key returned by registration or `/dashboard`; respondents do not need accounts. A pending result returns `409`, and an expired result returns `410`.
+Machine workspaces start with 10 handoffs per day, 5 active keys per project, seven-day respondent links, and seven-day completed-result access. New handoff creation also observes shared fair-use capacity of 1,000 per UTC day. An optional signed-in human claim makes the workspace eligible for the human-owned project limit of 100 handoffs per day. Voice is available under shared realtime limits without a claim. Use the Bearer project key returned by registration or `/dashboard`; respondents do not need accounts. A pending result returns `409`, and an expired result returns `410`.
 
 The public hosted production API does not make browser sessions or result delivery durable by implication. The hosted handoff API is the explicit durable project workflow; legacy transient session routes remain reference surfaces. Hosted results contain reviewed structured values and response mode, without a retained transcript or generated summary. Configure a signed `handoff.completed` webhook for delivery, or poll from an idempotent worker when no webhook is configured.
 

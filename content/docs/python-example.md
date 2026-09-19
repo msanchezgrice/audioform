@@ -28,7 +28,7 @@ export TAPK='tfk_...'
 python3 talkform_handoff.py --wait-seconds 300 > result.json
 ```
 
-Machine workspaces start with 10 text handoffs per day and are not voice eligible. An optional signed-in human claim enables the human-owned project limit and optional voice under shared limits.
+Machine workspaces start with 10 handoffs per day. Voice is available under shared realtime limits. An optional signed-in human claim enables the human-owned project limit of 100 handoffs per day.
 
 Progress and the private respondent link are flushed to stderr, so they remain visible while stdout is redirected. A successful stdout stream contains only the formatted JSON result. The API key is never printed or written to disk.
 

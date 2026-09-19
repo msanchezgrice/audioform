@@ -291,7 +291,7 @@ test("create_handoff and server instructions tell agents to send shareText with 
   const create = tools.find((tool) => tool.name === "talkform.create_handoff");
   assert.match(create?.description ?? "", /shareText/);
   assert.match(create?.description ?? "", /branding\.fromName/);
-  assert.match(create?.description ?? "", /claimUrl/);
+  assert.match(create?.description ?? "", /voice interview/);
   const appSource = await readFile(new URL("./app.ts", import.meta.url), "utf8");
   assert.match(appSource, /create_handoff returns shareText/);
   assert.match(appSource, /branding\.fromName and branding\.purpose/);

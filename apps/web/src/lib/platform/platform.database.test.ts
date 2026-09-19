@@ -125,8 +125,8 @@ integration("machine registration is one-time, quota-bound, claimable, and subje
   assert.equal(created.project.ownerKind, "machine");
   assert.equal(created.project.environment, "test");
   assert.equal(created.project.dailyHandoffLimit, 10);
-  assert.equal(created.project.voiceEligible, false);
-  assert.equal(created.limits.voiceEligible, false);
+  assert.equal(created.project.voiceEligible, true);
+  assert.equal(created.limits.voiceEligible, true);
   assert.equal(created.secret.startsWith(created.key.prefix), true);
   assert.equal(created.registration.verifiedHuman, false);
   const [stored] = await platformDatabase()<{
@@ -171,18 +171,16 @@ integration("machine registration is one-time, quota-bound, claimable, and subje
 
   const machineKey = await authenticateProjectKey(new Request("https://talkform.test", { headers: { authorization: `Bearer ${created.secret}` } }), "project:manage");
   assert.equal(machineKey.ownerKind, "machine");
-  assert.equal(machineKey.voiceEligible, false);
+  assert.equal(machineKey.voiceEligible, true);
   const config = { id: "machine-quota", title: "Machine quota", fields: [{ id: "answer", label: "Answer", type: "text" as const, required: true, promptTitle: "Answer", promptDetail: "Please answer" }] };
   const machineHandoffAttempts = await Promise.allSettled(Array.from({ length: 11 }, (_, index) => createHandoff(machineKey, { config, idempotencyKey: `machine-quota-${randomUUID()}-${index}`, baseUrl: "https://talkform.test" })));
   assert.equal(machineHandoffAttempts.filter((result) => result.status === "fulfilled").length, 10);
   assert.equal(machineHandoffAttempts.filter((result) => result.status === "rejected" && result.reason?.code === "daily_quota_exceeded").length, 1);
   const machineHandoff = machineHandoffAttempts.find((result): result is PromiseFulfilledResult<Awaited<ReturnType<typeof createHandoff>>> => result.status === "fulfilled")!.value;
   const machineToken = new URL(machineHandoff.respondentUrl).hash.slice("#token=".length);
-  await assert.rejects(
-    () => submitRespondentHandoff(machineHandoff.id, machineToken, { values: { answer: "Cannot claim voice usage" }, mode: "voice" }),
-    (error: unknown) => error instanceof Error && "code" in error && error.code === "voice_not_available",
-  );
-  assert.equal((await getRespondentHandoff(machineHandoff.id, machineToken)).status, "pending");
+  const machineVoice = await submitRespondentHandoff(machineHandoff.id, machineToken, { values: { answer: "Voice is allowed under shared caps" }, mode: "voice" });
+  assert.equal(machineVoice.status, "completed");
+  assert.equal((await getRespondentHandoff(machineHandoff.id, machineToken)).status, "completed");
 
   const rotated = await createManagedProjectApiKey(machineKey, { name: "Rotated key" });
   const rotatedAuth = await authenticateProjectKey(new Request("https://talkform.test", { headers: { authorization: `Bearer ${rotated.secret}` } }), "project:manage");

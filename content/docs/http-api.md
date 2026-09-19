@@ -1,6 +1,6 @@
 # HTTP API
 
-Talkform provides a hosted handoff API for agents that need a person to review and submit structured answers. Machine workspaces start with 10 hosted text handoffs per day. An optional verified human claim makes a workspace eligible for up to 100 hosted text handoffs per day per project and optional voice under shared limits. New handoff creation also observes a shared fair-use capacity of 1,000 handoffs per UTC day; idempotent retries do not consume capacity. Respondent links expire after 7 days. A completed result remains available to the owning project for 7 days.
+Talkform provides a hosted handoff API for agents that need a person to review and submit structured answers. Machine workspaces start with 10 hosted handoffs per day. Voice is available under shared realtime limits. An optional verified human claim raises the workspace to 100 hosted handoffs per day per project. New handoff creation also observes a shared fair-use capacity of 1,000 handoffs per UTC day; idempotent retries do not consume capacity. Respondent links expire after 7 days. A completed result remains available to the owning project for 7 days.
 
 The public browser demo at `/app` is separate: its transcript, summary, and answers remain in the browser until export. Hosted handoff results contain reviewed structured values and the selected response mode; Talkform does not retain a hosted transcript or generated summary.
 
@@ -20,7 +20,7 @@ Content-Type: application/json
 }
 ```
 
-The `201` response contains `registration`, `project`, `key`, `secret`, `limits`, and `urls`. The registration is marked `ownerKind: machine` and `verifiedHuman: false`; the limits report 10 text handoffs per day, 5 active keys per project, 7-day invite and result windows, and `voiceEligible: false`. Save `secret` immediately: it is returned once and is never replayed.
+The `201` response contains `registration`, `project`, `key`, `secret`, `limits`, and `urls`. The registration is marked `ownerKind: machine` and `verifiedHuman: false`; the limits report 10 handoffs per day, 5 active keys per project, 7-day invite and result windows, and `voiceEligible: true`. Save `secret` immediately: it is returned once and is never replayed.
 
 Reusing the same idempotency key, even after a network change, returns `409 registration_exists` with non-secret identifiers. If the initial response is ambiguous or the secret is lost, use a fresh idempotency key; registration is limited to 3 successful registrations per address per day.
 
@@ -88,14 +88,13 @@ The API validates config size, field count, field IDs, field types, branding URL
   "title": "Customer intake",
   "purpose": "2 min feedback for My Forever Songs",
   "fromName": "My Forever Songs",
-  "shareText": "My Forever Songs asked for a short interview: 2 min feedback for My Forever Songs\nhttps://www.talkform.ai/respond/11111111-1111-4111-8111-111111111111#token=private-token",
-  "mode": "text",
-  "voiceEligible": false,
-  "claimUrl": "https://www.talkform.ai/dashboard"
+  "shareText": "My Forever Songs asked for a voice interview: 2 min feedback for My Forever Songs\nhttps://www.talkform.ai/respond/11111111-1111-4111-8111-111111111111#token=private-token",
+  "mode": "voice",
+  "voiceEligible": true
 }
 ```
 
-Send `shareText` to the person who will share the link. Machine workspaces create text interviews. If you requested `config.mode: "voice"` before the project is claimed, the response stays `mode: "text"` and includes `claimUrl` plus a `note`.
+Send `shareText` to the person who will share the link. Omitted `config.mode` creates a voice interview. Set `config.mode` to `"text"` only when you want a written interview. Typed replies are interpreted in the respondent's own words, then reviewed before send.
 
 The fragment after `#token=` is a respondent credential. Browsers do not send URL fragments in HTTP requests. Share the full link only with the intended respondent.
 

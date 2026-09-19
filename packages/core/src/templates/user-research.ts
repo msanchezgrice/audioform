@@ -68,7 +68,7 @@ export const USER_RESEARCH_TEMPLATE: AudioformConfig = {
       promptTitle: "Confirm follow-up consent",
       promptDetail: "Ask whether the research team can reach out for a follow-up session.",
       visualTitle: "Can we follow up with you later?",
-      visualDetail: "Just say yes or no.",
+      visualDetail: "Answer in your own words. We'll map it to yes or no.",
       options: [
         { value: "yes", label: "Yes" },
         { value: "no", label: "No" },

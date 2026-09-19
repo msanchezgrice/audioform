@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.2.0] - 2026-09-19
+
+### Changed
+- Agent and machine workspaces can mint voice interviews. Voice stays under shared realtime caps.
+- Omitted `config.mode` is voice. Set `mode: "text"` only for a written interview.
+- Typed replies are interpreted as unstructured language. Common yes/no phrasing binds locally; hosted interviews can ask a model when the local map misses.
+
+### Removed
+- The claim-for-voice gate on machine workspaces.
+
 ## [0.1.1.0] - 2026-09-19
 
 ### Added

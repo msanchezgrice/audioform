@@ -15,7 +15,7 @@ export TAPK='tfk_...'
 python3 talkform_handoff.py --wait-seconds 300 > result.json
 ```
 
-The default API origin is exactly `https://www.talkform.ai`. The hidden localhost flags exist only for the fixture tests; the script refuses arbitrary API origins so a copied command cannot send `TAPK` elsewhere. A machine workspace starts with 10 text handoffs per day and is not voice eligible. An optional signed-in human claim can make the workspace eligible for the human-owned project limits and optional voice.
+The default API origin is exactly `https://www.talkform.ai`. The hidden localhost flags exist only for the fixture tests; the script refuses arbitrary API origins so a copied command cannot send `TAPK` elsewhere. A machine workspace starts with 10 handoffs per day. Voice is available under shared realtime limits. An optional signed-in human claim raises the daily handoff limit to the human-owned project cap.
 
 You can also create a project key in the [Talkform dashboard](https://www.talkform.ai/dashboard) and run the handoff flow directly. The respondent reviews and explicitly submits the fields before the result becomes available.
 

@@ -116,8 +116,8 @@ export function resolveEffectiveInterviewMode(input: {
   requested?: AudioformInterviewMode;
   voiceEligible: boolean;
 }): AudioformInterviewMode {
-  if (!input.voiceEligible || input.requested === "text") return "text";
-  return input.requested === "voice" ? "voice" : "text";
+  if (input.requested === "text" || !input.voiceEligible) return "text";
+  return "voice";
 }
 
 export function buildHandoffShareCopy(input: {

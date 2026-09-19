@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     const config = resolveRequestedAudioformConfig(body, "ai-skill-tutor");
     if (config.fields.length > 50) return NextResponse.json({ ok: false, error: "Talkform voice supports up to 50 fields." }, { status: 400 });
     const { identity, owner, voiceEligible } = await resolveCostIdentity(request);
-    if (!voiceEligible) return attachBrowserOwner(NextResponse.json({ ok: false, error: "Voice is available after this agent workspace is claimed by a signed-in owner.", reason: "voice_not_available" }, { status: 403, headers: { "cache-control": "no-store" } }), request, owner);
+    if (!voiceEligible) return attachBrowserOwner(NextResponse.json({ ok: false, error: "Voice is not available for this interview.", reason: "voice_not_available" }, { status: 403, headers: { "cache-control": "no-store" } }), request, owner);
     const result = await reserveCost("realtime", identity);
     if (!result.ok) {
       const status = result.reason === "disabled" ? 503 : 429;

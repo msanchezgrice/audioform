@@ -4,6 +4,7 @@ import { createApiKeySecret } from "./auth";
 import { platformDatabase } from "./database";
 import { normalizedPlatformEventContext } from "./events";
 import { cleanProjectName } from "./projects";
+import { isWorkspaceVoiceEligible } from "./voice";
 import {
   PLATFORM_LIMITS,
   PlatformError,
@@ -37,7 +38,7 @@ const projectFromRow = (row: ProjectRow): PlatformProject => ({
   environment: row.environment,
   ownerKind: row.owner_kind,
   dailyHandoffLimit: row.daily_handoff_limit,
-  voiceEligible: row.owner_kind === "human",
+  voiceEligible: isWorkspaceVoiceEligible(),
   createdAt: iso(row.created_at),
   updatedAt: iso(row.updated_at),
   claimedAt: row.claimed_at ? iso(row.claimed_at) : null,
@@ -174,7 +175,7 @@ export async function registerAgentWorkspace(args: {
         activeKeysPerProject: PLATFORM_LIMITS.activeKeysPerProject,
         inviteDays: PLATFORM_LIMITS.inviteDays,
         resultDays: PLATFORM_LIMITS.resultDays,
-        voiceEligible: false,
+        voiceEligible: isWorkspaceVoiceEligible(),
       },
       urls: urls(args.baseUrl),
     };
