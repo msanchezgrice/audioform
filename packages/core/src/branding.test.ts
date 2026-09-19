@@ -176,7 +176,7 @@ test("published config JSON schema advertises theme, branding, and mode", () => 
   const properties = audioformConfigJsonSchema.properties as {
     theme?: object;
     branding?: { properties?: Record<string, unknown> };
-    mode?: { enum?: string[] };
+    mode?: { enum?: readonly string[] };
   };
   assert.ok(properties.theme);
   assert.ok(properties.branding?.properties?.fromName);
