@@ -52,7 +52,7 @@ const footerGroups = [
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: `(function () {
           var isRespondent = function (path) { return path === '/respond' || path.indexOf('/respond/') === 0; };
@@ -66,6 +66,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             var blocked = isRespondent(path || window.location.pathname);
             window.__talkformRespondentRoute = blocked;
             window.__talkformAnalyticsBlocked = blocked;
+            document.documentElement.classList.toggle('respondent-route', blocked);
             window.dispatchEvent(new CustomEvent('talkform:route-change', { detail: { respondent: blocked } }));
           };
           ['pushState', 'replaceState'].forEach(function (method) {

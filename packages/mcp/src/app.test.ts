@@ -43,6 +43,36 @@ const validInput = {
   ],
 };
 
+test("prepare_form merges a branding object and lets top-level fromName win", () => {
+  const prepared = prepareTalkformDraft({
+    ...validInput,
+    branding: {
+      fromName: "Brand Co",
+      purpose: "from branding",
+      logoUrl: "https://cdn.example.com/logo.png",
+    },
+    fromName: "Override Name",
+  });
+  assert.equal(prepared.draft.branding?.fromName, "Override Name");
+  assert.equal(prepared.draft.branding?.purpose, "from branding");
+  assert.equal(prepared.draft.branding?.logoUrl, "https://cdn.example.com/logo.png");
+  assert.equal(prepared.preview.fromName, "Override Name");
+  assert.equal(prepared.preview.purpose, "from branding");
+});
+
+test("prepare_form keeps product identity and uses promptTitle as the visible question", () => {
+  const prepared = prepareTalkformDraft({
+    ...validInput,
+    fromName: "My Forever Songs",
+    purpose: "2 min product feedback",
+    theme: { accent: "#111111" },
+  });
+  assert.equal(prepared.draft.branding?.fromName, "My Forever Songs");
+  assert.equal(prepared.preview.fromName, "My Forever Songs");
+  assert.equal(prepared.draft.theme.accent, "#111111");
+  assert.equal(prepared.draft.fields[0]?.visualTitle, validInput.fields[0]?.promptTitle);
+});
+
 test("prepare_form accepts a bounded public shape and returns a valid deterministic config", () => {
   const first = prepareTalkformDraft(validInput);
   const second = prepareTalkformDraft(validInput);
@@ -52,10 +82,11 @@ test("prepare_form accepts a bounded public shape and returns a valid determinis
   assert.equal(first.preview.requiredCount, 2);
   assert.equal("realtime" in first.draft, false);
   assert.deepEqual(first.draft.theme, {
-    accent: "#d05a36",
-    surface: "#f7f4ee",
+    accent: "#1c1917",
+    surface: "#f3efe8",
     panel: "#ffffff",
   });
+  assert.equal(first.draft.fields[0]?.visualTitle, "Understand their role");
   assert.deepEqual(first.draft.output, { formats: ["json", "markdown"] });
   assert.equal(audioformConfigSchema.safeParse(first.draft).success, true);
   assert.ok(Buffer.byteLength(JSON.stringify(first), "utf8") <= PREPARE_FORM_LIMITS.maxOutputBytes);
@@ -233,6 +264,37 @@ test("the self-contained widget is accessible, commerce-free, and renders dynami
     /\b(?:pricing|checkout|upgrade|subscription|buy now|email capture)\b/i,
   );
   assert.doesNotMatch(TALKFORM_WIDGET_HTML, /<a\b|openExternal|https?:\/\//i);
+});
+
+test("create_handoff and server instructions tell agents to send shareText with branding", async (t) => {
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  const server = createTalkformMcpServer({
+    hosted: {
+      registerAgent: async () => ({}),
+      createHandoff: async () => ({}),
+      getHandoff: async () => ({}),
+      getResult: async () => ({}),
+      deleteHandoff: async () => ({}),
+      configureWebhook: async () => ({}),
+      getWebhook: async () => ({}),
+      deleteWebhook: async () => ({}),
+    },
+  });
+  const client = new Client({ name: "talkform-tests", version: "1.0.0" });
+  t.after(async () => {
+    await client.close();
+    await server.close();
+  });
+  await server.connect(serverTransport);
+  await client.connect(clientTransport);
+  const { tools } = await client.listTools();
+  const create = tools.find((tool) => tool.name === "talkform.create_handoff");
+  assert.match(create?.description ?? "", /shareText/);
+  assert.match(create?.description ?? "", /branding\.fromName/);
+  assert.match(create?.description ?? "", /claimUrl/);
+  const appSource = await readFile(new URL("./app.ts", import.meta.url), "utf8");
+  assert.match(appSource, /create_handoff returns shareText/);
+  assert.match(appSource, /branding\.fromName and branding\.purpose/);
 });
 
 test("the advertised MCP server version matches the published package", async () => {

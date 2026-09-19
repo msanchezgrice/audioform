@@ -1,5 +1,5 @@
 import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
-import { getCompletion, type AudioformConfig, type AudioformFieldMap } from "@talkform/core";
+import { buildHandoffShareCopy, getCompletion, resolveEffectiveInterviewMode, type AudioformConfig, type AudioformFieldMap } from "@talkform/core";
 import { recordPlatformCapacityDenial } from "../operator-notifications/database";
 import { createRespondentToken, decryptPlatformData, encryptPlatformData, hashSecret, validateAudioformConfig, validateRespondentSubmission } from "./auth";
 import { platformDatabase } from "./database";
@@ -32,12 +32,33 @@ function respondentUrl(baseUrl: string, id: string, token: string) {
   return `${origin}/respond/${id}#token=${encodeURIComponent(token)}`;
 }
 
-function createdResponse(row: HandoffRow, baseUrl: string, token: string): CreatedPlatformHandoff {
+function createdResponse(
+  row: HandoffRow,
+  baseUrl: string,
+  token: string,
+  extras: { config: AudioformConfig; voiceEligible: boolean },
+): CreatedPlatformHandoff {
+  const url = respondentUrl(baseUrl, row.id, token);
+  const requested = extras.config.mode;
+  const mode = resolveEffectiveInterviewMode({
+    requested,
+    voiceEligible: extras.voiceEligible,
+  });
+  const share = buildHandoffShareCopy({ config: extras.config, respondentUrl: url, mode });
+  const origin = new URL(baseUrl).origin;
+  const voiceRequestedButUnavailable = requested === "voice" && !extras.voiceEligible;
   return {
     id: row.id, projectId: row.project_id, status: row.status,
-    respondentUrl: respondentUrl(baseUrl, row.id, token), createdAt: iso(row.created_at),
+    respondentUrl: url, createdAt: iso(row.created_at),
     expiresAt: iso(row.invite_expires_at), completedAt: row.completed_at ? iso(row.completed_at) : null,
     resultExpiresAt: row.result_expires_at ? iso(row.result_expires_at) : null,
+    ...share,
+    mode,
+    voiceEligible: extras.voiceEligible,
+    ...(!extras.voiceEligible ? { claimUrl: `${origin}/dashboard` } : {}),
+    ...(voiceRequestedButUnavailable
+      ? { note: "This workspace is text-only until a signed-in owner claims it at claimUrl. Share the text interview, or claim first for voice." }
+      : {}),
   };
 }
 
@@ -46,11 +67,11 @@ export async function createHandoff(
   input: { config: unknown; idempotencyKey: unknown; baseUrl: string },
   eventContext?: PlatformEventContext,
 ) {
-  return createHandoffForProject(key, input, eventContext);
+  return createHandoffForProject({ ...key, keyId: key.keyId }, input, eventContext);
 }
 
 export async function createHandoffForProject(
-  actor: { projectId: string; keyId: string | null; environment: ProjectEnvironment },
+  actor: { projectId: string; keyId: string | null; environment: ProjectEnvironment; voiceEligible?: boolean },
   input: { config: unknown; idempotencyKey: unknown; baseUrl: string },
   eventContext?: PlatformEventContext,
 ) {
@@ -73,7 +94,7 @@ export async function createHandoffForProject(
       const existingConfig = decryptPlatformData<AudioformConfig>(existing.config_ciphertext, CONFIG_AAD(existing.id));
       if (JSON.stringify(existingConfig) !== JSON.stringify(config)) return { error: new PlatformError("idempotency_conflict", 409, "Idempotency key was already used with a different config.") };
       const token = decryptPlatformData<string>(existing.respondent_token_ciphertext, TOKEN_AAD(existing.id));
-      return { value: createdResponse(existing, input.baseUrl, token) };
+      return { value: createdResponse(existing, input.baseUrl, token, { config, voiceEligible: actor.voiceEligible === true }) };
     }
     const [globalUsage] = await tx<{ handoffs_created: number }[]>`
       insert into tf_global_daily_usage(usage_date,handoffs_created)
@@ -112,7 +133,7 @@ export async function createHandoffForProject(
       returning *
     `;
     await tx`insert into tf_events (event_key, event_name, project_id, key_id, handoff_id, environment, surface, client_sdk_name, client_sdk_version) values (${`handoff.created:${id}`}, 'handoff.created', ${actor.projectId}, ${actor.keyId}, ${id}, ${actor.environment}, ${event.surface}, ${event.client?.name ?? null}, ${event.client?.version ?? null}) on conflict (event_key) do nothing`;
-    return { value: createdResponse(row, input.baseUrl, generated.token) };
+    return { value: createdResponse(row, input.baseUrl, generated.token, { config, voiceEligible: actor.voiceEligible === true }) };
     });
   } catch (error) {
     if (error instanceof PlatformError && error.code === "shared_capacity_reached") {

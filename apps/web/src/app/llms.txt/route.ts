@@ -54,7 +54,8 @@ const body = `# Talkform
 - Register without an email or Clerk account with POST /api/v1/agents/register or talkform.register_agent using an optional name, optional production/test environment, and a fresh UUIDv4 idempotencyKey.
 - The 201 response returns registration, project, key, a one-time secret, limits, and URLs. Machine workspaces start at 10 text handoffs per day and voiceEligible false; save the secret immediately.
 - Authenticate machine requests with Authorization: Bearer project-key from registration or /dashboard.
-- Create with talkform.create_handoff or POST /api/v1/handoffs using config and idempotencyKey.
+- Create with talkform.create_handoff or POST /api/v1/handoffs using config and idempotencyKey. Set branding.fromName, branding.purpose, and theme hex colors so the respondent page is product-owned. promptTitle is the human question.
+- The create response includes respondentUrl, shareText, mode, and voiceEligible. Send shareText to the user who will share the link.
 - Read status with talkform.get_handoff; retrieve reviewed structured values with talkform.get_result.
 - Poll results every 10 seconds or slower. Pending returns HTTP 409; expired returns HTTP 410.
 - Respondent links and completed-result access last 7 days. Configure signed handoff.completed webhooks with PUT /api/v1/webhook, or poll when no webhook is configured.

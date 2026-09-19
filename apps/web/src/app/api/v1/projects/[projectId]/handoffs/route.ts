@@ -2,6 +2,7 @@ import { requireAllowedOrigin, requireClerkUserId } from "@/lib/platform/auth";
 import { createHandoffForProject } from "@/lib/platform/handoffs";
 import { platformEventContext } from "@/lib/platform/events";
 import { getOwnedProject } from "@/lib/platform/projects";
+import { publicCreatedHandoff } from "@/lib/platform/types";
 import { consumePlatformRateLimit, platformErrorResponse, platformJson, readJson, requireUuid } from "../../../_lib/http";
 
 export const runtime = "nodejs";
@@ -16,7 +17,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ pro
     const project = await getOwnedProject(userId, projectId);
     const body = await readJson(request) as { config?: unknown; idempotencyKey?: unknown };
     const created = await createHandoffForProject(
-      { projectId, keyId: null, environment: project.environment },
+      { projectId, keyId: null, environment: project.environment, voiceEligible: project.voiceEligible },
       {
         config: body?.config,
         idempotencyKey: request.headers.get("idempotency-key") ?? body?.idempotencyKey,
@@ -24,7 +25,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ pro
       },
       platformEventContext(request, "dashboard"),
     );
-    return platformJson({ id: created.id, respondentUrl: created.respondentUrl, status: created.status, expiresAt: created.expiresAt }, { status: 201 });
+    return platformJson(publicCreatedHandoff(created), { status: 201 });
   } catch (error) {
     return platformErrorResponse(error);
   }

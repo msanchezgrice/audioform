@@ -52,6 +52,16 @@ Idempotency-Key: intake-2026-09-10-001
   "config": {
     "id": "customer-intake",
     "title": "Customer intake",
+    "branding": {
+      "fromName": "My Forever Songs",
+      "purpose": "2 min feedback for My Forever Songs"
+    },
+    "theme": {
+      "accent": "#1c1917",
+      "surface": "#f3efe8",
+      "panel": "#ffffff"
+    },
+    "mode": "text",
     "fields": [
       {
         "id": "goal",
@@ -67,16 +77,25 @@ Idempotency-Key: intake-2026-09-10-001
 }
 ```
 
-The API validates config size, field count, field IDs, field types, and selection options before creating the resource. A successful create returns `201` with exactly these fields. At shared capacity, new creates return `429 shared_capacity_reached` with UTC reset metadata and `Retry-After`; idempotent retries of existing handoffs remain safe.
+The API validates config size, field count, field IDs, field types, branding URLs, and selection options before creating the resource. A successful create returns `201` with the respondent link plus share-ready copy. At shared capacity, new creates return `429 shared_capacity_reached` with UTC reset metadata and `Retry-After`; idempotent retries of existing handoffs remain safe.
 
 ```json
 {
   "id": "11111111-1111-4111-8111-111111111111",
   "respondentUrl": "https://www.talkform.ai/respond/11111111-1111-4111-8111-111111111111#token=private-token",
   "status": "pending",
-  "expiresAt": "2026-09-17T18:00:00.000Z"
+  "expiresAt": "2026-09-17T18:00:00.000Z",
+  "title": "Customer intake",
+  "purpose": "2 min feedback for My Forever Songs",
+  "fromName": "My Forever Songs",
+  "shareText": "My Forever Songs asked for a short interview: 2 min feedback for My Forever Songs\nhttps://www.talkform.ai/respond/11111111-1111-4111-8111-111111111111#token=private-token",
+  "mode": "text",
+  "voiceEligible": false,
+  "claimUrl": "https://www.talkform.ai/dashboard"
 }
 ```
+
+Send `shareText` to the person who will share the link. Machine workspaces create text interviews. If you requested `config.mode: "voice"` before the project is claimed, the response stays `mode: "text"` and includes `claimUrl` plus a `note`.
 
 The fragment after `#token=` is a respondent credential. Browsers do not send URL fragments in HTTP requests. Share the full link only with the intended respondent.
 

@@ -100,6 +100,12 @@ textarea:focus-visible {
   letter-spacing: -0.02em;
 }
 
+.respondentShell { max-width: none; padding: 0; }
+.respondent-route .siteHeader,
+.respondent-route .siteFooter,
+.respondent-route .skipLink,
+.respondentShell .siteHeader,
+.respondentShell .siteFooter { display: none; }
 .workspaceShell { max-width: 1440px; padding: 0 32px 24px; }
 .workspaceShell .siteHeader { height: 64px; }
 .workspaceShell .siteNav > a:not([href="/docs"]) { display: none; }

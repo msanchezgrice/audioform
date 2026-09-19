@@ -7,9 +7,11 @@ import {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
 } from "react";
 import {
   AUDIOFORM_REALTIME_TOOL_NAME,
+  NEUTRAL_INTERVIEW_THEME,
   createEmptyValues,
   createTranscriptEntry,
   getCompletion,
@@ -17,6 +19,7 @@ import {
   isFieldValueValid,
   mergeRealtimeUpdate,
   normalizeRealtimeUpdate,
+  resolveInterviewTheme,
   toSessionResult,
   type AudioformConfig,
   type AudioformField,
@@ -157,7 +160,15 @@ export function AudioformWidget({
 }: AudioformWidgetProps) {
   const [connectionState, setConnectionState] = useState<ConnectionState>("idle");
   const [interviewMode, setInterviewMode] = useState<InterviewMode>("unselected");
-  const [statusMessage, setStatusMessage] = useState("Ready to start a live Talkform session.");
+  const [statusMessage, setStatusMessage] = useState("Ready when you are.");
+  const hostedReview = Boolean(onComplete);
+  const interviewTheme = useMemo(
+    () => resolveInterviewTheme(
+      config.theme,
+      hostedReview ? NEUTRAL_INTERVIEW_THEME : { accent: "#d05a36", surface: "#f7f4ee", panel: "#ffffff" },
+    ),
+    [config.theme, hostedReview],
+  );
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -190,6 +201,11 @@ export function AudioformWidget({
   const interviewModeRef = useRef<InterviewMode>(interviewMode);
   const firstAnswerTrackedRef = useRef(false);
   const completionTrackedRef = useRef(false);
+
+  useEffect(() => {
+    if (!hostedReview || voiceEnabled || interviewMode !== "unselected") return;
+    startTextInterview();
+  }, [hostedReview, voiceEnabled, interviewMode]);
 
   const completion = useMemo(() => getCompletion(config, values), [config, values]);
   const missingFieldIds = completion.missingFieldIds;
@@ -581,7 +597,7 @@ export function AudioformWidget({
         if (connectionToken !== connectionTokenRef.current) return;
         if (peerConnection.connectionState === "connected") {
           setConnectionState("live");
-          setStatusMessage("Live. Talkform is listening and syncing structured fields.");
+          setStatusMessage(hostedReview ? "Live. Listening and updating your answers." : "Live. Talkform is listening and syncing structured fields.");
           emitTalkformEvent("session_connected", { mode: "voice", formId: config.id });
         }
         if (peerConnection.connectionState === "failed") {
@@ -654,7 +670,7 @@ export function AudioformWidget({
     } catch (startError) {
       if (connectionToken !== connectionTokenRef.current) return;
       closeConnection("error");
-      const message = startError instanceof Error ? startError.message : "Unable to start the Talkform call.";
+      const message = startError instanceof Error ? startError.message : (hostedReview ? "Unable to start the live call." : "Unable to start the Talkform call.");
       setError(message);
       setStatusMessage(message);
       emitTalkformEvent("session_failed", { mode: "voice", stage, formId: config.id });
@@ -673,7 +689,7 @@ export function AudioformWidget({
     setInterviewMode("unselected");
     interviewModeRef.current = "unselected";
     setSessionId(null);
-    setStatusMessage("Ready to start a new Talkform session.");
+    setStatusMessage(hostedReview ? "Ready to start again." : "Ready to start a new Talkform session.");
   }
 
   function updateField(field: AudioformField, nextValue: AudioformFieldValue) {
@@ -840,10 +856,17 @@ export function AudioformWidget({
   }
 
   return (
-    <div className={`${styles.shell}${consumerMode ? ` ${styles.consumer}` : ""}`}>
+    <div className={`${styles.shell}${consumerMode ? ` ${styles.consumer}` : ""}${hostedReview ? ` ${styles.hosted}` : ""}`}>
       <audio ref={audioRef} autoPlay playsInline hidden />
 
-      <div className={styles.widget}>
+      <div
+        className={styles.widget}
+        style={{
+          "--tf-accent": interviewTheme.accent,
+          "--tf-surface": interviewTheme.surface,
+          "--tf-panel": interviewTheme.panel,
+        } as CSSProperties}
+      >
         {/* ─── LEFT: Prompt area ─── */}
         <div className={styles.promptArea}>
           <div className={styles.promptBar}>
@@ -876,14 +899,18 @@ export function AudioformWidget({
           <div className={styles.promptBody}>
             {interviewMode === "unselected" ? (
               <section className={styles.preflight} aria-labelledby="talkform-preflight-title">
-                <div className={styles.stepLabel}>Private by choice</div>
-                <h2 id="talkform-preflight-title" className={styles.promptQuestion}>Before you begin</h2>
+                <div className={styles.stepLabel}>{config.title}</div>
+                <h2 id="talkform-preflight-title" className={styles.promptQuestion}>
+                  {config.fields.length === 1 ? "One question" : `${config.fields.length} questions`}
+                </h2>
                 <p className={styles.promptHint}>
-                  Allow a few minutes for {config.fields.length} questions. Choose how you would like to answer.
+                  {hostedReview
+                    ? (config.description || "Answer one question at a time. You can correct anything before you finish.")
+                    : "Answer one question at a time. You can correct anything before you finish."}
                 </p>
                 {onComplete ? (
                   <p className={styles.dataNotice}>
-                    Review your answers, then choose “Submit reviewed answers” to share them with the project that invited you. Voice, when available, sends audio to OpenAI; typing stays in this browser until you submit.
+                    Review your answers, then choose “Send answers” to share them with the project that invited you. Voice, when available, sends audio to OpenAI; typing stays in this browser until you submit.
                   </p>
                 ) : consumerMode ? (
                   <p className={styles.dataNotice}>
@@ -894,9 +921,11 @@ export function AudioformWidget({
                     <strong>Voice</strong> sends audio to OpenAI for the live conversation. Talkform limits the call duration and records usage totals. Your transcript, summary, and structured answers stay in your browser until export. <strong>Typing</strong> stays in your browser too.
                   </p>
                 )}
+                {onComplete ? null : (
                 <p className={styles.consentLinks}>
                   By continuing, you acknowledge our <a href="/privacy">Privacy Policy</a> and <a href="/terms">Terms</a>.
                 </p>
+                )}
                 <div className={styles.preflightChoices}>
                   {voiceEnabled && (
                     <button type="button" className={styles.primaryButton} onClick={startOnboardingCall} data-agent-action="start-voice-interview" data-testid="start-voice-button">
@@ -936,7 +965,7 @@ export function AudioformWidget({
                   <section className={styles.completionPanel} aria-labelledby="talkform-completion-title">
                     <div className={styles.stepLabel}>Complete</div>
                     <h2 id="talkform-completion-title" className={styles.promptQuestion}>Your answers are ready</h2>
-                    <p className={styles.promptHint}>{onComplete ? "Review and correct your answers in the form, then choose Submit reviewed answers." : "Review and correct the captured answers, then export them or turn your own form into a Talkform."}</p>
+                    <p className={styles.promptHint}>{onComplete ? "Review and correct your answers in the form, then choose Send answers." : "Review and correct the captured answers, then export them or turn your own form into a Talkform."}</p>
                     {!onComplete && <div className={styles.completionActions}>
                       <a
                         href="/import"
@@ -958,12 +987,14 @@ export function AudioformWidget({
                   <>
                     {pendingPromptQueue.length > 0 && (
                       <div className={styles.stepLabel}>
-                        Question {completion.captured + 1} of {completion.required}
+                        {completion.required > 0
+                          ? `${Math.min(completion.captured + 1, completion.required)} of ${completion.required}`
+                          : `Question ${completion.captured + 1} of ${config.fields.length}`}
                       </div>
                     )}
                     <h2 className={styles.promptQuestion}>{visualPromptState.title}</h2>
                     <p className={styles.promptHint}>
-                      {interviewMode === "text" ? "Type your answer below. You can correct it at any time." : visualPromptState.detail}
+                      {visualPromptState.detail || (interviewMode === "text" ? "Type your answer below. You can correct it at any time." : "")}
                     </p>
                   </>
                 )}
@@ -986,7 +1017,7 @@ export function AudioformWidget({
                   </div>
                 )}
 
-                {consumerMode && (
+                {!hostedReview && consumerMode && (
                   <div className={styles.consumerVarSection}>
                     {config.fields.map((field) => {
                       const value = values[field.id];
@@ -1006,7 +1037,7 @@ export function AudioformWidget({
                   </div>
                 )}
 
-                <button
+                {!hostedReview && <button
                   type="button"
                   className={`${styles.transcriptToggle} ${transcriptOpen ? styles.transcriptToggleOpen : ""}`}
                   onClick={() => setTranscriptOpen(!transcriptOpen)}
@@ -1017,8 +1048,8 @@ export function AudioformWidget({
                     <path d="M4 6l4 4 4-4" />
                   </svg>
                   {transcriptOpen ? "Hide transcript" : "Show transcript"}
-                </button>
-                <div
+                </button>}
+                {!hostedReview && <div
                   id="talkform-transcript"
                   className={`${styles.transcriptDrawer} ${transcriptOpen ? styles.transcriptDrawerOpen : ""}`}
                   hidden={!transcriptOpen}
@@ -1031,7 +1062,7 @@ export function AudioformWidget({
                       </div>
                     )) : <div className={styles.transcriptEmpty}>Transcript will appear once the session starts.</div>}
                   </div>
-                </div>
+                </div>}
               </>
             )}
           </div>
@@ -1039,8 +1070,10 @@ export function AudioformWidget({
           {interviewMode !== "unselected" && <div className={styles.promptInputArea}>
             {connectionState === "error" ? (
               <div className={styles.startRow}>
-                <button type="button" className={styles.primaryButton} onClick={startOnboardingCall}>Try voice again</button>
-                <button type="button" className={styles.ghostButton} onClick={startTextInterview}>Switch to typing</button>
+                {voiceEnabled && <button type="button" className={styles.primaryButton} onClick={startOnboardingCall}>Try voice again</button>}
+                <button type="button" className={voiceEnabled ? styles.ghostButton : styles.primaryButton} onClick={startTextInterview}>
+                  {voiceEnabled ? "Switch to typing" : "Continue with typing"}
+                </button>
               </div>
             ) : connectionState === "ended" ? (
               <div className={styles.startRow}>
@@ -1093,7 +1126,7 @@ export function AudioformWidget({
 
         {/* ─── RIGHT: Variable sidebar ─── */}
         <div className={styles.sidebarHeader}>
-          <span className={styles.sidebarTitle}>Captured answers</span>
+          <span className={styles.sidebarTitle}>{hostedReview ? "Review" : "Captured answers"}</span>
           <span className={styles.sidebarCount}>{completion.captured} / {completion.required}</span>
         </div>
 
@@ -1174,7 +1207,7 @@ export function AudioformWidget({
                         id={`talkform-field-${field.id}`}
                         className={styles.fieldTextarea}
                         value={typeof value === "string" ? value : ""}
-                        placeholder={status === "active" ? "Answer this question" : "Optional"}
+                        placeholder={status === "active" ? field.placeholder || "Type your answer" : "Optional"}
                         onChange={(event) => updateField(field, event.target.value)}
                         disabled={interviewMode === "unselected"}
                       />
@@ -1187,7 +1220,7 @@ export function AudioformWidget({
                         max={field.validation?.max}
                         value={typeof value === "string" || typeof value === "number" ? value : ""}
                         aria-invalid={status === "invalid"}
-                        placeholder={status === "active" ? "Answer this question" : "Optional"}
+                        placeholder={status === "active" ? field.placeholder || "Type your answer" : "Optional"}
                         onChange={(event) => updateField(
                           field,
                           field.type === "number"
@@ -1215,21 +1248,21 @@ export function AudioformWidget({
               onClick={() => void submitReviewedAnswers()}
               disabled={!sessionId || missingFieldIds.length > 0 || invalidFieldIds.length > 0 || submitting || submitted}
               data-agent-action="submit-reviewed-answers" data-testid="submit-reviewed-answers">
-              {submitted ? "Answers submitted" : submitting ? "Submitting…" : "Submit reviewed answers"}
+              {submitted ? "Sent" : submitting ? "Sending…" : missingFieldIds.length > 0 ? `Answer ${missingFieldIds.length} more to send` : "Send answers"}
             </button>
           </div>}
-          <div className={styles.summaryBlock}>
+          {!hostedReview && <div className={styles.summaryBlock}>
             <span className={styles.summaryLabel}>Live summary</span>
             <span>{summary || "Answers will be summarized here as they come in."}</span>
-          </div>
-          <div className={styles.exportRow}>
+          </div>}
+          {!hostedReview && <div className={styles.exportRow}>
             <button type="button" className={`${styles.btnExport} ${styles.btnExportPrimary}`} onClick={() => downloadExport("json")} disabled={invalidFieldIds.length > 0} data-agent-action="export-result" data-testid="export-json-button">
               Export JSON
             </button>
             <button type="button" className={styles.btnExport} onClick={() => downloadExport("markdown")} disabled={invalidFieldIds.length > 0} data-agent-action="export-result" data-testid="export-markdown-button">
               Export MD
             </button>
-          </div>
+          </div>}
         </div>
       </div>
 

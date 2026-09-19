@@ -1,3 +1,4 @@
+import { getRespondentQuestion, getRespondentQuestionDetail } from "./branding";
 import type {
   AudioformCompletion,
   AudioformConfig,
@@ -169,8 +170,8 @@ export function getCurrentPrompt(config: AudioformConfig, values: AudioformField
   return nextField
     ? {
         fieldId: nextField.id,
-        title: nextField.visualTitle ?? nextField.promptTitle,
-        detail: nextField.visualDetail ?? nextField.promptDetail,
+        title: getRespondentQuestion(nextField),
+        detail: getRespondentQuestionDetail(nextField),
       }
     : null;
 }

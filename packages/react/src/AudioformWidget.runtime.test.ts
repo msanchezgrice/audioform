@@ -94,3 +94,16 @@ test("local export rejects invalid corrected values", () => {
     /correct invalid answers.*Email.*Website/i,
   );
 });
+
+test("hosted review auto-starts text, applies theme vars, and uses a calmer review rail", () => {
+  assert.match(widgetSource, /if \(!hostedReview \|\| voiceEnabled \|\| interviewMode !== "unselected"\) return/);
+  assert.match(widgetSource, /startTextInterview\(\)/);
+  assert.match(widgetSource, /hostedReview \? NEUTRAL_INTERVIEW_THEME/);
+  assert.match(widgetSource, /--tf-accent/);
+  assert.match(widgetSource, /--tf-surface/);
+  assert.match(widgetSource, /--tf-panel/);
+  assert.match(widgetSource, /hostedReview \? "Review" : "Captured answers"/);
+  assert.match(widgetSource, /styles\.hosted/);
+  assert.match(widgetSource, /!hostedReview && <button/);
+  assert.match(widgetSource, /!hostedReview && <div className=\{styles\.summaryBlock\}/);
+});

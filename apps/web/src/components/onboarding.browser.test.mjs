@@ -226,3 +226,85 @@ test("homepage hero stacks cleanly on mobile and stays balanced on desktop", bro
     await browser.close();
   }
 });
+
+test("hosted respond consent starts a text interview and submits reviewed answers", browserTestOptions, async () => {
+  requireBrowser();
+  const browser = await chromium.launch({ executablePath, headless: true });
+  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  const runtimeErrors = captureRuntimeErrors(page);
+  const handoffId = "11111111-1111-4111-8111-111111111111";
+  const token = "respond-e2e-token";
+  const posted = [];
+
+  await page.route("**/api/v1/respond/**", async (route) => {
+    const request = route.request();
+    if (request.method() === "GET") {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          status: "pending",
+          voiceEligible: false,
+          config: {
+            id: "respond-e2e",
+            title: "Workshop feedback",
+            description: "One question for the team that invited you.",
+            branding: { fromName: "Northwind", purpose: "2 min workshop feedback" },
+            theme: { accent: "#1c1917", surface: "#f3efe8", panel: "#ffffff" },
+            mode: "text",
+            fields: [
+              {
+                id: "goal",
+                label: "Workshop goal",
+                type: "text",
+                required: true,
+                promptTitle: "What should the workshop accomplish?",
+                promptDetail: "Ask for one practical outcome.",
+                visualTitle: "What should the workshop accomplish?",
+              },
+            ],
+          },
+        }),
+      });
+      return;
+    }
+    if (request.method() === "POST") {
+      posted.push({
+        token: request.headers()["x-talkform-respondent-token"],
+        body: request.postData(),
+      });
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ id: handoffId, status: "completed", completedAt: "2026-09-19T00:00:00.000Z" }),
+      });
+      return;
+    }
+    await route.fallback();
+  });
+
+  try {
+    await page.goto(`${baseUrl}/respond/${handoffId}#token=${token}`, { waitUntil: "domcontentloaded" });
+    await page.getByText("From Northwind").waitFor();
+    await page.getByText("This is a written interview. Review every answer before you send it.").waitFor();
+    await page.getByRole("checkbox", { name: /I understand who will receive my answers/ }).check();
+    await page.getByTestId("respondent-consent").click();
+
+    const input = page.getByLabel("Type your answer");
+    await input.waitFor({ state: "visible" });
+    await input.fill("Ship the white-label respond page");
+    await input.press("Enter");
+    await page.getByRole("heading", { name: "Your answers are ready" }).waitFor();
+    await page.getByTestId("submit-reviewed-answers").click();
+    await page.getByRole("heading", { name: "Answers sent." }).waitFor();
+
+    assert.equal(posted.length, 1);
+    assert.equal(posted[0].token, token);
+    const payload = JSON.parse(posted[0].body);
+    assert.equal(payload.mode, "text");
+    assert.equal(payload.values.goal, "Ship the white-label respond page");
+    assert.deepEqual(runtimeErrors, []);
+  } finally {
+    await browser.close();
+  }
+});

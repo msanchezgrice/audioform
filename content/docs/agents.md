@@ -9,9 +9,10 @@ Talkform is designed so coding agents can discover and use it cleanly.
 3. Create or edit a form config
 4. Validate it
 5. Register a machine workspace with `talkform.register_agent` or `POST /api/v1/agents/register`; save its one-time project secret
-6. Call `talkform.create_handoff` with an idempotency key, then send the returned respondent URL to the person
-7. Poll `talkform.get_result` no more often than every 10 seconds until the person reviews and explicitly submits the fields
-8. Map the reviewed JSON into the product-specific next step
+6. Call `talkform.create_handoff` with an idempotency key. Write `promptTitle` as the question a person will read, and set `branding.fromName`, `branding.purpose`, and optional `theme` hex colors so the hosted page is about the product.
+7. Give the user the returned `shareText` so they can send the private link. Do not invent answers or submit on the respondent's behalf.
+8. Poll `talkform.get_result` no more often than every 10 seconds until the person reviews and explicitly submits the fields
+9. Map the reviewed JSON into the product-specific next step
 
 The [hosted MCP walkthrough](/docs/mcp) shows the exact tool calls. The [Python example](/docs/python-example) provides a runnable HTTP client with private idempotency state and bounded polling.
 

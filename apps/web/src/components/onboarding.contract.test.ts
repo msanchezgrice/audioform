@@ -15,7 +15,7 @@ const embedPage = read("../app/embed/page.tsx");
 const embedCss = read("../app/embed/embed.module.css");
 
 test("onboarding begins with informed voice or local-text choice", () => {
-  assert.match(widget, /Before you begin/);
+  assert.match(widget, /config\.fields\.length === 1 \? "One question"/);
   assert.match(widget, /Start with voice/);
   assert.match(widget, /Continue with typing/);
   assert.match(widget, /OpenAI/);
@@ -85,7 +85,7 @@ test("public demo privacy copy matches the browser-to-OpenAI data path", () => {
     assert.match(content, /browser[^.]*until export|until[^.]*export/i);
   }
   assert.match(widget, /Talkform controls the call duration and records usage totals/i);
-  assert.match(widget, /Submit reviewed answers/);
+  assert.match(widget, /Send answers/);
   assert.match(widget, /Only your reviewed structured answers are submitted to the inviting project/i);
   assert.match(privacy, /transcript[^.]*summary[^.]*structured answers[^.]*browser/i);
   assert.match(faq, /server creates a bounded realtime session/i);

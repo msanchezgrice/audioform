@@ -24,7 +24,7 @@ Talkform gives AI agents a hosted human handoff: an agent asks focused questions
 - Import a **public** form URL at `/import`, review the extracted draft, and launch a preview.
 - Export session results as JSON or Markdown after the user reviews them.
 - Registering an agent creates a machine workspace with 10 text handoffs per day, 5 active keys per project, 7-day respondent links, and 7-day completed-result access. The one-time project secret is returned only at registration; no email or Clerk user is created.
-- For machine handoffs, use the returned project Bearer key, send an idempotency key to `talkform.create_handoff`, and poll `talkform.get_result` every 10 seconds or slower. Pending is `409`; expired is `410`.
+- For machine handoffs, use the returned project Bearer key, send an idempotency key to `talkform.create_handoff` with `branding.fromName`, `branding.purpose`, and hex `theme` colors, then give the user the returned `shareText`. Poll `talkform.get_result` every 10 seconds or slower. Pending is `409`; expired is `410`.
 - An optional signed-in human claim enables the human-owned project limit of 100 text handoffs per day and optional voice under shared limits. Configure a signed completion webhook through the HTTP API, or poll when no webhook is configured.
 - Hosted results include reviewed structured values and response mode. They do not include a retained transcript or generated summary.
 

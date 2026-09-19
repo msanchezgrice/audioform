@@ -3,6 +3,8 @@ import {
   getCurrentPrompt,
   getInvalidFieldIds,
   getMissingFieldIds,
+  getRespondentQuestion,
+  getRespondentQuestionDetail,
   sessionResultToMarkdown,
   type AudioformConfig,
   type AudioformField,
@@ -162,11 +164,11 @@ function getFallbackVisualDetail(field: AudioformField) {
 }
 
 function getFieldVisualTitle(field: AudioformField) {
-  return field.visualTitle?.trim() || getFallbackVisualTitle(field);
+  return getRespondentQuestion(field) || getFallbackVisualTitle(field);
 }
 
 function getFieldVisualDetail(field: AudioformField) {
-  return field.visualDetail?.trim() || getFallbackVisualDetail(field);
+  return getRespondentQuestionDetail(field) || getFallbackVisualDetail(field);
 }
 
 function isEmailField(field: AudioformField) {
