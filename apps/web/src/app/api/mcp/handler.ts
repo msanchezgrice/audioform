@@ -13,6 +13,10 @@ export type McpRouteDependencies = {
     startedAt: number;
     response: Response;
     properties?: Record<string, unknown>;
+    /** Parsed JSON-RPC request body, when the body parsed as JSON. */
+    requestBody?: unknown;
+    /** Parsed JSON-RPC response body, when the protocol handler answered with JSON. */
+    responseBody?: unknown;
   }) => Promise<unknown>;
 };
 
@@ -52,8 +56,17 @@ export async function handleMcpPost(
 ) {
   const startedAt = Date.now();
   let analyticsProperties: Record<string, unknown> = {};
+  let requestBody: unknown = undefined;
+  let responseBody: unknown = null;
   const finish = async (response: Response) => {
-    await dependencies.recordRequest?.({ request, startedAt, response, properties: analyticsProperties });
+    await dependencies.recordRequest?.({
+      request,
+      startedAt,
+      response,
+      properties: analyticsProperties,
+      requestBody,
+      responseBody,
+    });
     return response;
   };
   if (!isAllowedHost(request)) {
@@ -80,6 +93,7 @@ export async function handleMcpPost(
     return finish(jsonError(400, "invalid_json"));
   }
   analyticsProperties = mcpRequestAnalyticsMetadata(parsedBody);
+  requestBody = parsedBody;
 
   let decision: AnonymousMcpRateLimitDecision;
   try {
@@ -97,6 +111,7 @@ export async function handleMcpPost(
     const response = await handleTalkformMcpProtocol(request, parsedBody, dependencies.hosted);
     if (response.headers.get("content-type")?.includes("application/json")) {
       const payload = await response.clone().json().catch(() => null);
+      responseBody = payload;
       analyticsProperties.protocol_outcome = payload?.error ? "protocol_error" : payload?.result?.isError ? "tool_error" : "succeeded";
     }
     const headers = new Headers(response.headers);
