@@ -69,13 +69,18 @@ export type OpenAIAccountReadiness = {
   projectHeader: "known" | "missing" | "unexpected";
   organizationId: string | null;
   organizationHeader: "known" | "missing" | "unexpected";
+  projectSelectionResults: Array<{
+    projectId: string;
+    httpStatus: number | null;
+    outcome: "accepted" | "non_200" | "request_error";
+  }>;
   outcome: "http_response" | "missing_key" | "request_error";
 };
 
 /** Read only fixed model metadata; never return provider body, errors, or unrecognized header values. */
 export async function readOpenAIAccountReadiness(fetcher: typeof fetch = fetch): Promise<OpenAIAccountReadiness> {
   const key = process.env.OPENAI_API_KEY?.trim();
-  if (!key) return { httpStatus: null, projectId: null, projectHeader: "missing", organizationId: null, organizationHeader: "missing", outcome: "missing_key" };
+  if (!key) return { httpStatus: null, projectId: null, projectHeader: "missing", organizationId: null, organizationHeader: "missing", projectSelectionResults: [], outcome: "missing_key" };
   try {
     const response = await fetcher("https://api.openai.com/v1/models/gpt-4.1-mini", {
       method: "GET",
@@ -88,16 +93,42 @@ export async function readOpenAIAccountReadiness(fetcher: typeof fetch = fetch):
     const rawOrganization = response.headers.get("openai-organization");
     const projectId = rawProject && KNOWN_OPENAI_PROJECTS.has(rawProject) ? rawProject : null;
     const organizationId = rawOrganization && KNOWN_OPENAI_ORGANIZATIONS.has(rawOrganization) ? rawOrganization : null;
+    let projectSelectionResults: OpenAIAccountReadiness["projectSelectionResults"] = [];
+    if (response.status === 200 && !rawProject && !rawOrganization) {
+      projectSelectionResults = await Promise.all([...KNOWN_OPENAI_PROJECTS].map(async (selectedProjectId) => {
+        try {
+          const selectedResponse = await fetcher("https://api.openai.com/v1/models/gpt-4.1-mini", {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${key}`,
+              "OpenAI-Organization": "org-1zdpMipnxc7A78hLjZPhgGM0",
+              "OpenAI-Project": selectedProjectId,
+            },
+            cache: "no-store",
+            redirect: "error",
+            signal: AbortSignal.timeout(5_000),
+          });
+          return {
+            projectId: selectedProjectId,
+            httpStatus: selectedResponse.status,
+            outcome: selectedResponse.status === 200 ? "accepted" as const : "non_200" as const,
+          };
+        } catch {
+          return { projectId: selectedProjectId, httpStatus: null, outcome: "request_error" as const };
+        }
+      }));
+    }
     return {
       httpStatus: response.status,
       projectId,
       projectHeader: projectId ? "known" : rawProject ? "unexpected" : "missing",
       organizationId,
       organizationHeader: organizationId ? "known" : rawOrganization ? "unexpected" : "missing",
+      projectSelectionResults,
       outcome: "http_response",
     };
   } catch {
-    return { httpStatus: null, projectId: null, projectHeader: "missing", organizationId: null, organizationHeader: "missing", outcome: "request_error" };
+    return { httpStatus: null, projectId: null, projectHeader: "missing", organizationId: null, organizationHeader: "missing", projectSelectionResults: [], outcome: "request_error" };
   }
 }
 
