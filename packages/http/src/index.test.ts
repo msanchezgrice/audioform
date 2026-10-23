@@ -5,6 +5,8 @@ import {
   createConfiguredSession,
   buildRealtimeSessionConfig,
   createRealtimeCall,
+  hangupRealtimeCall,
+  hangupRealtimeCallWithOutcome,
   exportSession,
   getSessionResult,
   listSessions,
@@ -187,6 +189,28 @@ test("Realtime calls use server-owned SDP exchange with fixed bounded configurat
     assert.equal(capturedBody?.model, "gpt-realtime-2.1-mini");
     assert.equal(capturedBody?.max_output_tokens, 512);
     assert.deepEqual(capturedBody?.reasoning, { effort: "low" });
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("Realtime hangup diagnostics retain only outcome and HTTP status", async () => {
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => new Response("provider detail must not escape", { status: 404 });
+    assert.deepEqual(await hangupRealtimeCallWithOutcome("rtc_safe", "test-key"), { outcome: "provider_rejected", httpStatus: 404 });
+
+    globalThis.fetch = async () => new Response(null, { status: 200 });
+    assert.deepEqual(await hangupRealtimeCallWithOutcome("rtc_safe", "test-key"), { outcome: "acknowledged", httpStatus: 200 });
+    assert.equal(await hangupRealtimeCall("rtc_safe", "test-key"), true);
+
+    globalThis.fetch = async () => { throw new DOMException("private exception detail", "TimeoutError"); };
+    assert.deepEqual(await hangupRealtimeCallWithOutcome("rtc_safe", "test-key"), { outcome: "request_timeout", httpStatus: null });
+
+    globalThis.fetch = async () => { throw new Error("private exception detail"); };
+    const failed = await hangupRealtimeCallWithOutcome("rtc_safe", "test-key");
+    assert.deepEqual(failed, { outcome: "request_error", httpStatus: null });
+    assert.equal(JSON.stringify(failed).includes("private exception detail"), false);
   } finally {
     globalThis.fetch = originalFetch;
   }

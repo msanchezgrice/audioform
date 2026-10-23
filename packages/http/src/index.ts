@@ -309,13 +309,30 @@ export async function createRealtimeCall(config: AudioformConfig, options: Realt
   };
 }
 
-export async function hangupRealtimeCall(callId: string, apiKey: string) {
+export type RealtimeHangupOutcome =
+  | { outcome: "acknowledged"; httpStatus: number }
+  | { outcome: "provider_rejected"; httpStatus: number }
+  | { outcome: "request_timeout" | "request_error"; httpStatus: null };
+
+export async function hangupRealtimeCallWithOutcome(callId: string, apiKey: string): Promise<RealtimeHangupOutcome> {
   if (!/^rtc_[A-Za-z0-9_-]+$/.test(callId)) throw new Error("Invalid Realtime call id.");
-  const response = await fetch(`https://api.openai.com/v1/realtime/calls/${encodeURIComponent(callId)}/hangup`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}` },
-    cache: "no-store",
-    signal: AbortSignal.timeout(8_000),
-  });
-  return response.ok;
+  try {
+    const response = await fetch(`https://api.openai.com/v1/realtime/calls/${encodeURIComponent(callId)}/hangup`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}` },
+      cache: "no-store",
+      signal: AbortSignal.timeout(8_000),
+    });
+    return { outcome: response.ok ? "acknowledged" : "provider_rejected", httpStatus: response.status };
+  } catch (error) {
+    return { outcome: error instanceof Error && error.name === "TimeoutError" ? "request_timeout" : "request_error", httpStatus: null };
+  }
+}
+
+export async function hangupRealtimeCall(callId: string, apiKey: string) {
+  const result = await hangupRealtimeCallWithOutcome(callId, apiKey);
+  if (result.outcome === "request_timeout" || result.outcome === "request_error") {
+    throw new Error(result.outcome === "request_timeout" ? "Realtime hangup request timed out." : "Realtime hangup request failed.");
+  }
+  return result.outcome === "acknowledged";
 }

@@ -1,7 +1,7 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { listOverdueRealtimeReservations, pruneExpiredReservations } from "../../../../lib/cost/database";
-import { terminateRealtimeReservation } from "../../../../lib/cost/service";
+import { readOpenAIAccountReadiness, summarizeTeardownDiagnostics, terminateRealtimeReservation, type TeardownDiagnostic } from "../../../../lib/cost/service";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,17 +16,23 @@ function authorized(request: Request) {
 
 export async function POST(request: Request) {
   if (!authorized(request)) return NextResponse.json({ ok: false, error: "Unauthorized." }, { status: 401 });
+  const accountReadinessPromise = readOpenAIAccountReadiness();
   const released = await pruneExpiredReservations();
   const overdue = await listOverdueRealtimeReservations();
   let confirmed = 0;
+  const diagnostics: TeardownDiagnostic[] = [];
   for (let offset = 0; offset < overdue.length; offset += 10) {
     const results = await Promise.all(overdue.slice(offset, offset + 10).map((reservation) => Promise.race([
       terminateRealtimeReservation(reservation.id, "cleanup", false),
-      new Promise<{ confirmed: false }>((resolve) => setTimeout(() => resolve({ confirmed: false }), 10_000)),
+      new Promise<{ confirmed: false; diagnostic: TeardownDiagnostic }>((resolve) => setTimeout(() => resolve({ confirmed: false, diagnostic: { outcome: "cleanup_timeout", httpStatus: null } }), 10_000)),
     ])));
     confirmed += results.filter((result) => result.confirmed).length;
+    diagnostics.push(...results.map((result) => result.diagnostic));
   }
-  return NextResponse.json({ ok: true, released, overdue: overdue.length, terminationConfirmed: confirmed });
+  const accountReadiness = await accountReadinessPromise;
+  const teardownOutcomes = summarizeTeardownDiagnostics(diagnostics);
+  console.info("realtime_cleanup_diagnostic", { released, overdue: overdue.length, terminationConfirmed: confirmed, teardownOutcomes, accountReadiness });
+  return NextResponse.json({ ok: true, released, overdue: overdue.length, terminationConfirmed: confirmed, teardownOutcomes, accountReadiness });
 }
 
 export const GET = POST;
