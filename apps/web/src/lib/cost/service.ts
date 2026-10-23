@@ -1,4 +1,4 @@
-import { hangupRealtimeCall } from "@talkform/http";
+import { hangupRealtimeCallWithOutcome } from "@talkform/http";
 import WebSocket, { type RawData } from "ws";
 import { estimateRealtimeMicrousd, parseRealtimeUsage, parseTranscriptionUsage } from "./policy";
 import { getReservation, markObserverAttached, markReservationExposureUnknown, markTermination, recordRealtimeUsage } from "./database";
@@ -34,27 +34,93 @@ export function sidebandUsageComplete(state: { observerAttached: boolean; socket
   return state.observerAttached && !state.socketErrored && !state.usageUnknown && state.observedUsage && state.activeResponses === 0 && state.pendingTranscriptions === 0;
 }
 
+export type TeardownDiagnostic = {
+  outcome: "acknowledged" | "provider_rejected" | "request_timeout" | "request_error" | "cleanup_timeout" | "already_acknowledged" | "not_attempted" | "not_needed";
+  httpStatus: number | null;
+};
+
+export function summarizeTeardownDiagnostics(diagnostics: TeardownDiagnostic[]) {
+  const counts = new Map<string, { outcome: TeardownDiagnostic["outcome"]; httpStatus: number | null; count: number }>();
+  for (const diagnostic of diagnostics) {
+    const key = `${diagnostic.outcome}:${diagnostic.httpStatus ?? "none"}`;
+    const current = counts.get(key);
+    if (current) current.count += 1;
+    else counts.set(key, { outcome: diagnostic.outcome, httpStatus: diagnostic.httpStatus, count: 1 });
+  }
+  return [...counts.values()].sort((a, b) => a.outcome.localeCompare(b.outcome) || (a.httpStatus ?? 0) - (b.httpStatus ?? 0));
+}
+
 function apiKey() {
   const value = process.env.OPENAI_API_KEY?.trim();
   if (!value) throw new Error("OPENAI_API_KEY is required.");
   return value;
 }
 
+const KNOWN_OPENAI_PROJECTS = new Set([
+  "proj_xGpticukjbzDoJcb3lU1IzHO",
+  "proj_hqJUNI5zwDL2CUpYfMwGEM8V",
+  "proj_9Hk0VRG0gHfO5r8r0D6q9DV9",
+]);
+const KNOWN_OPENAI_ORGANIZATIONS = new Set(["org-1zdpMipnxc7A78hLjZPhgGM0"]);
+
+export type OpenAIAccountReadiness = {
+  httpStatus: number | null;
+  projectId: string | null;
+  projectHeader: "known" | "missing" | "unexpected";
+  organizationId: string | null;
+  organizationHeader: "known" | "missing" | "unexpected";
+  outcome: "http_response" | "missing_key" | "request_error";
+};
+
+/** Read only fixed model metadata; never return provider body, errors, or unrecognized header values. */
+export async function readOpenAIAccountReadiness(fetcher: typeof fetch = fetch): Promise<OpenAIAccountReadiness> {
+  const key = process.env.OPENAI_API_KEY?.trim();
+  if (!key) return { httpStatus: null, projectId: null, projectHeader: "missing", organizationId: null, organizationHeader: "missing", outcome: "missing_key" };
+  try {
+    const response = await fetcher("https://api.openai.com/v1/models/gpt-4.1-mini", {
+      method: "GET",
+      headers: { Authorization: `Bearer ${key}` },
+      cache: "no-store",
+      redirect: "error",
+      signal: AbortSignal.timeout(5_000),
+    });
+    const rawProject = response.headers.get("openai-project");
+    const rawOrganization = response.headers.get("openai-organization");
+    const projectId = rawProject && KNOWN_OPENAI_PROJECTS.has(rawProject) ? rawProject : null;
+    const organizationId = rawOrganization && KNOWN_OPENAI_ORGANIZATIONS.has(rawOrganization) ? rawOrganization : null;
+    return {
+      httpStatus: response.status,
+      projectId,
+      projectHeader: projectId ? "known" : rawProject ? "unexpected" : "missing",
+      organizationId,
+      organizationHeader: organizationId ? "known" : rawOrganization ? "unexpected" : "missing",
+      outcome: "http_response",
+    };
+  } catch {
+    return { httpStatus: null, projectId: null, projectHeader: "missing", organizationId: null, organizationHeader: "missing", outcome: "request_error" };
+  }
+}
+
 export async function terminateRealtimeReservation(id: string, _reason: string, usageComplete = false) {
   const reservation = await getReservation(id);
-  if (!reservation || ["settled", "released"].includes(reservation.status)) return { confirmed: true, reservation };
+  if (!reservation || ["settled", "released"].includes(reservation.status)) return { confirmed: true, reservation, diagnostic: { outcome: "not_needed", httpStatus: null } as const };
   if (!reservation.providerCallId) {
     await markReservationExposureUnknown(id);
-    return { confirmed: false, reservation };
+    return { confirmed: false, reservation, diagnostic: { outcome: "not_attempted", httpStatus: null } as const };
   }
   if (reservation.terminationConfirmedAt) {
     await markTermination(id, true, usageComplete);
-    return { confirmed: true, reservation };
+    return { confirmed: true, reservation, diagnostic: { outcome: "already_acknowledged", httpStatus: null } as const };
   }
-  let confirmed = false;
-  try { confirmed = await hangupRealtimeCall(reservation.providerCallId, apiKey()); } catch { confirmed = false; }
+  let diagnostic: TeardownDiagnostic;
+  try {
+    diagnostic = await hangupRealtimeCallWithOutcome(reservation.providerCallId, apiKey());
+  } catch {
+    diagnostic = { outcome: "request_error", httpStatus: null };
+  }
+  const confirmed = diagnostic.outcome === "acknowledged";
   await markTermination(id, confirmed, usageComplete);
-  return { confirmed, reservation };
+  return { confirmed, reservation, diagnostic };
 }
 
 export type RealtimeObserverEvent =
