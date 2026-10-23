@@ -31,7 +31,7 @@ export async function POST(request: Request) {
   }
   const accountReadiness = await accountReadinessPromise;
   const teardownOutcomes = summarizeTeardownDiagnostics(diagnostics);
-  console.info("realtime_cleanup_diagnostic", { released, overdue: overdue.length, terminationConfirmed: confirmed, teardownOutcomes, accountReadiness });
+  console.info("realtime_cleanup_diagnostic", JSON.stringify({ released, overdue: overdue.length, terminationConfirmed: confirmed, teardownOutcomes, accountReadiness }));
   return NextResponse.json({ ok: true, released, overdue: overdue.length, terminationConfirmed: confirmed, teardownOutcomes, accountReadiness });
 }
 
