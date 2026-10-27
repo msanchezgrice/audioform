@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import type { QaAttribution } from "./qa-attribution";
 
 /**
  * MCP traffic telemetry for Portfolio Brain.
@@ -20,7 +21,7 @@ export type McpTelemetryEvent = {
   event: McpTelemetryEventName;
   distinct_id: string;
   timestamp: string;
-  properties: {
+  properties: QaAttribution & {
     $host: string;
     $current_url: string;
     $pathname: "/api/mcp" | "/api/mcp/public";
@@ -50,6 +51,7 @@ export type BuildMcpTelemetryInput = {
   /** HTTP status of the MCP response. */
   httpStatus: number;
   now?: Date;
+  qaAttribution?: QaAttribution;
 };
 
 const TRACKED_METHODS = new Set(["initialize", "tools/call"]);
@@ -148,6 +150,7 @@ export function buildMcpTelemetryEvents(input: BuildMcpTelemetryInput): McpTelem
         status: failed ? "error" : "ok",
         $process_person_profile: false,
         $raw_user_agent: userAgent.slice(0, 512),
+        ...input.qaAttribution,
       },
     });
   }

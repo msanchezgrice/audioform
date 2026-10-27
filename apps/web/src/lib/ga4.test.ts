@@ -25,3 +25,25 @@ test("Talkform's loader honors Do Not Track and disables Google advertising sign
   assert.match(source, /location\.pathname/);
   assert.match(source, /respond/);
 });
+
+
+test("QA browser sessions never start aggregate analytics, including later untagged navigation", async () => {
+  const {runInNewContext} = await import("node:vm");
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  const source = await readFile(path.join(here,"../app/layout.tsx"),"utf8");
+  const script = source.match(/__html: `([\s\S]*?)` \}\}/)?.[1];
+  assert.ok(script);
+  const entries = new Map<string,string>();
+  const loaded: string[] = [];
+  const makeContext = (url:string) => {
+    const location = new URL(url);
+    const window = {location,history:{pushState(){},replaceState(){}},sessionStorage:{getItem:(key:string)=>entries.get(key)??null,setItem:(key:string,value:string)=>entries.set(key,value)},dispatchEvent(){},addEventListener(){}};
+    return {window,navigator:{},URL,URLSearchParams,CustomEvent:class {},document:{documentElement:{classList:{toggle(){}}},createElement:()=>({src:"",dataset:{},async:false}),head:{appendChild:(script:{src:string})=>loaded.push(script.src)}}};
+  };
+  runInNewContext(script, makeContext("https://talkform.ai/?pb_traffic_type=qa"));
+  runInNewContext(script, makeContext("https://talkform.ai/dashboard"));
+  assert.deepEqual(loaded,[]);
+  entries.clear();
+  runInNewContext(script, makeContext("https://talkform.ai/docs"));
+  assert.equal(loaded.length,1,"ordinary external visitor retains analytics");
+});

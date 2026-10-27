@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { requestQaAttribution } from "./qa-request";
 
 type SafeValue = string | number | boolean;
 
@@ -129,6 +130,7 @@ export async function captureServerAnalytics(
           ...(timestamp ? { timestamp } : {}),
           properties: {
             ...sanitizeServerAnalyticsProperties(properties),
+            ...requestQaAttribution(request),
             site_id: "talkform.ai",
             site_name: "Talkform",
             origin: "server",

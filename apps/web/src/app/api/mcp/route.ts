@@ -8,6 +8,7 @@ import {
 import { captureApiRequest } from "../../../lib/server-analytics";
 import { handleMcpPost, methodNotAllowed } from "./handler";
 import { authorizeMcpRequest, hostedMcpServices } from "../../../lib/platform/mcp";
+import { requestQaAttribution } from "../../../lib/qa-request";
 
 export const runtime = "nodejs";
 
@@ -36,6 +37,7 @@ function recordMcpTelemetry(args: {
       requestBody: args.requestBody,
       responseBody: args.responseBody,
       httpStatus: args.response.status,
+      qaAttribution: requestQaAttribution(args.request),
     });
     if (events.length === 0) return Promise.resolve();
     const send = () => sendMcpTelemetryEvents(events, {

@@ -2,6 +2,7 @@ import { platformDatabase } from "../platform/database";
 import type { PlatformEventSurface } from "../platform/types";
 import type postgres from "postgres";
 import { NOTIFICATION_MAX_ATTEMPTS, boundedFailureCode, registrationDigestWindow, retryDelaySeconds } from "./policy";
+import { externalRegistrationPredicate } from "../platform/usage-cohorts";
 
 export type OperatorRegistrationKind = "human" | "machine";
 export type OperatorNotificationKind =
@@ -125,9 +126,11 @@ export async function recordOperatorRegistration(
   `;
   if (!registration) return { recorded: false as const, notification: null };
   const [{ count }] = await database<{ count: number }[]>`
-    select count(*)::int as count from tf_operator_registrations
+    select count(*)::int as count from tf_operator_registrations r
     where registration_kind=${input.kind} and recorded_at>=${window.start} and recorded_at<${window.end}
+      and ${externalRegistrationPredicate(database)}
   `;
+  if (count === 0) return { recorded: true as const, notification: null };
   const kind = input.kind === "human" ? "human_signup_digest" : "machine_registration_digest";
   const notification = await enqueueOperatorNotification({
     kind,

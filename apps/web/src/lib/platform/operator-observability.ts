@@ -1,5 +1,6 @@
 import { platformDatabase } from "./database";
 import type { PlatformEventName, PlatformEventSurface } from "./types";
+import { externalRegistrationPredicate } from "./usage-cohorts";
 
 type SurfaceCount = {
   project_id?: string; event: PlatformEventName; surface: PlatformEventSurface; count: number;
@@ -87,7 +88,8 @@ export async function getOperatorObservability(internalIds: string[]) {
       select registration_kind,
         count(*) filter (where occurred_at>=now()-interval '30 days')::int as last_30_days,
         count(*)::int as all_time
-      from tf_operator_registrations group by registration_kind order by registration_kind`,
+      from tf_operator_registrations r where ${externalRegistrationPredicate(sql, internalIds)}
+      group by registration_kind order by registration_kind`,
     sql<{ baseline_total: number | null; cursor_at: Date | string; last_success_at: Date | string | null; last_error_code: string | null }[]>`
       select baseline_total,cursor_at,last_success_at,last_error_code from tf_operator_reconciliation where source='clerk_users'`,
     sql<{ status: string; count: number; oldest_available_at: Date | string | null; last_sent_at: Date | string | null }[]>`

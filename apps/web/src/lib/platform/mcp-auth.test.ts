@@ -77,3 +77,34 @@ test("API-key clients retain their scope and project boundary", async () => {
   assert.equal((await auth.projectPrincipal(request("tfk_fixture"), "handoffs:read")).keyId, "key-fixture");
   await assert.rejects(() => auth.projectPrincipal(request("tfk_fixture"), "handoffs:write", { projectId: "foreign-project" }));
 });
+
+
+test("verified internal account and test project requests are QA, without excluding other Claude users", async () => {
+  const { requestQaAttribution } = await import("../qa-request");
+  const { createMcpProjectAuthorizer } = await load();
+  const internal = request("oauth-fixture");
+  const auth = createMcpProjectAuthorizer({ ...dependencies(), verifyOAuth: async () => ({ ...token, userId: "user_3LIDRoRVi4IE9PUeVQpcRdm8qW9" }) });
+  await auth.authorizeRequest(internal, body("talkform.get_result"));
+  assert.equal(requestQaAttribution(internal).qa_traffic,true);
+  const external = request("oauth-fixture");
+  const regular = createMcpProjectAuthorizer(dependencies());
+  await regular.authorizeRequest(external, body("talkform.get_result"));
+  assert.deepEqual(requestQaAttribution(external), {});
+  await regular.projectPrincipal(external,"handoffs:read",{projectId:project.id});
+  assert.equal(requestQaAttribution(external).is_test,true);
+  const invalid = request("invalid-token");
+  await createMcpProjectAuthorizer({ ...dependencies(), verifyOAuth: async () => { throw new Error("invalid"); } }).authorizeRequest(invalid,body("talkform.get_result"));
+  assert.deepEqual(requestQaAttribution(invalid), {});
+});
+
+
+test("public methods stay public while voluntarily supplied verified QA credentials retain attribution", async () => {
+  const { requestQaAttribution } = await import("../qa-request");
+  const { createMcpProjectAuthorizer } = await load();
+  const req = request("oauth-fixture");
+  const auth = createMcpProjectAuthorizer({ ...dependencies(), verifyOAuth: async () => ({...token,userId:"user_3LIDRoRVi4IE9PUeVQpcRdm8qW9"}) });
+  assert.equal(await auth.authorizeRequest(req,body("talkform.list_templates")),undefined);
+  assert.equal(requestQaAttribution(req).qa_traffic,true);
+  const invalid = createMcpProjectAuthorizer({...dependencies(),verifyOAuth:async()=>{throw new Error("invalid");}});
+  assert.equal(await invalid.authorizeRequest(request("invalid"),body("talkform.list_templates")),undefined);
+});
