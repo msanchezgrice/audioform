@@ -2,6 +2,12 @@
 
 Talkform exposes a local configuration surface and a hosted project handoff surface. They have different ownership and retention boundaries.
 
+## Public Claude connector
+
+For template review and form preparation without an account, connect to `https://www.talkform.ai/api/mcp/public` using Streamable HTTP and no authentication. This profile exposes exactly three read-only tools: `talkform.list_templates`, `talkform.get_template`, and `talkform.prepare_form`. They return public templates or a validated draft in the tool response; they do not publish a form, create a project, collect respondent answers, configure a webhook or generate audio.
+
+For example, `talkform.get_template` accepts `{"id":"customer-feedback"}`. `talkform.prepare_form` accepts a title and a bounded fields array with each field's id, label, type, required flag, promptTitle and promptDetail. No reviewer account or private credentials are needed for this profile. The full hosted endpoint below retains project and handoff operations with its documented credentials.
+
 ## Autonomous agent registration
 
 An agent can register a machine workspace anonymously with `talkform.register_agent` or `POST /api/v1/agents/register`. The input accepts an optional `name`, an optional `environment` (`production` or `test`, defaulting to `production`), and a fresh UUIDv4 idempotency key:

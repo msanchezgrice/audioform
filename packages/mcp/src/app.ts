@@ -598,7 +598,7 @@ function registerPublicTools(server: McpServer) {
       description: "Lists the public conversational-form templates available for review.",
       inputSchema: z.object({}).strict(),
       outputSchema: z.object({ templates: z.array(templateSummarySchema) }).strict(),
-      annotations: readOnlyAnnotations,
+      annotations: { ...readOnlyAnnotations, title: "List Talkform templates" },
     },
     async () => {
       const templates = listAudioformTemplates()
@@ -620,7 +620,7 @@ function registerPublicTools(server: McpServer) {
       description: "Returns one public template as a structured, reviewable conversational form draft.",
       inputSchema: z.object({ id: z.enum(safeTemplateIds) }).strict(),
       outputSchema: preparedOutputSchema,
-      annotations: readOnlyAnnotations,
+      annotations: { ...readOnlyAnnotations, title: "Review a Talkform template" },
       _meta: {
         ui: { resourceUri: TALKFORM_WIDGET_URI },
         "openai/outputTemplate": TALKFORM_WIDGET_URI,
@@ -638,10 +638,10 @@ function registerPublicTools(server: McpServer) {
     "talkform.prepare_form",
     {
       title: "Prepare a Talkform draft",
-      description: "Turns interview questions into a validated, shareable form draft. Write promptTitle as the question a person will hear or read. Include fromName and purpose (or branding) so the hosted page is about the product, not Talkform. Optional theme colors should be hex values. This does not store or publish the form.",
+      description: "Turns interview questions into a validated, shareable form draft. Each promptTitle is the respondent-facing question; fromName, purpose and branding identify the originating product. Optional theme colors use hex values. Returns a draft without storing or publishing it.",
       inputSchema: prepareFormToolInputSchema,
       outputSchema: preparedOutputSchema,
-      annotations: readOnlyAnnotations,
+      annotations: { ...readOnlyAnnotations, title: "Prepare a Talkform draft" },
       _meta: {
         ui: { resourceUri: TALKFORM_WIDGET_URI },
         "openai/outputTemplate": TALKFORM_WIDGET_URI,
@@ -704,7 +704,7 @@ function registerLegacyStdioSurface(server: McpServer) {
       inputSchema: z.object({
         kind: z.enum(["config", "session-result"]).default("config"),
       }).strict(),
-      outputSchema: z.object({ schema: z.record(z.unknown()) }).strict(),
+      outputSchema: z.object({ schema: z.record(z.string(), z.unknown()) }).strict(),
       annotations: readOnlyAnnotations,
     },
     async ({ kind }) => {
@@ -812,7 +812,7 @@ function registerHostedTools(server: McpServer, services: HostedMcpServices) {
   server.registerTool("talkform.create_handoff", {
     title: "Create a hosted interview",
     description: "Stores a validated interview and returns a private respondent link plus shareText. Put the human questions in config.fields[].promptTitle, and set config.branding.fromName, branding.purpose, optional branding.logoUrl, and theme hex colors so the page looks like the product. Omitted mode creates a voice interview. voiceEligible is true. Set config.mode to text only when you want a written interview. Requires a project API key. Reuse the same idempotencyKey when retrying. Never invent answers.",
-    inputSchema: z.object({ config: audioformConfigSchema.innerType(), idempotencyKey: z.string().min(8).max(128) }).strict(),
+    inputSchema: z.object({ config: audioformConfigSchema, idempotencyKey: z.string().min(8).max(128) }).strict(),
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
   }, (input) => result(() => services.createHandoff(input)));
   const idSchema = z.object({ id: z.string().uuid() }).strict();
