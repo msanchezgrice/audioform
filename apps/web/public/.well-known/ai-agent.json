@@ -37,7 +37,7 @@
     "read": "talkform.get_handoff",
     "result": "talkform.get_result",
     "delete": "talkform.delete_handoff",
-    "authentication": "Authorization: Bearer <project key from /dashboard>",
+    "authentication": "Project Bearer API key, or scoped OAuth for the signed-in account owning the project",
     "daily_text_limit": 100,
     "machine_daily_text_limit": 10,
     "shared_daily_capacity": 1000,
@@ -48,8 +48,20 @@
     "expired_result_status": 410,
     "poll_interval_seconds": 10,
     "webhooks": true,
-    "webhook_status": "Configure PUT /api/v1/webhook with an HTTPS public port 443 URL. Completion events are signed, contain no answers, and retry up to seven total attempts.",
-    "result_contents": "Reviewed structured values and response mode; no retained transcript or generated summary."
+    "webhook_status": "Configure via talkform.configure_webhook (handoffs:write) or PUT /api/v1/webhook with a public HTTPS port443 URL. Completion events are signed, contain no answers, and retry up to seven total attempts.",
+    "result_contents": "Reviewed structured values and response mode; no retained transcript or generated summary.",
+    "oauth": {
+      "resource": "https://www.talkform.ai/api/mcp",
+      "authorization_server": "https://clerk.talkform.ai",
+      "resource_metadata": "https://www.talkform.ai/.well-known/oauth-protected-resource/api/mcp",
+      "scopes": [
+        "handoffs:read",
+        "handoffs:write",
+        "handoffs:delete"
+      ],
+      "project_selection": "Optional projectId selects an owned account project; required when the account has several projects",
+      "setup": "https://www.talkform.ai/docs/mcp"
+    }
   },
   "guardrails": {
     "allowed_actions": [
@@ -57,7 +69,7 @@
       "Run the browser demo interview at /app using voice or text input.",
       "Import a public form URL at /import and review the extracted editable draft.",
       "Launch a preview of an imported draft and export reviewed session results as JSON or Markdown.",
-      "Create a project-scoped hosted handoff with a project key, send the expiring respondent link, and retrieve the reviewed result."
+      "Create a project-scoped hosted handoff with a project key or scoped account OAuth, send the expiring respondent link, and retrieve the reviewed result."
     ],
     "disallowed_actions": [
       "Never submit the source form on a third-party provider; the importer reads public responder pages only.",

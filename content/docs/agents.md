@@ -46,3 +46,7 @@ The product should own:
 - generate a kickoff brief
 - file a project intake object
 - score a sales discovery call
+
+## Claude account sign-in
+
+The full hosted MCP endpoint https://www.talkform.ai/api/mcp supports scoped OAuth as well as project API keys. Claude prompts for sign-in when a private tool needs handoff read, write or delete permission; identity-only consent does not grant project access. Create a project in your dashboard first. A sole owned project is selected automatically, and projectId selects among several owned projects. Handoff IDs are resolved through verified ownership. Public template/draft calls and discovery remain anonymous. Completion webhooks can be managed with talkform.configure_webhook, talkform.get_webhook and talkform.delete_webhook. See the [full account setup](/docs/mcp) for exact resource and permissions.

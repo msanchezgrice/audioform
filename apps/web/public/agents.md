@@ -45,3 +45,7 @@ Talkform gives AI agents a hosted human handoff: an agent asks focused questions
 ## Contact
 
 support@talkform.ai — https://www.talkform.ai/contact
+
+## Claude account connector
+
+Connect to https://www.talkform.ai/api/mcp for all 11 hosted tools. Public templates and draft preparation remain anonymous. Private operations prompt for OAuth sign-in and handoff read, write or delete permissions; only the signed-in person's owned projects are accessible. Create a project in /dashboard first; projectId selects among multiple owned projects. The OAuth resource is the exact MCP endpoint, with Clerk CIMD and PKCE. Project API keys remain supported for machine clients. Setup: https://www.talkform.ai/docs/mcp. MCP also supports configure_webhook, get_webhook and delete_webhook within the authorized project.
