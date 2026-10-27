@@ -29,7 +29,7 @@ export const handoffStatusSchema = z.object({
 export const reviewedHandoffResultSchema = z.object({
   handoffId: z.string().min(1),
   formId: z.string().min(1),
-  fields: z.record(reviewedValueSchema),
+  fields: z.record(z.string(), reviewedValueSchema),
   completedAt: z.string().datetime(),
   expiresAt: z.string().datetime(),
 }).strict();

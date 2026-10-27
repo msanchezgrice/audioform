@@ -43,6 +43,15 @@ const validInput = {
   ],
 };
 
+test("oversized draft collections reject before validating individual fields", () => {
+  let visited = 0;
+  const fields = Array.from({ length: PREPARE_FORM_LIMITS.maxFields + 1 }, () => validInput.fields[0]);
+  Object.defineProperty(fields, 0, { enumerable: true, get: () => { visited += 1; return validInput.fields[0]; } });
+  const result = prepareFormInputSchema.safeParse({ title: "Oversized QA draft", fields });
+  assert.equal(result.success, false);
+  assert.equal(visited, 0, "Oversized input must fail before visiting its elements");
+});
+
 test("prepare_form merges a branding object and lets top-level fromName win", () => {
   const prepared = prepareTalkformDraft({
     ...validInput,
