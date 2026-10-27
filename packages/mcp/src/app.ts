@@ -778,13 +778,13 @@ function registerLegacyStdioSurface(server: McpServer) {
 
 export type HostedMcpServices = {
   registerAgent: (input: { name?: string; environment?: "production" | "test"; idempotencyKey: string }) => Promise<Record<string, unknown>>;
-  createHandoff: (input: { config: unknown; idempotencyKey: string }) => Promise<Record<string, unknown>>;
+  createHandoff: (input: { config: unknown; idempotencyKey: string; projectId?: string }) => Promise<Record<string, unknown>>;
   getHandoff: (id: string) => Promise<Record<string, unknown>>;
   getResult: (id: string) => Promise<Record<string, unknown>>;
   deleteHandoff: (id: string) => Promise<Record<string, unknown>>;
-  configureWebhook: (url: string) => Promise<Record<string, unknown>>;
-  getWebhook: () => Promise<Record<string, unknown>>;
-  deleteWebhook: () => Promise<Record<string, unknown>>;
+  configureWebhook: (url: string, projectId?: string) => Promise<Record<string, unknown>>;
+  getWebhook: (projectId?: string) => Promise<Record<string, unknown>>;
+  deleteWebhook: (projectId?: string) => Promise<Record<string, unknown>>;
 };
 
 function registerHostedTools(server: McpServer, services: HostedMcpServices) {
@@ -801,51 +801,51 @@ function registerHostedTools(server: McpServer, services: HostedMcpServices) {
   };
   server.registerTool("talkform.register_agent", {
     title: "Create a private agent workspace",
-    description: "Creates a persistent machine-owned project and returns its API key secret once. No email, sign-in, or human identity is created. Use a fresh UUIDv4 idempotencyKey and save the returned secret; retries never reveal it again. Machine projects receive 10 hosted handoffs per day. Voice is available under shared realtime limits.",
+    description: "Creates a persistent machine-owned project and returns its API key secret once. No email, sign-in, or human identity is created. A UUIDv4 idempotency key identifies registration; retries never replay the secret. Machine projects receive 10 hosted handoffs per day. Voice is available in hosted interviews under shared realtime limits.",
     inputSchema: z.object({
       name: z.string().trim().min(1).max(80).optional(),
       environment: z.enum(["production", "test"]).default("production"),
       idempotencyKey: z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i),
     }).strict(),
-    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+    annotations: { title: "Create a private agent workspace", readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
   }, (input) => result(() => services.registerAgent(input)));
   server.registerTool("talkform.create_handoff", {
     title: "Create a hosted interview",
-    description: "Stores a validated interview and returns a private respondent link plus shareText. Put the human questions in config.fields[].promptTitle, and set config.branding.fromName, branding.purpose, optional branding.logoUrl, and theme hex colors so the page looks like the product. Omitted mode creates a voice interview. voiceEligible is true. Set config.mode to text only when you want a written interview. Requires a project API key. Reuse the same idempotencyKey when retrying. Never invent answers.",
-    inputSchema: z.object({ config: audioformConfigSchema, idempotencyKey: z.string().min(8).max(128) }).strict(),
-    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+    description: "Stores a validated voice interview or text interview and returns a private respondent link plus shareText. config.fields[].promptTitle supplies each question; config.branding.fromName and branding.purpose identify the originating product. Omitted mode selects voice; text mode is available. Requires a project API key or scoped OAuth. Optional projectId selects an owned account project; required when the account has several projects. Matching idempotency keys replay the existing handoff.",
+    inputSchema: z.object({ config: audioformConfigSchema, idempotencyKey: z.string().min(8).max(128), projectId: z.string().uuid().optional() }).strict(),
+    annotations: { title: "Create a hosted interview", readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
   }, (input) => result(() => services.createHandoff(input)));
   const idSchema = z.object({ id: z.string().uuid() }).strict();
   server.registerTool("talkform.get_handoff", {
-    title: "Check interview status", description: "Checks a hosted handoff owned by your project. Requires a project API key.", inputSchema: idSchema,
-    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    title: "Check interview status", description: "Checks a hosted handoff owned by the authorized project or OAuth account. Requires handoffs:read permission.", inputSchema: idSchema,
+    annotations: { title: "Check interview status", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   }, ({ id }) => result(() => services.getHandoff(id)));
   server.registerTool("talkform.get_result", {
-    title: "Retrieve reviewed answers", description: "Returns completed structured answers for your project. Pending results return an error; poll no more often than every 10 seconds. Results expire 7 days after submission. No transcript is returned.", inputSchema: idSchema,
-    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    title: "Retrieve reviewed answers", description: "Returns completed structured answers for an authorized project or OAuth account with handoffs:read permission. Pending results return result_pending. Results expire 7 days after submission. No transcript is returned.", inputSchema: idSchema,
+    annotations: { title: "Retrieve reviewed answers", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   }, ({ id }) => result(() => services.getResult(id)));
   server.registerTool("talkform.delete_handoff", {
-    title: "Delete a hosted interview", description: "Permanently deletes stored configuration and answers. Requires confirmation from the user and a project API key.", inputSchema: idSchema,
-    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+    title: "Delete a hosted interview", description: "Permanently deletes stored configuration and answers for an authorized project or OAuth account. Requires user confirmation and handoffs:delete permission.", inputSchema: idSchema,
+    annotations: { title: "Delete a hosted interview", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
   }, ({ id }) => result(() => services.deleteHandoff(id)));
   server.registerTool("talkform.configure_webhook", {
     title: "Configure a completion webhook",
-    description: "Configures one HTTPS endpoint for completed handoffs in this project. Replaces any active endpoint and returns the signing secret once. Requires a project API key.",
-    inputSchema: z.object({ url: z.string().url().max(2_048) }).strict(),
-    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true },
-  }, ({ url }) => result(() => services.configureWebhook(url)));
+    description: "Configures one HTTPS endpoint for completed handoffs in an authorized project. Replaces any active endpoint and returns the signing secret once. Requires handoffs:write permission. Optional projectId selects an owned OAuth account project.",
+    inputSchema: z.object({ url: z.string().url().max(2_048), projectId: z.string().uuid().optional() }).strict(),
+    annotations: { title: "Configure a completion webhook", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true },
+  }, ({ url, projectId }) => result(() => services.configureWebhook(url, projectId)));
   server.registerTool("talkform.get_webhook", {
     title: "Get completion webhook",
-    description: "Returns active webhook metadata and recent delivery metadata for this project. Signing secrets are never returned. Requires a project API key.",
-    inputSchema: z.object({}).strict(),
-    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
-  }, () => result(() => services.getWebhook()));
+    description: "Returns active webhook metadata and recent delivery metadata for an authorized project. Signing secrets are never returned. Requires handoffs:read permission. Optional projectId selects an owned OAuth account project.",
+    inputSchema: z.object({ projectId: z.string().uuid().optional() }).strict(),
+    annotations: { title: "Get completion webhook", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  }, ({ projectId }) => result(() => services.getWebhook(projectId)));
   server.registerTool("talkform.delete_webhook", {
     title: "Disable completion webhook",
-    description: "Disables this project's active webhook and cancels pending deliveries. Requires a project API key.",
-    inputSchema: z.object({}).strict(),
-    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
-  }, () => result(() => services.deleteWebhook()));
+    description: "Disables an authorized project's active webhook and cancels pending deliveries. Requires handoffs:write permission. Optional projectId selects an owned OAuth account project.",
+    inputSchema: z.object({ projectId: z.string().uuid().optional() }).strict(),
+    annotations: { title: "Disable completion webhook", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+  }, ({ projectId }) => result(() => services.deleteWebhook(projectId)));
 }
 
 export function createTalkformMcpServer(options: { includeLegacyStdioSurface?: boolean; hosted?: HostedMcpServices } = {}) {

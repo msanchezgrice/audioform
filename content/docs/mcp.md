@@ -2,11 +2,19 @@
 
 Talkform exposes a local configuration surface and a hosted project handoff surface. They have different ownership and retention boundaries.
 
-## Public Claude connector
+## Claude connector with account access
+
+Connect to `https://www.talkform.ai/api/mcp` using Streamable HTTP. Discovery and public template/draft tools work without sign-in. A private project operation prompts for Talkform sign-in and OAuth consent. OAuth access is limited to the signed-in person's human-owned projects and the granted `handoffs:read`, `handoffs:write`, and `handoffs:delete` permissions. Identity-only consent never grants project access. Tokens must be issued by `https://clerk.talkform.ai` for this exact MCP resource.
+
+Create a project at `/dashboard` before using account tools. If there is one owned project, it is selected automatically. With multiple projects, include `projectId` on `create_handoff`, `configure_webhook`, `get_webhook`, or `delete_webhook`; the response supplies the owned project IDs when selection is needed. Reads and deletion by handoff ID derive and verify project ownership. No project API key is created by OAuth sign-in. A revoked token or permission cannot access private data.
+
+The full connector exposes 11 tools: three template/draft tools, machine workspace registration, four handoff tools, and three webhook tools. MCP prepares configurations and links; optional respondent voice interviews run separately on Talkform.
+
+## Public-only endpoint
 
 For template review and form preparation without an account, connect to `https://www.talkform.ai/api/mcp/public` using Streamable HTTP and no authentication. This profile exposes exactly three read-only tools: `talkform.list_templates`, `talkform.get_template`, and `talkform.prepare_form`. They return public templates or a validated draft in the tool response; they do not publish a form, create a project, collect respondent answers, configure a webhook or generate audio.
 
-For example, `talkform.get_template` accepts `{"id":"customer-feedback"}`. `talkform.prepare_form` accepts a title and a bounded fields array with each field's id, label, type, required flag, promptTitle and promptDetail. No reviewer account or private credentials are needed for this profile. The full hosted endpoint below retains project and handoff operations with its documented credentials.
+For example, `talkform.get_template` accepts `{"id":"customer-feedback"}`. `talkform.prepare_form` accepts a title and a bounded fields array with each field's id, label, type, required flag, promptTitle and promptDetail. No reviewer account or private credentials are needed for this profile. The full hosted endpoint above adds account operations and OAuth sign-in; this public-only endpoint remains available for clients that only need drafts.
 
 ## Autonomous agent registration
 
@@ -26,7 +34,7 @@ An optional signed-in human can claim the machine workspace with its project key
 
 ## Hosted project tools
 
-To create private respondent links, connect an MCP client to the Streamable HTTP endpoint `https://www.talkform.ai/api/mcp`, register an agent with `talkform.register_agent` or create a project and key in `/dashboard`, and configure the returned project key in the client's server settings:
+Claude uses the account OAuth flow described above. API-key clients can instead register a machine workspace with `talkform.register_agent` or create a project and key in `/dashboard`, then configure that project key in the client's server settings:
 
 ```http
 Authorization: Bearer tfk_...
@@ -104,7 +112,7 @@ Poll `talkform.get_result` no more often than every 10 seconds. A pending or exp
 
 Results contain the reviewed structured fields and response mode. Talkform does not retain or return a hosted transcript or generated summary. A successful `get_result` means the authenticated project received the response from Talkform; it does not prove downstream processing.
 
-Signed completion webhooks are configured through the HTTP API; the hosted MCP surface does not configure webhook endpoints. Poll from the project worker when no webhook is configured and keep any downstream action idempotent. `create_handoff` is the only MCP tool that creates a hosted resource, and its idempotency key must be reused for retries.
+Signed completion webhooks can be managed with `talkform.configure_webhook` (`url`, optional `projectId`, write permission), `talkform.get_webhook` (optional `projectId`, read permission), and `talkform.delete_webhook` (optional `projectId`, write permission). Configuration returns a signing secret once; keep it in server-side secret storage. Deleting a webhook disables delivery and cancels outstanding attempts. Poll from the project worker when no webhook is configured and keep downstream actions idempotent. Reuse `create_handoff` idempotency keys for retries.
 
 ## What agents can do without sign-in
 
@@ -116,7 +124,7 @@ The same public endpoint can expose these anonymous draft tools without a projec
 
 It can also expose `talkform.register_agent`, which creates a machine workspace and returns a one-time project secret. Registration is the only anonymous tool that creates a hosted account-owned resource; the draft tools remain stateless.
 
-`talkform.prepare_form` is stateless. An agent can generate and validate a reviewable form draft anonymously. Creating a private respondent link, checking its status, retrieving reviewed answers, or deleting it requires a project key and the hosted tools above. Anonymous draft preparation does not persist a handoff, submit a source form, deliver a webhook, or retain form drafts, conversations, transcripts, answers, or tool payloads.
+`talkform.prepare_form` is stateless. An agent can generate and validate a reviewable form draft anonymously. Creating a private respondent link, checking its status, retrieving reviewed answers, or deleting it requires OAuth account authorization or a project key and the hosted tools above. Anonymous draft preparation does not persist a handoff, submit a source form, deliver a webhook, or retain form drafts, conversations, transcripts, answers, or tool payloads.
 
 ## Install the local configuration server
 

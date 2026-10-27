@@ -7,6 +7,7 @@ const PRODUCTION_HOSTS = new Set(["talkform.ai", "www.talkform.ai"]);
 
 export type McpRouteDependencies = {
   hosted?: HostedMcpServices;
+  authorizeRequest?: (request: Request, body: unknown) => Promise<Response | undefined>;
   allowRequest: (request: Request) => Promise<AnonymousMcpRateLimitDecision>;
   recordRequest?: (args: {
     request: Request;
@@ -109,6 +110,10 @@ export async function handleMcpPost(
 
   try {
     const publicProfile = new URL(request.url).pathname.replace(/\/$/, "") === "/api/mcp/public";
+    if (!publicProfile && dependencies.authorizeRequest) {
+      const challenge = await dependencies.authorizeRequest(request, parsedBody);
+      if (challenge) return finish(challenge);
+    }
     const response = await handleTalkformMcpProtocol(request, parsedBody, publicProfile ? undefined : dependencies.hosted);
     if (response.headers.get("content-type")?.includes("application/json")) {
       const payload = await response.clone().json().catch(() => null);

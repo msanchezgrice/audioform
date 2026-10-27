@@ -197,6 +197,13 @@ test("hosted tools expose the full contract and return semantic service failures
   await client.connect(clientTransport);
   const { tools } = await client.listTools();
   const register = tools.find((tool) => tool.name === "talkform.register_agent");
+  const deletion = tools.find((tool) => tool.name === "talkform.delete_handoff");
+  assert.equal(deletion?.annotations?.destructiveHint, true);
+  assert.match(deletion?.description ?? "", /user confirmation/i);
+  for (const tool of tools) {
+    assert.equal(tool.annotations?.title, tool.title);
+    assert.doesNotMatch(tool.description ?? "", /Use a fresh|Put the human|Set config|Reuse the same|Never invent|Poll only/i);
+  }
   assert.deepEqual(register?.inputSchema.required, ["idempotencyKey"]);
   const registered = await client.callTool({ name: "talkform.register_agent", arguments: { name: "Research agent", environment: "test", idempotencyKey: "59a39e19-d625-4d38-923b-b0fb92f1cb4e" } });
   assert.equal(registered.isError, undefined);
@@ -205,9 +212,10 @@ test("hosted tools expose the full contract and return semantic service failures
   assert.deepEqual(create?.inputSchema.required, ["config", "idempotencyKey"]);
   const configSchema = (create?.inputSchema.properties as Record<string, { required?: string[] }>).config;
   assert.ok(configSchema.required?.includes("fields"));
-  const created = await client.callTool({ name: "talkform.create_handoff", arguments: { config: prepareTalkformDraft(validInput).draft, idempotencyKey: "test-request-123" } });
+  const created = await client.callTool({ name: "talkform.create_handoff", arguments: { config: prepareTalkformDraft(validInput).draft, idempotencyKey: "test-request-123", projectId: "d3d31521-0ae8-4f3f-bbc1-0422a3df2599" } });
   assert.equal(created.isError, undefined);
   assert.equal(calls.length, 1);
+  assert.equal((calls[0] as { projectId?: string }).projectId, "d3d31521-0ae8-4f3f-bbc1-0422a3df2599");
   const pending = await client.callTool({ name: "talkform.get_result", arguments: { id: "2d8b1a0a-5615-4bb5-a34e-12814cb144d8" } });
   assert.equal(pending.isError, true);
   assert.match(JSON.stringify(pending.content), /result_pending/);

@@ -12,6 +12,20 @@ import { PlatformError } from "./types";
 const databaseUrl = process.env.TALKFORM_PLATFORM_TEST_DATABASE_URL;
 const integration = databaseUrl ? test : test.skip;
 
+integration("OAuth handoff lookup joins through the verified human owner", async () => {
+  process.env.DATABASE_URL = databaseUrl;
+  process.env.TALKFORM_DATA_ENCRYPTION_KEY = Buffer.alloc(32, 11).toString("base64");
+  const projects = await import("./projects");
+  assert.equal(typeof projects.getOwnedProjectForHandoff, "function", "Owned OAuth handoff lookup must exist");
+  const owner = `user_oauth_qa_${randomUUID()}`;
+  const project = await createProject(owner, { name: "OAuth QA", environment: "test" });
+  const key = await createProjectApiKey(owner, project.id, { name: "Synthetic local test key" });
+  const principal = await authenticateProjectKey(new Request("https://talkform.test", { headers: { authorization: `Bearer ${key.secret}` } }), "handoffs:write");
+  const handoff = await createHandoff(principal, { config: { id: "oauth-qa", title: "OAuth QA", mode: "text", fields: [{ id: "answer", label: "Answer", type: "text", required: true, promptTitle: "Answer", promptDetail: "Synthetic QA" }] }, idempotencyKey: randomUUID(), baseUrl: "https://talkform.test" });
+  assert.equal((await projects.getOwnedProjectForHandoff(owner, handoff.id)).id, project.id);
+  await assert.rejects(() => projects.getOwnedProjectForHandoff("user_other_tenant", handoff.id), /not found/i);
+});
+
 integration("database enforces tenant, concurrent project/key caps, API-key auth, and idempotent handoffs", async () => {
   process.env.DATABASE_URL = databaseUrl;
   process.env.TALKFORM_DATA_ENCRYPTION_KEY = Buffer.alloc(32, 11).toString("base64");

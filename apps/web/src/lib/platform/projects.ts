@@ -85,3 +85,14 @@ export async function getOwnedProject(clerkUserId: string, projectId: string) {
   if (!row) throw new PlatformError("not_found", 404, "Project not found.");
   return projectFromRow(row);
 }
+
+/** Derive the project from an owned handoff; caller-supplied project IDs never establish ownership. */
+export async function getOwnedProjectForHandoff(clerkUserId: string, handoffId: string) {
+  const [row] = await platformDatabase()<ProjectRow[]>`
+    select p.id, p.name, p.environment, p.owner_kind, p.daily_handoff_limit, p.created_at, p.updated_at, p.claimed_at
+    from tf_projects p join tf_handoffs h on h.project_id = p.id
+    where h.id = ${handoffId} and p.clerk_user_id = ${clerkUserId} and p.owner_kind = 'human'
+  `;
+  if (!row) throw new PlatformError("not_found", 404, "Handoff not found.");
+  return projectFromRow(row);
+}
