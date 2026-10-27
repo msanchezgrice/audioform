@@ -128,3 +128,24 @@ test("search attribution records source and landing context without query text",
     },
   );
 });
+
+
+test("QA markers survive URL scrubbing without retaining token or private query content", () => {
+  const event = { uuid: "00000000-0000-4000-8000-000000000002", event: "$pageview" as const, properties: { $current_url: "https://talkform.ai/dashboard?pb_traffic_type=qa&pb_qa_run=claude-account-20261027&token=private" } };
+  const safe = filterRespondentAnalyticsEvent(event, "/dashboard", false);
+  assert.equal(safe?.properties.qa_traffic, true);
+  assert.equal(safe?.properties.pb_qa_run, "claude-account-20261027");
+  assert.doesNotMatch(JSON.stringify(safe), /private|token=/);
+  assert.equal(filterRespondentAnalyticsEvent({ uuid: "00000000-0000-4000-8000-000000000003", event: "$pageview", properties: { $current_url: "https://talkform.ai/docs" } }, "/docs", false)?.properties.qa_traffic, undefined);
+});
+
+test("QA attribution survives navigation in this tab and recognizes only exact internal accounts", async () => {
+  const { rememberQaAttribution } = await import("./qa-attribution");
+  const entries = new Map<string,string>();
+  const storage = { getItem: (key: string) => entries.get(key) ?? null, setItem: (key: string, value: string) => { entries.set(key,value); } };
+  assert.equal(rememberQaAttribution("https://talkform.ai/?pb_traffic_type=qa", storage).qa_traffic,true);
+  assert.equal(rememberQaAttribution("https://talkform.ai/dashboard", storage).qa_traffic,true);
+  const clean = { getItem: () => null, setItem: () => undefined };
+  assert.deepEqual(rememberQaAttribution("https://talkform.ai/docs", clean, "user_external"), {});
+  assert.equal(rememberQaAttribution("https://talkform.ai/dashboard", clean, "user_3LIDRoRVi4IE9PUeVQpcRdm8qW9").is_internal,true);
+});

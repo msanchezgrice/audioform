@@ -3,6 +3,7 @@ import { platformDatabase } from "./database";
 import { PlatformError } from "./types";
 import { getCostPolicy, getCostSummary } from "../cost/database";
 import { getOperatorObservability } from "./operator-observability";
+import { internalAnalyticsUserIds } from "../qa-attribution";
 
 export function operatorIdentityAllowed(user: { id: string; emailAddresses: { emailAddress: string; verification: { status: string } | null }[] }, env: Record<string, string | undefined> = process.env) {
   const ids = new Set((env.TALKFORM_OPERATOR_USER_IDS || "").split(",").map((v) => v.trim()).filter(Boolean));
@@ -20,7 +21,7 @@ export async function requireOperator() {
 
 export async function getOperatorUsage(operatorId: string) {
   const sql = platformDatabase();
-  const internalIds = [...new Set([operatorId, ...(process.env.TALKFORM_INTERNAL_USER_IDS || "").split(",").map((id) => id.trim()).filter(Boolean)])];
+  const internalIds = [...new Set([operatorId, ...internalAnalyticsUserIds(process.env.TALKFORM_INTERNAL_USER_IDS)])];
   const [projectRows, daily, cost, policy, totals, observability] = await Promise.all([
     sql<{ id: string; name: string; account_id: string | null; owner_kind: "human" | "machine"; environment: string; internal: boolean; created: number; opened: number; completed: number; retrieved: number; active_keys: number; last_used_at: Date | null; retrieval_days: number }[]>`
       select p.id, p.name, p.clerk_user_id as account_id, p.owner_kind, p.environment,

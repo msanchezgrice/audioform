@@ -178,3 +178,12 @@ test("sending posts to the PostHog capture endpoint, skips without a key and nev
   const failing = (async () => { throw new Error("network down"); }) as unknown as typeof fetch;
   await sendMcpTelemetryEvents([event], { apiKey: "phc_test", fetcher: failing });
 });
+
+
+test("explicit QA request attribution is attached to MCP events without bearer or account details", () => {
+  const events = buildMcpTelemetryEvents({ domain:"talkform.ai", serverName:"talkform", headers:new Headers({"user-agent":"Claude"}), requestBody:{id:1,method:"initialize"}, responseBody:{id:1,result:{}}, httpStatus:200,
+    qaAttribution:{qa_traffic:true,is_internal:true,pb_traffic_type:"qa",pb_qa_run:"claude-account-20261027"} });
+  assert.equal(events[0].properties.qa_traffic,true);
+  assert.equal(events[0].properties.pb_qa_run,"claude-account-20261027");
+  assert.doesNotMatch(JSON.stringify(events),/user_3LID|Bearer/);
+});

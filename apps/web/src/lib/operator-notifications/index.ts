@@ -10,6 +10,7 @@ import {
 } from "./database";
 import { budgetLevel, operatorRecipient, utcDayKey, utcMonthKey } from "./policy";
 import { reconcileClerkUsers } from "./clerk-reconciliation";
+import { internalAnalyticsUserIds } from "../qa-attribution";
 
 export { recordOperatorRegistration, recordPlatformCapacityDenial } from "./database";
 export { reconcileClerkUsers } from "./clerk-reconciliation";
@@ -127,7 +128,7 @@ export async function collectOperatorNotifications(options: {
 } = {}) {
   const now = options.now ?? new Date();
   const sql = platformDatabase();
-  const internalIds = [...new Set((options.internalUserIds ?? (process.env.TALKFORM_INTERNAL_USER_IDS || "").split(","))
+  const internalIds = [...new Set([...internalAnalyticsUserIds(process.env.TALKFORM_INTERNAL_USER_IDS), ...(options.internalUserIds ?? [])]
     .map((id) => id.trim()).filter(Boolean))];
   // A sentinel keeps postgres.js list interpolation valid while preserving nullable
   // clerk_user_id machine projects as external projects.

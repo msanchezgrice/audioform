@@ -1,4 +1,5 @@
 import posthog from "posthog-js";
+import { rememberQaAttribution } from "./src/lib/qa-attribution";
 import {
   dispatchAnalyticsEvent,
   filterRespondentAnalyticsEvent,
@@ -14,9 +15,16 @@ const analyticsEnabled = telemetryAllowed(
   (navigator as Navigator & { globalPrivacyControl?: boolean }).globalPrivacyControl,
   (window as Window & { globalPrivacyControl?: boolean }).globalPrivacyControl,
 ) && !isRespondentRoute();
+const qaStorage = (() => { try { return window.sessionStorage; } catch { return undefined; } })();
+let qaAttribution = analyticsEnabled ? rememberQaAttribution(window.location.href, qaStorage) : {};
+const currentQaAttribution = () => {
+  qaAttribution = { ...qaAttribution, ...rememberQaAttribution(window.location.href, qaStorage) };
+  return qaAttribution;
+};
 const ga4Capture = (event: string, properties: Record<string, string | number | boolean>) => {
+  if (currentQaAttribution().qa_traffic) return;
   const gtag = (window as Window & { gtag?: (...args: unknown[]) => void }).gtag;
-  gtag?.("event", event, { ...properties, site_id: "talkform.ai" });
+  gtag?.("event", event, { ...properties, ...currentQaAttribution(), site_id: "talkform.ai" });
 };
 
 if (analyticsEnabled && token) {
@@ -33,10 +41,11 @@ if (analyticsEnabled && token) {
       event,
       window.location.pathname,
       (window as Window & { __talkformAnalyticsBlocked?: boolean }).__talkformAnalyticsBlocked === true,
+      currentQaAttribution(),
     ),
     debug: process.env.NODE_ENV === "development",
   });
-  posthog.register({ site_id: "talkform.ai", site_name: "Talkform" });
+  posthog.register({ site_id: "talkform.ai", site_name: "Talkform", ...qaAttribution });
 
   const attribution = searchAttributionFromUrl(new URL(window.location.href), document.referrer);
   posthog.register({
@@ -70,6 +79,7 @@ if (analyticsEnabled) {
       keepalive: true,
       headers: {
         "content-type": "application/json",
+        ...(currentQaAttribution().qa_traffic ? { "x-portfolio-qa": "true" } : {}),
         ...(token ? { "x-posthog-distinct-id": posthog.get_distinct_id() } : {}),
         ...(token && posthog.get_session_id() ? { "x-posthog-session-id": posthog.get_session_id() } : {}),
       },
@@ -88,6 +98,11 @@ if (analyticsEnabled) {
     if (!token || !(event instanceof CustomEvent) || !event.detail || typeof event.detail !== "object") return;
     const userId = (event.detail as { userId?: unknown }).userId;
     if (typeof userId === "string" && /^user_[A-Za-z0-9]{8,}$/.test(userId)) {
+      qaAttribution = { ...qaAttribution, ...rememberQaAttribution(window.location.href, qaStorage, userId) };
+      if (qaAttribution.qa_traffic) {
+        (window as Window & { __talkformQaTraffic?: boolean }).__talkformQaTraffic = true;
+      }
+      posthog.register(qaAttribution);
       posthog.identify(userId);
     }
   });

@@ -123,3 +123,22 @@ integration("Clerk reconciliation fails closed and preserves its cursor for out-
   assert.equal(cursor.cursor_at.toISOString(), initializedAt.toISOString());
   assert.equal(cursor.last_error_code, "error");
 });
+
+
+integration("QA signups and test projects remain raw audit records but never inflate signup digests or adoption totals", async () => {
+  const { createProject } = await import("../platform/projects");
+  const { getOperatorObservability } = await import("../platform/operator-observability");
+  const sql = platformDatabase();
+  const qa = "user_3LIDRoRVi4IE9PUeVQpcRdm8qW9";
+  const qaOnly = await recordOperatorRegistration({kind:"human",sourceKey:`clerk:${qa}`});
+  assert.equal(qaOnly.notification,null);
+  const external = await recordOperatorRegistration({kind:"human",sourceKey:"clerk:user_external_qa_regression"});
+  assert.equal(external.notification?.payload.count,1);
+  const testProject = await createProject("user_external_test_regression", {name:"Disposable test",environment:"test"});
+  assert.equal((await recordOperatorRegistration({kind:"machine",sourceKey:"qa-machine-regression",projectId:testProject.id})).notification,null);
+  const observed = await getOperatorObservability([qa]);
+  assert.equal(observed.registrations.human.all_time,1);
+  assert.equal(observed.registrations.machine.all_time,0);
+  const [raw] = await sql<{count:number}[]>`select count(*)::int as count from tf_operator_registrations`;
+  assert.equal(raw.count,3);
+});

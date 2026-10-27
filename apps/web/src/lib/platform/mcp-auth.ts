@@ -1,5 +1,6 @@
 import { TALKFORM_MCP_RESOURCE, type VerifiedMcpOAuth } from "./mcp-oauth";
 import { PlatformError, type ApiKeyScope, type AuthenticatedProjectKey, type PlatformProject } from "./types";
+import { markVerifiedQaRequest } from "../qa-request";
 
 const TOOL_SCOPES = new Map<string, ApiKeyScope>([
   ["talkform.create_handoff", "handoffs:write"], ["talkform.get_handoff", "handoffs:read"],
@@ -45,9 +46,11 @@ export function createMcpProjectAuthorizer(deps: Dependencies) {
       pending = (async () => {
         const token = bearer(request);
         if (!token) throw new PlatformError("authorization_required", 401, "Sign in to Talkform to continue.");
-        return token.startsWith("tfk_")
+        const value = token.startsWith("tfk_")
           ? { kind: "key" as const, key: await deps.authenticateKey(request, scope) }
           : { kind: "oauth" as const, oauth: await deps.verifyOAuth(token) };
+        markVerifiedQaRequest(request, value.kind === "key" ? value.key : value.oauth);
+        return value;
       })();
       cache.set(request, pending);
     }
@@ -59,7 +62,14 @@ export function createMcpProjectAuthorizer(deps: Dependencies) {
   }
   async function authorizeRequest(request: Request, body: unknown): Promise<Response | undefined> {
     const scopes = requiredScopes(body);
-    if (!scopes.length) return undefined;
+    if (!scopes.length) {
+      // Public methods remain available even if optional credentials are absent
+      // or invalid. Verified QA credentials can still classify their telemetry.
+      if (bearer(request)) {
+        try { await credential(request, "handoffs:read"); } catch { /* Public access is unchanged. */ }
+      }
+      return undefined;
+    }
     let value: Credential | undefined;
     try {
       value = await credential(request, scopes[0]);
@@ -93,6 +103,7 @@ export function createMcpProjectAuthorizer(deps: Dependencies) {
       project = projects[0];
     }
     if (project.ownerKind !== "human") throw new PlatformError("not_found", 404, "Project not found.");
+    markVerifiedQaRequest(request, { userId, environment: project.environment });
     return { keyId: null, projectId: project.id, environment: project.environment, ownerKind: project.ownerKind,
       dailyHandoffLimit: project.dailyHandoffLimit, voiceEligible: project.voiceEligible, scopes: value.oauth.scopes };
   }

@@ -57,7 +57,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: `(function () {
           var isRespondent = function (path) { return path === '/respond' || path.indexOf('/respond/') === 0; };
           var trackingAllowed = function () {
-            return navigator.doNotTrack !== '1' && window.doNotTrack !== '1' && navigator.globalPrivacyControl !== true && window.globalPrivacyControl !== true;
+            try {
+              var params = new URL(window.location.href).searchParams;
+              var stored = JSON.parse(window.sessionStorage.getItem('talkform:qa-attribution:v1') || 'null');
+              if (params.get('pb_traffic_type') === 'qa' || params.get('utm_source') === 'portfolio_brain_qa' || params.get('utm_medium') === 'agent_qa' || ['1','true'].indexOf(params.get('qa') || params.get('internal_qa')) >= 0 || (stored && stored.qa_traffic === true)) {
+                window.__talkformQaTraffic = true;
+                window.sessionStorage.setItem('talkform:qa-attribution:v1', JSON.stringify(Object.assign({}, stored, { qa_traffic: true })));
+              }
+            } catch (_) {}
+            return window.__talkformQaTraffic !== true && navigator.doNotTrack !== '1' && window.doNotTrack !== '1' && navigator.globalPrivacyControl !== true && window.globalPrivacyControl !== true;
           };
           var routePath = function (url) {
             try { return new URL(url || window.location.href, window.location.href).pathname; } catch (_) { return window.location.pathname; }

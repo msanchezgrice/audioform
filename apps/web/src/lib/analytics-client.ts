@@ -1,4 +1,5 @@
 import type { CaptureResult } from "posthog-js";
+import { qaAttributionFromUrl, type QaAttribution } from "./qa-attribution";
 
 const ALLOWED_EVENTS = new Set([
   "checkout_failed",
@@ -85,9 +86,9 @@ function scrubUrlProperty(value: unknown) {
 }
 
 /** Drop SDK-generated events on respondent pages and remove bearer-bearing URL properties. */
-export function filterRespondentAnalyticsEvent(event: CaptureResult | null, pathname: string, blocked: boolean) {
+export function filterRespondentAnalyticsEvent(event: CaptureResult | null, pathname: string, blocked: boolean, qa: QaAttribution = {}) {
   if (!event || blocked || isRespondentPath(pathname)) return null;
-  const properties = { ...event.properties };
+  const properties: Record<string, unknown> = { ...event.properties, ...qaAttributionFromUrl(String(event.properties.$current_url ?? "")), ...qa };
   for (const [key, value] of Object.entries(properties)) {
     if (!/(?:url|referrer|referer|path)/i.test(key)) continue;
     const scrubbed = scrubUrlProperty(value);

@@ -6,7 +6,7 @@ export function TalkformGoogleAnalytics({ measurementId }: { measurementId?: str
 
   return (
     <Script id="talkform-google-analytics" strategy="afterInteractive">
-      {`if ((window.__talkformAnalyticsBlocked === true || window.location.pathname === '/respond' || window.location.pathname.indexOf('/respond/') === 0) === false && navigator.doNotTrack !== '1' && window.doNotTrack !== '1' && navigator.globalPrivacyControl !== true && window.globalPrivacyControl !== true) {
+      {`if (window.__talkformQaTraffic !== true && (window.__talkformAnalyticsBlocked === true || window.location.pathname === '/respond' || window.location.pathname.indexOf('/respond/') === 0) === false && navigator.doNotTrack !== '1' && window.doNotTrack !== '1' && navigator.globalPrivacyControl !== true && window.globalPrivacyControl !== true) {
 window.dataLayer = window.dataLayer || [];
 window.gtag = window.gtag || function gtag(){window.dataLayer.push(arguments);};
 window.gtag('js', new Date());
@@ -20,7 +20,7 @@ window.gtag('config', '${id}', {
 var talkformOriginalGtag = window.gtag;
 window.addEventListener('talkform:route-change', function (event) {
   var detail = event && event.detail;
-  if (detail && detail.respondent) {
+  if (window.__talkformQaTraffic === true || (detail && detail.respondent)) {
     window.gtag = function () {};
   } else {
     window.gtag = talkformOriginalGtag;
