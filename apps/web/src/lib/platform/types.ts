@@ -13,7 +13,7 @@ export type ApiKeyScope = "handoffs:read" | "handoffs:write" | "handoffs:delete"
 export type PlatformProject = { id: string; name: string; environment: ProjectEnvironment; ownerKind: ProjectOwnerKind; dailyHandoffLimit: number; voiceEligible: boolean; createdAt: string; updatedAt: string; claimedAt: string | null };
 export type PlatformApiKey = { id: string; projectId: string; name: string; prefix: string; scopes: ApiKeyScope[]; createdAt: string; lastUsedAt: string | null; revokedAt: string | null };
 export type CreatedPlatformApiKey = PlatformApiKey & { secret: string };
-export type AuthenticatedProjectKey = { keyId: string; projectId: string; environment: ProjectEnvironment; ownerKind: ProjectOwnerKind; dailyHandoffLimit: number; voiceEligible: boolean; scopes: ApiKeyScope[] };
+export type AuthenticatedProjectKey = { keyId: string | null; projectId: string; environment: ProjectEnvironment; ownerKind: ProjectOwnerKind; dailyHandoffLimit: number; voiceEligible: boolean; scopes: ApiKeyScope[] };
 export type PlatformHandoff = { id: string; projectId: string; status: HostedHandoffStatus; createdAt: string; expiresAt: string; completedAt: string | null; resultExpiresAt: string | null };
 export type CreatedPlatformHandoff = PlatformHandoff & {
   respondentUrl: string;

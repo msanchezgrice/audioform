@@ -14,6 +14,20 @@ const initializeBody = JSON.stringify({
   },
 });
 
+test("OAuth challenges happen before a private tool can execute", async () => {
+  let invoked = 0;
+  const response = await handleMcpPost(new Request("https://www.talkform.ai/api/mcp", {
+    method: "POST", headers: { "content-type": "application/json", accept: "application/json, text/event-stream" },
+    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "talkform.get_handoff", arguments: { id: "2d8b1a0a-5615-4bb5-a34e-12814cb144d8" } } }),
+  }), {
+    allowRequest: async () => ({ allowed: true, retryAfter: 60 }),
+    authorizeRequest: async () => new Response(null, { status: 401, headers: { "www-authenticate": "Bearer resource_metadata=fixture" } }),
+    hosted: { getHandoff: async () => { invoked += 1; return { privateRecord: true }; } } as never,
+  });
+  assert.equal(response.status, 401);
+  assert.equal(invoked, 0);
+});
+
 function request(body = initializeBody, headers: Record<string, string> = {}) {
   return new Request("https://www.talkform.ai/api/mcp", {
     method: "POST",

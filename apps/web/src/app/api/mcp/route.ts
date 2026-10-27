@@ -7,7 +7,7 @@ import {
 } from "../../../lib/mcp-telemetry";
 import { captureApiRequest } from "../../../lib/server-analytics";
 import { handleMcpPost, methodNotAllowed } from "./handler";
-import { hostedMcpServices } from "../../../lib/platform/mcp";
+import { authorizeMcpRequest, hostedMcpServices } from "../../../lib/platform/mcp";
 
 export const runtime = "nodejs";
 
@@ -57,6 +57,7 @@ function recordMcpTelemetry(args: {
 export async function POST(request: Request) {
   return handleMcpPost(request, {
     hosted: hostedMcpServices(request),
+    authorizeRequest: authorizeMcpRequest,
     allowRequest: consumeAnonymousMcpQuota,
     recordRequest: ({ request: trackedRequest, startedAt, response, properties, requestBody, responseBody }) => Promise.all([
       captureApiRequest({
