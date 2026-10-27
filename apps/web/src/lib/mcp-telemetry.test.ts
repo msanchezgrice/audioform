@@ -12,6 +12,16 @@ import {
 
 const NOW = new Date("2026-09-23T15:04:05.000Z");
 
+test("directory profile traffic retains its public endpoint path", () => {
+  const [event] = buildMcpTelemetryEvents({
+    domain: "talkform.ai", serverName: "talkform", pathname: "/api/mcp/public",
+    headers: new Headers(), requestBody: { jsonrpc: "2.0", id: 1, method: "initialize", params: {} },
+    responseBody: { jsonrpc: "2.0", id: 1, result: {} }, httpStatus: 200, now: NOW,
+  });
+  assert.equal(event?.properties.$pathname, "/api/mcp/public");
+  assert.equal(event?.properties.$current_url, "https://talkform.ai/api/mcp/public");
+});
+
 function headers(extra: Record<string, string> = {}) {
   return new Headers({
     "user-agent": "Claude-User/1.0 (+https://anthropic.com)",

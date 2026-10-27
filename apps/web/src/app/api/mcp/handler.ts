@@ -108,7 +108,8 @@ export async function handleMcpPost(
   }
 
   try {
-    const response = await handleTalkformMcpProtocol(request, parsedBody, dependencies.hosted);
+    const publicProfile = new URL(request.url).pathname.replace(/\/$/, "") === "/api/mcp/public";
+    const response = await handleTalkformMcpProtocol(request, parsedBody, publicProfile ? undefined : dependencies.hosted);
     if (response.headers.get("content-type")?.includes("application/json")) {
       const payload = await response.clone().json().catch(() => null);
       responseBody = payload;

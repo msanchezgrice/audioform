@@ -23,7 +23,7 @@ export type McpTelemetryEvent = {
   properties: {
     $host: string;
     $current_url: string;
-    $pathname: "/api/mcp";
+    $pathname: "/api/mcp" | "/api/mcp/public";
     origin: "mcp";
     mcp_server: string;
     mcp_method: "initialize" | "tools/call";
@@ -41,6 +41,7 @@ export type BuildMcpTelemetryInput = {
   domain: string;
   /** MCP serverInfo.name. */
   serverName: string;
+  pathname?: "/api/mcp" | "/api/mcp/public";
   headers: Headers;
   /** Parsed JSON-RPC request body (single message or batch array). */
   requestBody: unknown;
@@ -136,8 +137,8 @@ export function buildMcpTelemetryEvents(input: BuildMcpTelemetryInput): McpTelem
       timestamp: now.toISOString(),
       properties: {
         $host: domain,
-        $current_url: `https://${domain}/api/mcp`,
-        $pathname: "/api/mcp",
+        $current_url: `https://${domain}${input.pathname ?? "/api/mcp"}`,
+        $pathname: input.pathname ?? "/api/mcp",
         origin: "mcp",
         mcp_server: input.serverName,
         mcp_method: method as "initialize" | "tools/call",

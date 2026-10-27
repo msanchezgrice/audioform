@@ -27,6 +27,18 @@ function request(body = initializeBody, headers: Record<string, string> = {}) {
   });
 }
 
+test("the public directory URL exposes only draft tools even when hosted services are available", async () => {
+  const response = await handleMcpPost(new Request("https://www.talkform.ai/api/mcp/public", {
+    method: "POST", headers: { accept: "application/json, text/event-stream", "content-type": "application/json" },
+    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list", params: {} }),
+  }), { allowRequest: async () => ({ allowed: true, retryAfter: 60 }), hosted: {} as never });
+  assert.equal(response.status, 200);
+  const payload = await response.json() as { result: { tools: Array<{ name: string }> } };
+  assert.deepEqual(payload.result.tools.map((tool) => tool.name).sort(), [
+    "talkform.get_template", "talkform.list_templates", "talkform.prepare_form",
+  ]);
+});
+
 test("the hosted MCP route initializes statelessly with a fresh server per request", async () => {
   let allowed = 0;
   const recorded: Array<{ status: number; protocolMethod?: unknown }> = [];

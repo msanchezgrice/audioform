@@ -31,6 +31,7 @@ function recordMcpTelemetry(args: {
     const events = buildMcpTelemetryEvents({
       domain: MCP_TELEMETRY_DOMAIN,
       serverName: MCP_SERVER_NAME,
+      pathname: new URL(args.request.url).pathname === "/api/mcp/public" ? "/api/mcp/public" : "/api/mcp",
       headers,
       requestBody: args.requestBody,
       responseBody: args.responseBody,
@@ -60,7 +61,7 @@ export async function POST(request: Request) {
     recordRequest: ({ request: trackedRequest, startedAt, response, properties, requestBody, responseBody }) => Promise.all([
       captureApiRequest({
         request: trackedRequest,
-        route: "/api/mcp",
+        route: new URL(trackedRequest.url).pathname === "/api/mcp/public" ? "/api/mcp/public" : "/api/mcp",
         startedAt,
         response,
         actorKind: "anonymous",

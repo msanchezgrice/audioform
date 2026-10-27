@@ -150,6 +150,7 @@ test("Apps SDK discovery exposes only the three public tools with accurate metad
     assert.ok(tool.inputSchema);
     assert.ok(tool.outputSchema);
     assert.deepEqual(tool.annotations, {
+      title: tool.title,
       readOnlyHint: true,
       destructiveHint: false,
       openWorldHint: false,
